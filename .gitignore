@@ -1,0 +1,6 @@
+node_modules
+.env
+bin
+tmp
+andurel-site.db
+.andurel-upgrade-state.json
