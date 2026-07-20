@@ -1,7 +1,9 @@
 package views
 
 import (
+	"andurel-site/config"
 	"andurel-site/internal/request"
+	"andurel-site/internal/server"
 	"andurel-site/router/cookies"
 	"andurel-site/router/routes"
 	"time"
@@ -43,6 +45,9 @@ templ base(headOpts ...HeadDataOption) {
 					</div>
 				}
 			</div>
+			if config.Env == server.ProdEnvironment {
+				<script defer data-website-id="8ced4d29-c1ad-46aa-a885-2cf193222376" src="https://analytics.mbvlabs.com/t/script.js"></script>
+			}
 		</body>
 	</html>
 }
