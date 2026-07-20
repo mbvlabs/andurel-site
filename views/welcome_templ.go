@@ -8,8 +8,6 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "andurel-site/router/routes"
-
 type Welcome struct{}
 
 func (w Welcome) PageFragment() string {
@@ -61,60 +59,47 @@ func (w Welcome) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"welcome-container\" class=\"relative flex flex-1 items-center justify-center overflow-hidden bg-[#090b0d] text-[#e4dfd2]\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: radial-gradient(circle at 12% 18%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 82% 22%, #aaa393 0 1px, transparent 1.5px), radial-gradient(circle at 67% 72%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 24% 83%, #8f8a7d 0 1px, transparent 1.5px);\"></div><div class=\"relative mx-auto w-full max-w-[960px] px-4 py-4\"><section class=\"grid items-center gap-6 py-6 lg:grid-cols-[minmax(0,1fr)_22rem]\"><div class=\"max-w-3xl\"><h1 class=\"text-4xl font-semibold text-[#f2ead8] sm:text-5xl lg:text-6xl\">Space-grade Go, wired locally.</h1><p class=\"mt-5 max-w-2xl text-lg leading-7 text-[#aaa393]\">Andurel has generated the core app shell: routing, controllers, validation, authentication, email, queues, Templ, and Inertia-ready frontends.</p><div class=\"mt-8 flex flex-wrap gap-3\"><a class=\"bg-[#ff6b1a] px-4 py-2 text-sm font-semibold text-[#130f0b] shadow-sm shadow-black/40 transition hover:bg-[#ff8748]\" href=\"https://andurel.com\">Read the docs</a> <a class=\"border border-[#2f3a37] bg-[#101414]/80 px-4 py-2 text-sm font-semibold text-[#d7d0bf] transition hover:border-[#52605c] hover:text-[#f2ead8]\" href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"welcome-container\" class=\"relative flex flex-1 items-center justify-center overflow-hidden bg-[#090b0d] text-[#e4dfd2]\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: radial-gradient(circle at 12% 18%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 82% 22%, #aaa393 0 1px, transparent 1.5px), radial-gradient(circle at 67% 72%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 24% 83%, #8f8a7d 0 1px, transparent 1.5px);\"></div><div class=\"relative mx-auto w-full max-w-[960px] px-4 py-4\"><section class=\"grid items-center gap-6 py-6 lg:grid-cols-[minmax(0,1fr)_22rem]\"><div class=\"max-w-3xl\"><p class=\"mb-3 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-[#8df7a4]\">Rails-like development speed for Go</p><h1 class=\"text-4xl font-semibold text-[#f2ead8] sm:text-5xl lg:text-6xl\">Space-grade Go, wired locally.</h1><p class=\"mt-5 max-w-2xl text-lg leading-7 text-[#aaa393]\">Andurel brings routing, controllers, data, jobs, authentication, and modern frontends into one convention-led workflow.</p><div class=\"mt-8 flex flex-wrap gap-3\"><a class=\"bg-[#ff6b1a] px-4 py-2 text-sm font-semibold text-[#130f0b] shadow-sm shadow-black/40 transition hover:bg-[#ff8748]\" href=\"/docs/1.5.2/installation\">Read the documentation</a> <a class=\"border border-[#2f3a37] bg-[#101414]/80 px-4 py-2 text-sm font-semibold text-[#d7d0bf] transition hover:border-[#52605c] hover:text-[#f2ead8]\" href=\"https://github.com/mbvlabs/andurel\">View on GitHub</a></div></div><div class=\"border border-[#2f3a37] bg-[#101414]/80 p-4 shadow-sm shadow-black/40\"><div class=\"mb-4 flex items-center justify-between border-b border-[#2f3a37] pb-3 text-xs uppercase text-[#8f8a7d]\"><span>deploy console</span> <span class=\"text-[#8df7a4]\">ready</span></div><div class=\"space-y-4 font-mono text-sm\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var4 templ.SafeURL
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(routes.RegistrationNew.URL())
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 25, Col: 196}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+				templ_7745c5c3_Err = consoleLine("install", "go install github.com/mbvlabs/andurel@latest").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\">Create account</a></div></div><div class=\"border border-[#2f3a37] bg-[#101414]/80 p-4 shadow-sm shadow-black/40\"><div class=\"mb-4 flex items-center justify-between border-b border-[#2f3a37] pb-3 text-xs uppercase text-[#8f8a7d]\"><span>deploy console</span> <span class=\"text-[#8df7a4]\">ready</span></div><div class=\"space-y-4 font-mono text-sm\">")
+				templ_7745c5c3_Err = consoleLine("create", "andurel new orbit").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = consoleLine("auth", "sessions, registration, reset password").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = consoleLine("tools", "andurel tool sync").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = consoleLine("views", "Templ + Inertia scaffold online").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = consoleLine("run", "andurel run").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = consoleLine("routes", "slugged endpoints mounted").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></div><section class=\"grid gap-4 md:grid-cols-2 lg:col-span-2\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = consoleLine("jobs", "queue worker ready").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = welcomeCard("Documentation", "Install Andurel, create an application, and learn the conventions that shape a project.", "/docs/1.5.2/installation").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div><section class=\"grid gap-4 md:grid-cols-2 lg:col-span-2\">")
+				templ_7745c5c3_Err = welcomeCard("Command line", "Generate models, factories, controllers, routes, jobs, emails, and complete resources.", "/docs/1.5.2/cli").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = welcomeCard("Documentation", "Start with the framework guides and learn the conventions that shape an Andurel app.", "https://andurel.com").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = welcomeCard("Templ and Inertia", "Render server-side Templ pages or choose Vue, React, or Svelte through Inertia.", "/docs/1.5.2/frontend-options").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = welcomeCard("Authentication", "Registration, sessions, email confirmation, and password reset are already wired.", routes.RegistrationNew.URL()).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = welcomeCard("Open source", "Read the framework source, report issues, and contribute on GitHub.", "https://github.com/mbvlabs/andurel").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = welcomeCard("Templ and Inertia", "Render server-side Templ pages or scaffold Inertia pages when Inertia is enabled.", routes.HomePage.URL()).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = welcomeCard("Command line", "Generate models, factories, controllers, routes, jobs, emails, and views from the CLI.", "https://andurel.com").Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</section></section></div></main>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</section></section></div></main>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -126,7 +111,7 @@ func (w Welcome) Page() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = base(SetTitle("Welcome")).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = base(SetTitle("Go web framework"), SetDescription("Andurel is a Rails-like web framework for Go that prioritizes development speed.")).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -150,51 +135,51 @@ func welcomeCard(title string, description string, href string) templ.Component 
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<a class=\"group border border-[#2f3a37] bg-[#101414]/80 p-4 text-left shadow-sm shadow-black/40 transition hover:border-[#52605c]\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<a class=\"group border border-[#2f3a37] bg-[#101414]/80 p-4 text-left shadow-sm shadow-black/40 transition hover:border-[#52605c]\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var6 templ.SafeURL
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(href)
+		var templ_7745c5c3_Var5 templ.SafeURL
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(href)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 54, Col: 143}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 53, Col: 143}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><div class=\"mb-4 flex size-8 items-center justify-center border border-[#52605c] bg-[#090c0d] text-[#8df7a4] transition group-hover:border-[#8df7a4]\"><span class=\"size-2 bg-[#8df7a4]\"></span></div><h2 class=\"text-base font-semibold text-[#f2ead8]\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var6 string
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(title)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 57, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><div class=\"mb-4 flex size-8 items-center justify-center border border-[#52605c] bg-[#090c0d] text-[#8df7a4] transition group-hover:border-[#8df7a4]\"><span class=\"size-2 bg-[#8df7a4]\"></span></div><h2 class=\"text-base font-semibold text-[#f2ead8]\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</h2><p class=\"mt-2 text-sm leading-5 text-[#8f8a7d]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(title)
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 58, Col: 60}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 58, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</h2><p class=\"mt-2 text-sm leading-5 text-[#8f8a7d]\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(description)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 59, Col: 64}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</p></a>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</p></a>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -218,17 +203,30 @@ func consoleLine(label string, value string) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var9 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var9 == nil {
-			templ_7745c5c3_Var9 = templ.NopComponent
+		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var8 == nil {
+			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"flex items-start gap-3\"><span class=\"mt-1 size-1.5 bg-[#8df7a4]\"></span><div><p class=\"text-[#8df7a4]\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"flex items-start gap-3\"><span class=\"mt-1 size-1.5 bg-[#8df7a4]\"></span><div><p class=\"text-[#8df7a4]\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var9 string
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(label)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 66, Col: 36}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</p><p class=\"text-[#8f8a7d]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(label)
+		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(value)
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 67, Col: 36}
 		}
@@ -236,20 +234,7 @@ func consoleLine(label string, value string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</p><p class=\"text-[#8f8a7d]\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var11 string
-		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(value)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/welcome.templ`, Line: 68, Col: 36}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</p></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</p></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

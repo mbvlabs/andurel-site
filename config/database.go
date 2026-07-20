@@ -26,9 +26,7 @@ func (d Database) GetDatabaseURL() string {
 func newDatabaseConfig() Database {
 	dataCfg := Database{}
 
-	if err := env.ParseWithOptions(&dataCfg, env.Options{
-		RequiredIfNoDef: true,
-	}); err != nil {
+	if err := env.Parse(&dataCfg); err != nil {
 		panic(err)
 	}
 

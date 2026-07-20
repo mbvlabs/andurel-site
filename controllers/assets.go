@@ -12,7 +12,7 @@ import (
 
 	"andurel-site/assets"
 	"andurel-site/config"
-	"andurel-site/internal/routing"
+	documentation "andurel-site/docs"
 	"andurel-site/internal/server"
 	"andurel-site/router"
 	"andurel-site/router/routes"
@@ -24,10 +24,11 @@ const threeMonthsCache = "7776000"
 
 type Assets struct {
 	cache *Cache[string]
+	site  *documentation.Site
 }
 
-func NewAssets(cache *Cache[string]) Assets {
-	return Assets{cache}
+func NewAssets(cache *Cache[string], site *documentation.Site) Assets {
+	return Assets{cache: cache, site: site}
 }
 
 func (a Assets) RegisterRoutes(r *router.Router) error {
@@ -155,7 +156,7 @@ func (a Assets) Sitemap(etx *echo.Context) error {
 	cacheKey := "assets:sitemap"
 
 	sitemap, err := a.cache.Get(cacheKey, func() (string, error) {
-		return createSitemap([]routing.Route{})
+		return createSitemap(a.site)
 	})
 	if err != nil {
 		slog.ErrorContext(
@@ -164,7 +165,7 @@ func (a Assets) Sitemap(etx *echo.Context) error {
 			"error", err,
 		)
 
-		result, err := createSitemap([]routing.Route{})
+		result, err := createSitemap(a.site)
 		if err != nil {
 			return err
 		}
@@ -189,17 +190,20 @@ type Sitemap struct {
 	URL     []URL    `xml:"url"`
 }
 
-func createSitemap(routes []routing.Route) (string, error) {
-	baseURL := config.BaseURL
-
-	var urls []URL
-
-	urls = append(urls, URL{
+func createSitemap(site *documentation.Site) (string, error) {
+	baseURL := strings.TrimRight(config.BaseURL, "/")
+	urls := []URL{{
 		Loc:        baseURL,
 		ChangeFreq: "monthly",
-		LastMod:    "2024-10-22T09:43:09+00:00",
 		Priority:   "1",
-	})
+	}}
+	for _, document := range site.Documents() {
+		urls = append(urls, URL{
+			Loc:        baseURL + document.URL(),
+			ChangeFreq: "monthly",
+			Priority:   "0.8",
+		})
+	}
 
 	sitemap := Sitemap{
 		XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9",

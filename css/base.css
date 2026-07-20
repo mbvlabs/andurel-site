@@ -21,3 +21,172 @@ body {
 
 @source "./views";
 @source "./resources/js";
+
+.docs-content {
+	color: #aaa393;
+	font-size: 1rem;
+	line-height: 1.8;
+}
+
+.docs-content > :first-child {
+	margin-top: 0;
+}
+
+.docs-content h1,
+.docs-content h2,
+.docs-content h3,
+.docs-content h4 {
+	color: #f2ead8;
+	font-weight: 650;
+	line-height: 1.25;
+	scroll-margin-top: 5.5rem;
+}
+
+.docs-content h1 {
+	font-size: clamp(2.25rem, 5vw, 3.4rem);
+	letter-spacing: -0.04em;
+	margin-bottom: 1.5rem;
+}
+
+.docs-content h2 {
+	border-top: 1px solid #2f3a37;
+	font-size: 1.65rem;
+	letter-spacing: -0.025em;
+	margin-top: 3.5rem;
+	padding-top: 2rem;
+}
+
+.docs-content h3 {
+	font-size: 1.25rem;
+	margin-top: 2.25rem;
+}
+
+.docs-content p,
+.docs-content ul,
+.docs-content ol,
+.docs-content blockquote,
+.docs-content table,
+.docs-content pre {
+	margin-top: 1.25rem;
+}
+
+.docs-content ul,
+.docs-content ol {
+	padding-left: 1.5rem;
+}
+
+.docs-content ul {
+	list-style: square;
+}
+
+.docs-content ol {
+	list-style: decimal;
+}
+
+.docs-content li {
+	margin-top: 0.35rem;
+	padding-left: 0.3rem;
+}
+
+.docs-content li::marker {
+	color: #8df7a4;
+}
+
+.docs-content a {
+	color: #8df7a4;
+	text-decoration: underline;
+	text-decoration-color: #52605c;
+	text-underline-offset: 0.22em;
+}
+
+.docs-content a:hover {
+	color: #f2ead8;
+	text-decoration-color: #8df7a4;
+}
+
+.docs-content code {
+	border: 1px solid #2f3a37;
+	background: #101414;
+	color: #e4dfd2;
+	padding: 0.12rem 0.35rem;
+	font-size: 0.88em;
+}
+
+.docs-content pre {
+	position: relative;
+	overflow-x: auto;
+	border: 1px solid #2f3a37;
+	background: #070909;
+	padding: 1.2rem;
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+.docs-content pre code {
+	border: 0;
+	background: transparent;
+	padding: 0;
+	color: #d7d0bf;
+	font-size: 0.875rem;
+	line-height: 1.75;
+}
+
+.docs-content .copy-code {
+	position: absolute;
+	top: 0.55rem;
+	right: 0.55rem;
+	border: 1px solid #2f3a37;
+	background: #101414;
+	color: #8f8a7d;
+	padding: 0.3rem 0.5rem;
+	font-family: ui-monospace, monospace;
+	font-size: 0.65rem;
+	text-transform: uppercase;
+}
+
+.docs-content .copy-code:hover,
+.docs-content .copy-code:focus-visible {
+	border-color: #8df7a4;
+	color: #f2ead8;
+}
+
+.docs-content blockquote {
+	border-left: 3px solid #ff6b1a;
+	background: #130f0b;
+	padding: 0.9rem 1rem;
+}
+
+.docs-content table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+}
+
+.docs-content th,
+.docs-content td {
+	border: 1px solid #2f3a37;
+	padding: 0.65rem 0.8rem;
+	text-align: left;
+}
+
+.docs-content th {
+	background: #0b1110;
+	color: #8df7a4;
+}
+
+.docs-content strong {
+	color: #e4dfd2;
+}
+
+dialog::backdrop {
+	backdrop-filter: blur(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	* {
+		transition-duration: 0.01ms !important;
+	}
+}

@@ -5,9 +5,6 @@ import (
 	"net/http"
 
 	"andurel-site/internal/hypermedia"
-	"andurel-site/internal/inertia"
-	"andurel-site/internal/storage"
-	"andurel-site/queue"
 	"andurel-site/router"
 	"andurel-site/router/routes"
 	"andurel-site/views"
@@ -15,16 +12,10 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-type Pages struct {
-	db         storage.Pool
-	insertOnly queue.InsertOnly
-}
+type Pages struct{}
 
-func NewPages(
-	db storage.Pool,
-	insertOnly queue.InsertOnly,
-) Pages {
-	return Pages{db, insertOnly}
+func NewPages() Pages {
+	return Pages{}
 }
 
 func (p Pages) RegisterRoutes(r *router.Router) error {
@@ -60,5 +51,5 @@ func (p Pages) Home(etx *echo.Context) error {
 }
 
 func (p Pages) NotFound(etx *echo.Context) error {
-	return inertia.Page(etx, "Errors/NotFound", inertia.Props{})
+	return renderNotFound(etx)
 }

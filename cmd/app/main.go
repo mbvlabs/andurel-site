@@ -4,23 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	mailclients "andurel-site/clients/email"
 	"andurel-site/config"
 	"andurel-site/controllers"
-	"andurel-site/database"
-	"andurel-site/email"
 	"andurel-site/internal/inertia"
 	"andurel-site/internal/server"
-	"andurel-site/queue"
 	"andurel-site/router"
-	"andurel-site/services"
 	"andurel-site/telemetry"
 
 	"go.uber.org/fx"
@@ -36,27 +30,11 @@ func main() {
 		os.Exit(1)
 	}
 	app := fx.New(
-		fx.Provide(
-			func() context.Context { return ctx },
-			func(cfg config.Config) (email.TransactionalSender, email.MarketingSender) {
-				if config.Env == server.ProdEnvironment {
-					log.Fatal("provide real email sender")
-				}
-
-				return mailclients.NewMailpit(cfg), mailclients.NewMailpit(cfg)
-			},
-		),
-
+		fx.Provide(func() context.Context { return ctx }),
 		config.Module,
-		database.Module,
 		telemetry.Module,
-		queue.Module,
-		queue.WorkersModule,
-		services.Module,
 		controllers.Module,
 		router.Module,
-
-		fx.Invoke(startQueueProcessor),
 		fx.Invoke(startServer),
 	)
 
@@ -74,19 +52,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
-}
-
-func startQueueProcessor(lc fx.Lifecycle, appCtx context.Context, p queue.Processor) {
-	var done <-chan struct{}
-	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			done = startInBackground(appCtx, "queue processor", p.Start)
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			return stopAndWait(ctx, p.Stop, done)
-		},
-	})
 }
 
 func startServer(lc fx.Lifecycle, appCtx context.Context, r *router.Router, cfg config.Config) {
@@ -121,7 +86,10 @@ func startServer(lc fx.Lifecycle, appCtx context.Context, r *router.Router, cfg 
 				var shutdownErr error
 				for _, shutdowner := range srv.Shutdowners {
 					if err := shutdowner.Shutdown(ctx); err != nil {
-						shutdownErr = errors.Join(shutdownErr, fmt.Errorf("server: shutdown component %T: %w", shutdowner, err))
+						shutdownErr = errors.Join(
+							shutdownErr,
+							fmt.Errorf("server: shutdown component %T: %w", shutdowner, err),
+						)
 					}
 				}
 				return shutdownErr
