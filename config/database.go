@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 
 	"github.com/caarlos0/env/v11"
 )
@@ -21,6 +23,22 @@ func (d Database) GetDatabaseURL() string {
 		d.DatabaseKind, d.User, d.Password, d.Host, d.Port,
 		d.Name, d.SslMode,
 	)
+}
+
+// PostgresURL builds a postgres connection string from individual parts.
+func PostgresURL(host, port, name, user, password, sslMode string) string {
+	u := url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(user, password),
+		Host:   net.JoinHostPort(host, port),
+		Path:   "/" + name,
+	}
+
+	q := u.Query()
+	q.Set("sslmode", sslMode)
+	u.RawQuery = q.Encode()
+
+	return u.String()
 }
 
 func newDatabaseConfig() Database {
