@@ -36,4 +36,7 @@ var Module = fx.Module(
 	fx.Invoke(func(r *router.Router, c Assets) error {
 		return c.RegisterRoutes(r)
 	}),
+	fx.Invoke(func(r *router.Router, c api.API) error {
+		return c.RegisterRoutes(r)
+	}),
 )
