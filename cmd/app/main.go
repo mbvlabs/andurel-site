@@ -12,6 +12,7 @@ import (
 
 	"andurel-site/config"
 	"andurel-site/controllers"
+	"andurel-site/database"
 	"andurel-site/internal/inertia"
 	"andurel-site/internal/server"
 	"andurel-site/router"
@@ -35,6 +36,7 @@ func main() {
 		telemetry.Module,
 		controllers.Module,
 		router.Module,
+		database.Module,
 		fx.Invoke(startServer),
 	)
 
