@@ -37,8 +37,19 @@ var Catalog = []Version{
 					{Slug: "routing", Title: "Routing", Description: "Declare typed routes and register Echo handlers."},
 					{Slug: "controllers", Title: "Controllers", Description: "Handle requests with explicit injected dependencies."},
 					{Slug: "views", Title: "Views", Description: "Render Templ, Datastar, and Inertia v3 responses."},
-					{Slug: "validation", Title: "Validation", Description: "Validate configuration, models, and request data."},
-					{Slug: "framework-packages", Title: "Framework Packages", Description: "Use the independently versioned Andurel packages."},
+				},
+			},
+			{
+				Title: "Framework Packages",
+				Pages: []Page{
+					{Slug: "framework-packages", Title: "Framework Packages", Description: "Understand package boundaries, composition, and versioning."},
+					{Slug: "storage", Title: "Storage", Description: "Configure PostgreSQL, transactions, sqlc, tests, and River clients."},
+					{Slug: "inertia", Title: "Inertia", Description: "Understand the Inertia v3 protocol, props, Vite, and SSR lifecycle."},
+					{Slug: "hypermedia", Title: "Hypermedia", Description: "Render Templ and build Datastar element, signal, and SSE flows."},
+					{Slug: "routing-package", Title: "Routing Package", Description: "Construct typed Go URLs and generated Inertia route helpers."},
+					{Slug: "server-package", Title: "Server", Description: "Configure HTTP bounds, lifecycle, and graceful shutdown."},
+					{Slug: "email-package", Title: "Email Package", Description: "Use transport-neutral messages, providers, and retry classification."},
+					{Slug: "validation", Title: "Validation", Description: "Build structured field errors and reusable validation rules."},
 				},
 			},
 			{
