@@ -21,7 +21,7 @@ func TestDocumentationHTTPBoundary(t *testing.T) {
 	t.Run("landing page", func(t *testing.T) {
 		status, _, body := runHandler(t, http.MethodGet, "/", Pages{}.Home, nil)
 		if status != http.StatusOK || !strings.Contains(body, "Read the documentation") ||
-			!strings.Contains(body, "/docs/1.5.2/installation") {
+			!strings.Contains(body, "/docs/latest/installation") {
 			t.Fatalf("unexpected landing response: status=%d body=%q", status, body)
 		}
 	})
@@ -29,7 +29,7 @@ func TestDocumentationHTTPBoundary(t *testing.T) {
 	t.Run("docs index redirects to latest installation", func(t *testing.T) {
 		status, headers, _ := runHandler(t, http.MethodGet, "/docs", docs.Index, nil)
 		if status != http.StatusPermanentRedirect ||
-			headers.Get("Location") != "/docs/1.5.2/installation" {
+			headers.Get("Location") != "/docs/latest/installation" {
 			t.Fatalf("unexpected redirect: status=%d location=%q", status, headers.Get("Location"))
 		}
 	})
@@ -38,10 +38,10 @@ func TestDocumentationHTTPBoundary(t *testing.T) {
 		status, _, body := runHandler(
 			t,
 			http.MethodGet,
-			"/docs/1.5.2/installation",
+			"/docs/latest/installation",
 			docs.Show,
 			map[string]string{
-				"version": "1.5.2",
+				"version": "latest",
 				"slug":    "installation",
 			},
 		)
@@ -49,7 +49,7 @@ func TestDocumentationHTTPBoundary(t *testing.T) {
 			"Installation - andurel",
 			`aria-current="page"`,
 			`href="#requirements"`,
-			`href="/docs/1.5.2/configuration"`,
+			`href="/docs/latest/configuration"`,
 			`rel="canonical"`,
 			`background-color:#282828`,
 			`user-select:none`,
@@ -92,7 +92,7 @@ func TestDocumentationHTTPBoundary(t *testing.T) {
 				headers.Get("Content-Type"),
 			)
 		}
-		for _, expected := range []string{"Installation", "/docs/1.5.2/installation", "Requirements"} {
+		for _, expected := range []string{"Installation", "/docs/latest/installation", "Requirements"} {
 			if !strings.Contains(body, expected) {
 				t.Fatalf("search body missing %q", expected)
 			}
@@ -104,7 +104,7 @@ func TestDocumentationHTTPBoundary(t *testing.T) {
 		if err != nil {
 			t.Fatalf("create sitemap: %v", err)
 		}
-		for _, expected := range []string{"http://localhost:8080", "/docs/1.5.2/installation", "/docs/1.5.2/configuration"} {
+		for _, expected := range []string{"http://localhost:8080", "/docs/latest/installation", "/docs/1.5.2/configuration"} {
 			if !strings.Contains(xml, expected) {
 				t.Fatalf("sitemap missing %q", expected)
 			}

@@ -59,11 +59,11 @@ func (w Welcome) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"welcome-container\" class=\"relative flex flex-1 items-center justify-center overflow-hidden bg-[#090b0d] text-[#e4dfd2]\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: radial-gradient(circle at 12% 18%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 82% 22%, #aaa393 0 1px, transparent 1.5px), radial-gradient(circle at 67% 72%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 24% 83%, #8f8a7d 0 1px, transparent 1.5px);\"></div><div class=\"relative mx-auto w-full max-w-[960px] px-4 py-4\"><section class=\"grid items-center gap-6 py-6 lg:grid-cols-[minmax(0,1fr)_22rem]\"><div class=\"max-w-3xl\"><p class=\"mb-3 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-[#8df7a4]\">Rails-like development speed for Go</p><h1 class=\"text-4xl font-semibold text-[#f2ead8] sm:text-5xl lg:text-6xl\">Space-grade Go, wired locally.</h1><p class=\"mt-5 max-w-2xl text-lg leading-7 text-[#aaa393]\">Andurel brings routing, controllers, data, jobs, authentication, and modern frontends into one convention-led workflow.</p><div class=\"mt-8 flex flex-wrap gap-3\"><a class=\"bg-[#ff6b1a] px-4 py-2 text-sm font-semibold text-[#130f0b] shadow-sm shadow-black/40 transition hover:bg-[#ff8748]\" href=\"/docs/1.5.2/installation\">Read the documentation</a> <a class=\"border border-[#2f3a37] bg-[#101414]/80 px-4 py-2 text-sm font-semibold text-[#d7d0bf] transition hover:border-[#52605c] hover:text-[#f2ead8]\" href=\"https://github.com/mbvlabs/andurel\">View on GitHub</a></div></div><div class=\"border border-[#2f3a37] bg-[#101414]/80 p-4 shadow-sm shadow-black/40\"><div class=\"mb-4 flex items-center justify-between border-b border-[#2f3a37] pb-3 text-xs uppercase text-[#8f8a7d]\"><span>deploy console</span> <span class=\"text-[#8df7a4]\">ready</span></div><div class=\"space-y-4 font-mono text-sm\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"welcome-container\" class=\"relative flex flex-1 items-center justify-center overflow-hidden bg-[#090b0d] text-[#e4dfd2]\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: radial-gradient(circle at 12% 18%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 82% 22%, #aaa393 0 1px, transparent 1.5px), radial-gradient(circle at 67% 72%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 24% 83%, #8f8a7d 0 1px, transparent 1.5px);\"></div><div class=\"relative mx-auto w-full max-w-[960px] px-4 py-4\"><section class=\"grid items-center gap-6 py-6 lg:grid-cols-[minmax(0,1fr)_22rem]\"><div class=\"max-w-3xl\"><p class=\"mb-3 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-[#8df7a4]\">Rails-like development speed for Go</p><h1 class=\"text-4xl font-semibold text-[#f2ead8] sm:text-5xl lg:text-6xl\">Space-grade Go, wired locally.</h1><p class=\"mt-5 max-w-2xl text-lg leading-7 text-[#aaa393]\">Andurel brings routing, controllers, data, jobs, authentication, and modern frontends into one convention-led workflow.</p><div class=\"mt-8 flex flex-wrap gap-3\"><a class=\"bg-[#ff6b1a] px-4 py-2 text-sm font-semibold text-[#130f0b] shadow-sm shadow-black/40 transition hover:bg-[#ff8748]\" href=\"/docs/latest/installation\">Read the documentation</a> <a class=\"border border-[#2f3a37] bg-[#101414]/80 px-4 py-2 text-sm font-semibold text-[#d7d0bf] transition hover:border-[#52605c] hover:text-[#f2ead8]\" href=\"https://github.com/mbvlabs/andurel\">View on GitHub</a></div></div><div class=\"border border-[#2f3a37] bg-[#101414]/80 p-4 shadow-sm shadow-black/40\"><div class=\"mb-4 flex items-center justify-between border-b border-[#2f3a37] pb-3 text-xs uppercase text-[#8f8a7d]\"><span>deploy console</span> <span class=\"text-[#8df7a4]\">ready</span></div><div class=\"space-y-4 font-mono text-sm\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = consoleLine("install", "go install github.com/mbvlabs/andurel@latest").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = consoleLine("install v2", "go install github.com/mbvlabs/andurel@master").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -83,15 +83,15 @@ func (w Welcome) Page() templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = welcomeCard("Documentation", "Install Andurel, create an application, and learn the conventions that shape a project.", "/docs/1.5.2/installation").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = welcomeCard("Documentation", "Install Andurel, create an application, and learn the conventions that shape a project.", "/docs/latest/installation").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = welcomeCard("Command line", "Generate models, factories, controllers, routes, jobs, emails, and complete resources.", "/docs/1.5.2/cli").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = welcomeCard("Command line", "Generate models, factories, controllers, routes, jobs, emails, and complete resources.", "/docs/latest/cli").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = welcomeCard("Templ and Inertia", "Render server-side Templ pages or choose Vue, React, or Svelte through Inertia.", "/docs/1.5.2/frontend-options").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = welcomeCard("Templ and Inertia", "Render server-side Templ pages or choose Vue, React, or Svelte through Inertia.", "/docs/latest/frontend-options").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

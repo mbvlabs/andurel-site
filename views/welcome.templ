@@ -20,7 +20,7 @@ templ (w Welcome) Page() {
 								Andurel brings routing, controllers, data, jobs, authentication, and modern frontends into one convention-led workflow.
 							</p>
 							<div class="mt-8 flex flex-wrap gap-3">
-								<a class="bg-[#ff6b1a] px-4 py-2 text-sm font-semibold text-[#130f0b] shadow-sm shadow-black/40 transition hover:bg-[#ff8748]" href="/docs/1.5.2/installation">Read the documentation</a>
+								<a class="bg-[#ff6b1a] px-4 py-2 text-sm font-semibold text-[#130f0b] shadow-sm shadow-black/40 transition hover:bg-[#ff8748]" href="/docs/latest/installation">Read the documentation</a>
 								<a class="border border-[#2f3a37] bg-[#101414]/80 px-4 py-2 text-sm font-semibold text-[#d7d0bf] transition hover:border-[#52605c] hover:text-[#f2ead8]" href="https://github.com/mbvlabs/andurel">View on GitHub</a>
 							</div>
 						</div>
@@ -30,16 +30,16 @@ templ (w Welcome) Page() {
 								<span class="text-[#8df7a4]">ready</span>
 							</div>
 							<div class="space-y-4 font-mono text-sm">
-								@consoleLine("install", "go install github.com/mbvlabs/andurel@latest")
+								@consoleLine("install v2", "go install github.com/mbvlabs/andurel@master")
 								@consoleLine("create", "andurel new orbit")
 								@consoleLine("tools", "andurel tool sync")
 								@consoleLine("run", "andurel run")
 							</div>
 						</div>
 						<section class="grid gap-4 md:grid-cols-2 lg:col-span-2">
-							@welcomeCard("Documentation", "Install Andurel, create an application, and learn the conventions that shape a project.", "/docs/1.5.2/installation")
-							@welcomeCard("Command line", "Generate models, factories, controllers, routes, jobs, emails, and complete resources.", "/docs/1.5.2/cli")
-							@welcomeCard("Templ and Inertia", "Render server-side Templ pages or choose Vue, React, or Svelte through Inertia.", "/docs/1.5.2/frontend-options")
+							@welcomeCard("Documentation", "Install Andurel, create an application, and learn the conventions that shape a project.", "/docs/latest/installation")
+							@welcomeCard("Command line", "Generate models, factories, controllers, routes, jobs, emails, and complete resources.", "/docs/latest/cli")
+							@welcomeCard("Templ and Inertia", "Render server-side Templ pages or choose Vue, React, or Svelte through Inertia.", "/docs/latest/frontend-options")
 							@welcomeCard("Open source", "Read the framework source, report issues, and contribute on GitHub.", "https://github.com/mbvlabs/andurel")
 						</section>
 					</section>
