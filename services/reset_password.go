@@ -2,20 +2,18 @@ package services
 
 import (
 	"context"
-
 	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
-	"andurel-site/config"
-	"andurel-site/email"
-
-	"andurel-site/internal/validation"
+	appemail "andurel-site/email"
 	"andurel-site/models"
-
 	"andurel-site/queue/jobs"
 	"andurel-site/router/routes"
+
+	"github.com/mbvlabs/andurel/pkg/email"
+	"github.com/mbvlabs/andurel/pkg/validation"
 )
 
 const userResetPassword = "user_password_reset"
@@ -39,7 +37,7 @@ func (i Identity) RequestResetPassword(
 		return b.Errors()
 	}
 
-	tx, err := i.db.BeginTx(ctx, nil)
+	tx, err := i.db.BeginTransaction(ctx, nil)
 
 	if err != nil {
 
@@ -47,13 +45,17 @@ func (i Identity) RequestResetPassword(
 
 	}
 
-	user, err := models.User.FindByEmail(ctx, tx, data.Email)
+	users := i.users.WithTx(tx)
+	tokens := i.tokens.WithTx(tx)
+
+	user, err := users.FindByEmail(ctx, data.Email)
 	if err != nil {
 		_ = tx.Rollback()
 
 		if errors.Is(err, models.ErrNotFound) {
 			return nil
 		}
+
 		return fmt.Errorf("find password reset user: %w", err)
 
 	}
@@ -68,9 +70,8 @@ func (i Identity) RequestResetPassword(
 
 	}
 
-	token, err := models.Token.Create(
+	token, err := tokens.Create(
 		ctx,
-		tx,
 		i.tokenSigningKey,
 
 		userResetPassword,
@@ -90,9 +91,9 @@ func (i Identity) RequestResetPassword(
 
 	}
 
-	resetURL := fmt.Sprintf("%s%s", config.BaseURL, routes.PasswordEdit.URL(token))
+	resetURL := fmt.Sprintf("%s%s", i.baseURL, routes.PasswordEdit.URL(token))
 
-	rpEmail := email.ResetPassword{ResetURL: resetURL}
+	rpEmail := appemail.ResetPassword{ResetURL: resetURL}
 
 	html, err := rpEmail.ToHTML()
 	if err != nil {
@@ -112,7 +113,7 @@ func (i Identity) RequestResetPassword(
 
 		Data: email.TransactionalData{
 			To:       user.Email,
-			From:     config.DefaultSenderSignature,
+			From:     i.defaultSenderSignature,
 			Subject:  "Reset Your Password",
 			HTMLBody: html,
 			TextBody: text,
@@ -148,7 +149,7 @@ func (i Identity) ResetPassword(
 		return b.Errors()
 	}
 
-	tx, err := i.db.BeginTx(ctx, nil)
+	tx, err := i.db.BeginTransaction(ctx, nil)
 
 	if err != nil {
 
@@ -156,9 +157,11 @@ func (i Identity) ResetPassword(
 
 	}
 
-	token, err := models.Token.FindByScopeAndHash(
+	users := i.users.WithTx(tx)
+	tokens := i.tokens.WithTx(tx)
+
+	token, err := tokens.FindByScopeAndHash(
 		ctx,
-		tx,
 		i.tokenSigningKey,
 
 		userResetPassword,
@@ -170,6 +173,7 @@ func (i Identity) ResetPassword(
 		if errors.Is(err, models.ErrNotFound) {
 			return ErrInvalidResetCode
 		}
+
 		return fmt.Errorf("find password reset token: %w", err)
 
 	}
@@ -196,13 +200,14 @@ func (i Identity) ResetPassword(
 
 	}
 
-	user, err := models.User.FindByEmail(ctx, tx, emailAddr)
+	user, err := users.FindByEmail(ctx, emailAddr)
 	if err != nil {
 		_ = tx.Rollback()
 
 		if errors.Is(err, models.ErrNotFound) {
 			return ErrInvalidResetCode
 		}
+
 		return fmt.Errorf("find password reset user: %w", err)
 
 	}
@@ -216,7 +221,7 @@ func (i Identity) ResetPassword(
 
 	}
 
-	_, err = models.User.Update(ctx, tx, models.UpdateUserData{
+	_, err = users.Update(ctx, models.UpdateUserData{
 		ID:               user.ID,
 		Email:            user.Email,
 		EmailValidatedAt: user.EmailValidatedAt,
@@ -229,11 +234,12 @@ func (i Identity) ResetPassword(
 		if errors.Is(err, models.ErrNotFound) {
 			return ErrInvalidResetCode
 		}
+
 		return fmt.Errorf("update password reset user: %w", err)
 
 	}
 
-	if err := models.Token.Destroy(ctx, tx, token.ID); err != nil {
+	if err := tokens.Destroy(ctx, token.ID); err != nil {
 		_ = tx.Rollback()
 
 		return fmt.Errorf("destroy password reset token: %w", err)

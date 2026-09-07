@@ -4,18 +4,22 @@ import (
 	"errors"
 	"net/http"
 
-	"andurel-site/internal/hypermedia"
 	"andurel-site/router"
 	"andurel-site/router/routes"
 	"andurel-site/views"
 
+	"github.com/mbvlabs/andurel/pkg/hypermedia"
+	"github.com/mbvlabs/andurel/pkg/inertia"
+
 	"github.com/labstack/echo/v5"
 )
 
-type Pages struct{}
+type Pages struct {
+	renderer *inertia.Renderer
+}
 
-func NewPages() Pages {
-	return Pages{}
+func NewPages(renderer *inertia.Renderer) Pages {
+	return Pages{renderer: renderer}
 }
 
 func (p Pages) RegisterRoutes(r *router.Router) error {
@@ -51,5 +55,5 @@ func (p Pages) Home(etx *echo.Context) error {
 }
 
 func (p Pages) NotFound(etx *echo.Context) error {
-	return renderNotFound(etx)
+	return p.renderer.Page(etx, "Errors/NotFound", inertia.Props{})
 }

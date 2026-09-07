@@ -1,52 +1,58 @@
 package config
 
 import (
+	"errors"
 	"fmt"
-	"net"
-	"net/url"
 
-	"github.com/caarlos0/env/v11"
+	"github.com/mbvlabs/andurel/pkg/storage"
 )
 
-type Database struct {
-	Port         string `env:"DB_PORT"`
-	Host         string `env:"DB_HOST"`
-	Name         string `env:"DB_NAME"`
-	User         string `env:"DB_USER"`
-	Password     string `env:"DB_PASSWORD"`
-	DatabaseKind string `env:"DB_KIND"`
-	SslMode      string `env:"DB_SSL_MODE"`
-}
+const (
+	DefaultDatabaseKind            = "postgres"
+	DefaultDatabaseHost            = "127.0.0.1"
+	DefaultDatabasePort            = "5432"
+	DefaultDatabaseName            = "andurel"
+	DefaultDatabaseUser            = "postgres"
+	DefaultDatabasePassword        = "postgres"
+	DefaultDatabaseSSLMode         = "disable"
+	DefaultDatabaseApplicationName = "andurel"
+)
 
-func (d Database) GetDatabaseURL() string {
-	return fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s",
-		d.DatabaseKind, d.User, d.Password, d.Host, d.Port,
-		d.Name, d.SslMode,
+func NewDatabase() (storage.Config, error) {
+	env := newEnvironment()
+	cfg := storage.DefaultConfig()
+	cfg.DatabaseKind = env.String("DB_KIND", DefaultDatabaseKind)
+	cfg.Host = env.String("DB_HOST", DefaultDatabaseHost)
+	cfg.Port = env.String("DB_PORT", DefaultDatabasePort)
+	cfg.Name = env.String("DB_NAME", DefaultDatabaseName)
+	cfg.User = env.String("DB_USER", DefaultDatabaseUser)
+	cfg.Password = env.String("DB_PASSWORD", DefaultDatabasePassword)
+	cfg.SSLMode = env.String("DB_SSL_MODE", DefaultDatabaseSSLMode)
+	cfg.ApplicationName = env.String("DB_APPLICATION_NAME", DefaultDatabaseApplicationName)
+	cfg.ConnectTimeout = env.Duration("DB_CONNECT_TIMEOUT", cfg.ConnectTimeout)
+	cfg.StatementCacheCapacity = env.Int(
+		"DB_STATEMENT_CACHE_CAPACITY",
+		cfg.StatementCacheCapacity,
 	)
-}
+	cfg.DescriptionCacheCapacity = env.Int(
+		"DB_DESCRIPTION_CACHE_CAPACITY",
+		cfg.DescriptionCacheCapacity,
+	)
+	cfg.MaxOpenConnections = env.Int("DB_MAX_OPEN_CONNECTIONS", cfg.MaxOpenConnections)
+	cfg.MaxIdleConnections = env.Int("DB_MAX_IDLE_CONNECTIONS", cfg.MaxIdleConnections)
+	cfg.ConnectionMaxLifetime = env.Duration(
+		"DB_CONNECTION_MAX_LIFETIME",
+		cfg.ConnectionMaxLifetime,
+	)
+	cfg.ConnectionMaxIdleTime = env.Duration(
+		"DB_CONNECTION_MAX_IDLE_TIME",
+		cfg.ConnectionMaxIdleTime,
+	)
+	cfg.OpenTelemetry = env.Bool("DB_OPEN_TELEMETRY", true)
 
-// PostgresURL builds a postgres connection string from individual parts.
-func PostgresURL(host, port, name, user, password, sslMode string) string {
-	u := url.URL{
-		Scheme: "postgres",
-		User:   url.UserPassword(user, password),
-		Host:   net.JoinHostPort(host, port),
-		Path:   "/" + name,
+	if err := errors.Join(env.Err(), cfg.Validate()); err != nil {
+		return storage.Config{}, fmt.Errorf("config: database: %w", err)
 	}
 
-	q := u.Query()
-	q.Set("sslmode", sslMode)
-	u.RawQuery = q.Encode()
-
-	return u.String()
-}
-
-func newDatabaseConfig() Database {
-	dataCfg := Database{}
-
-	if err := env.Parse(&dataCfg); err != nil {
-		panic(err)
-	}
-
-	return dataCfg
+	return cfg, nil
 }

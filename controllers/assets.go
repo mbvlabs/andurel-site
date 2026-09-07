@@ -12,23 +12,22 @@ import (
 
 	"andurel-site/assets"
 	"andurel-site/config"
-	documentation "andurel-site/docs"
-	"andurel-site/internal/server"
 	"andurel-site/router"
 	"andurel-site/router/routes"
 
 	"github.com/labstack/echo/v5"
+	"github.com/mbvlabs/andurel/pkg/routing"
 )
 
 const threeMonthsCache = "7776000"
 
 type Assets struct {
-	cache *Cache[string]
-	site  *documentation.Site
+	cache  *Cache[string]
+	appCfg config.App
 }
 
-func NewAssets(cache *Cache[string], site *documentation.Site) Assets {
-	return Assets{cache: cache, site: site}
+func NewAssets(cache *Cache[string], appCfg config.App) Assets {
+	return Assets{cache: cache, appCfg: appCfg}
 }
 
 func (a Assets) RegisterRoutes(r *router.Router) error {
@@ -92,11 +91,12 @@ func (a Assets) RegisterRoutes(r *router.Router) error {
 	if err != nil {
 		errs = append(errs, err)
 	}
+
 	return errors.Join(errs...)
 }
 
 func (a Assets) enableCaching(etx *echo.Context, content []byte) *echo.Context {
-	if config.Env == server.ProdEnvironment {
+	if a.appCfg.IsProduction() {
 		//nolint:gosec //only needed for browser caching
 		hash := md5.Sum(content)
 		etag := fmt.Sprintf(`"%x-%x"`, hash, len(content))
@@ -126,10 +126,10 @@ func (a Assets) enableCaching(etx *echo.Context, content []byte) *echo.Context {
 	return etx
 }
 
-func createRobotsTxt() string {
+func createRobotsTxt(baseURL string) string {
 	return fmt.Sprintf(
 		"User-agent: *\nAllow: /\nSitemap: %s%s\n",
-		config.BaseURL,
+		baseURL,
 		routes.Sitemap.URL(),
 	)
 }
@@ -138,7 +138,7 @@ func (a Assets) Robots(etx *echo.Context) error {
 	cacheKey := "assets:robots"
 
 	robotsTxt, err := a.cache.Get(cacheKey, func() (string, error) {
-		return createRobotsTxt(), nil
+		return createRobotsTxt(a.appCfg.BaseURL), nil
 	})
 	if err != nil {
 		slog.ErrorContext(
@@ -146,7 +146,7 @@ func (a Assets) Robots(etx *echo.Context) error {
 			"failed to get robots.txt from cache",
 			"error", err,
 		)
-		return etx.String(http.StatusOK, createRobotsTxt())
+		return etx.String(http.StatusOK, createRobotsTxt(a.appCfg.BaseURL))
 	}
 
 	return etx.String(http.StatusOK, robotsTxt)
@@ -156,7 +156,7 @@ func (a Assets) Sitemap(etx *echo.Context) error {
 	cacheKey := "assets:sitemap"
 
 	sitemap, err := a.cache.Get(cacheKey, func() (string, error) {
-		return createSitemap(a.site)
+		return createSitemap(a.appCfg.BaseURL, []routing.Route{})
 	})
 	if err != nil {
 		slog.ErrorContext(
@@ -165,7 +165,7 @@ func (a Assets) Sitemap(etx *echo.Context) error {
 			"error", err,
 		)
 
-		result, err := createSitemap(a.site)
+		result, err := createSitemap(a.appCfg.BaseURL, []routing.Route{})
 		if err != nil {
 			return err
 		}
@@ -190,20 +190,15 @@ type Sitemap struct {
 	URL     []URL    `xml:"url"`
 }
 
-func createSitemap(site *documentation.Site) (string, error) {
-	baseURL := strings.TrimRight(config.BaseURL, "/")
-	urls := []URL{{
+func createSitemap(baseURL string, routes []routing.Route) (string, error) {
+	var urls []URL
+
+	urls = append(urls, URL{
 		Loc:        baseURL,
 		ChangeFreq: "monthly",
+		LastMod:    "2024-10-22T09:43:09+00:00",
 		Priority:   "1",
-	}}
-	for _, document := range site.Documents() {
-		urls = append(urls, URL{
-			Loc:        baseURL + document.URL(),
-			ChangeFreq: "monthly",
-			Priority:   "0.8",
-		})
-	}
+	})
 
 	sitemap := Sitemap{
 		XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9",
@@ -254,6 +249,7 @@ func (a Assets) Script(etx *echo.Context) error {
 	etx = a.enableCaching(etx, stylesheet)
 	return etx.Blob(http.StatusOK, "application/javascript", stylesheet)
 }
+
 func contentTypeByExt(name string) string {
 	switch {
 	case strings.HasSuffix(name, ".js"):

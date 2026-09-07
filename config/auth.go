@@ -1,20 +1,31 @@
 package config
 
-import "github.com/caarlos0/env/v10"
+import (
+	"fmt"
+	"slices"
+)
 
-type auth struct {
-	Pepper          string   `env:"PEPPER"`
-	PreviousPeppers []string `env:"PREVIOUS_PEPPERS" envSeparator:"," envDefault:""`
+type Auth struct {
+	TokenSigningKey string
+	Pepper          string
+	PreviousPeppers []string
 }
 
-func newAuthConfig() auth {
-	authenticationCfg := auth{}
-
-	if err := env.ParseWithOptions(&authenticationCfg, env.Options{
-		RequiredIfNoDef: true,
-	}); err != nil {
-		panic(err)
+func NewAuth() (Auth, error) {
+	env := newEnvironment()
+	cfg := Auth{
+		TokenSigningKey: env.RequiredString("TOKEN_SIGNING_KEY"),
+		Pepper:          env.RequiredString("PEPPER"),
+		PreviousPeppers: env.Strings("PREVIOUS_PEPPERS", nil),
+	}
+	if err := env.Err(); err != nil {
+		return Auth{}, fmt.Errorf("config: auth: %w", err)
 	}
 
-	return authenticationCfg
+	return cfg, nil
+}
+
+func (c Auth) Clone() Auth {
+	c.PreviousPeppers = slices.Clone(c.PreviousPeppers)
+	return c
 }

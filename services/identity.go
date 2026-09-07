@@ -4,31 +4,48 @@ import (
 	"strings"
 
 	"andurel-site/config"
-	"andurel-site/internal/storage"
-	"andurel-site/queue"
+	"andurel-site/models"
+
+	"github.com/mbvlabs/andurel/pkg/storage"
 )
 
 type Identity struct {
-	db              storage.Pool
-	insertOnly      queue.InsertOnly
-	pepper          string
-	previousPeppers []string
-	tokenSigningKey string
+	db                     storage.Connection
+	users                  models.Users
+	tokens                 models.Tokens
+	insertOnly             storage.InsertQueue
+	pepper                 string
+	previousPeppers        []string
+	tokenSigningKey        string
+	baseURL                string
+	defaultSenderSignature string
 }
 
-func NewIdentity(db storage.Pool, insertOnly queue.InsertOnly, cfg config.Config) Identity {
-	previousPeppers := make([]string, 0, len(cfg.Auth.PreviousPeppers))
-	for _, pepper := range cfg.Auth.PreviousPeppers {
-		if pepper = strings.TrimSpace(pepper); pepper != "" && pepper != cfg.Auth.Pepper {
-			previousPeppers = append(previousPeppers, pepper)
+func NewIdentity(
+	db storage.Connection,
+	users models.Users,
+	tokens models.Tokens,
+	insertOnly storage.InsertQueue,
+	appCfg config.App,
+	authCfg config.Auth,
+	mailCfg config.Mail,
+) Identity {
+	validPeppers := make([]string, 0, len(authCfg.PreviousPeppers))
+	for _, p := range authCfg.PreviousPeppers {
+		if p = strings.TrimSpace(p); p != "" && p != authCfg.Pepper {
+			validPeppers = append(validPeppers, p)
 		}
 	}
 
 	return Identity{
-		db:              db,
-		insertOnly:      insertOnly,
-		pepper:          cfg.Auth.Pepper,
-		previousPeppers: previousPeppers,
-		tokenSigningKey: cfg.App.TokenSigningKey,
+		db:                     db,
+		users:                  users,
+		tokens:                 tokens,
+		insertOnly:             insertOnly,
+		pepper:                 authCfg.Pepper,
+		previousPeppers:        validPeppers,
+		tokenSigningKey:        authCfg.TokenSigningKey,
+		baseURL:                appCfg.BaseURL,
+		defaultSenderSignature: mailCfg.DefaultSenderSignature,
 	}
 }

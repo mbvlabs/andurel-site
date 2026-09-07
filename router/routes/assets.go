@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"andurel-site/internal/routing"
+	"github.com/mbvlabs/andurel/pkg/routing"
 )
 
 const AssetsPrefix = "/assets"

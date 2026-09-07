@@ -9,7 +9,6 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"andurel-site/config"
 	"andurel-site/router/routes"
 	"context"
 	"net/url"
@@ -47,6 +46,7 @@ func buildCanonicalURL(base, slug string) string {
 		if base == "" {
 			return slug
 		}
+
 		return strings.TrimRight(base, "/") + "/" + strings.TrimLeft(slug, "/")
 	}
 
@@ -525,13 +525,23 @@ func head(data HeadData) templ.Component {
 	})
 }
 
+var headDefaults struct {
+	projectName string
+	baseURL     string
+}
+
+func ConfigureHead(projectName, baseURL string) {
+	headDefaults.projectName = projectName
+	headDefaults.baseURL = baseURL
+}
+
 func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 	data := &HeadData{
-		siteName:       config.ProjectName,
-		Title:          config.ProjectName,
+		siteName:       headDefaults.projectName,
+		Title:          headDefaults.projectName,
 		Description:    "Andurel is the web development framework for Go.",
 		Slug:           "/",
-		canonical:      config.BaseURL,
+		canonical:      headDefaults.baseURL,
 		twitterCreator: "@mbvisti",
 		faviconBaseURL: "https://media.andurel.com/favicon",
 		MetaType:       "website",

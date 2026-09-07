@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"andurel-site/internal/routing"
+	"github.com/mbvlabs/andurel/pkg/routing"
 )
 
 const APIPrefix = "/api"

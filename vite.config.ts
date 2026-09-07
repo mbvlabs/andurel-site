@@ -1,10 +1,11 @@
 import { fileURLToPath, URL } from 'node:url'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
+import inertia from '@inertiajs/vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [svelte(), tailwindcss()],
+  plugins: [react(), inertia({ ssr: false }), tailwindcss()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
@@ -12,11 +13,11 @@ export default defineConfig({
   },
   base: '/assets/dist/',
   build: {
-    manifest: 'vite/manifest.json',
-    assetsDir: '',
+    manifest: "vite/manifest.json",
+    assetsDir: "",
     outDir: 'assets/dist',
     rollupOptions: {
-      input: 'resources/js/app.ts',
+      input: 'resources/js/app.tsx',
     },
   },
   server: {

@@ -5,22 +5,29 @@ import (
 	"log/slog"
 	"net/http"
 
-	"andurel-site/internal/inertia"
-	"andurel-site/internal/validation"
 	"andurel-site/router"
 	"andurel-site/router/cookies"
 	"andurel-site/router/routes"
 	"andurel-site/services"
+
+	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/validation"
 
 	"github.com/labstack/echo/v5"
 )
 
 type Confirmations struct {
 	identity services.Identity
+	renderer *inertia.Renderer
+	session  *cookies.Session
 }
 
-func NewConfirmations(identity services.Identity) Confirmations {
-	return Confirmations{identity}
+func NewConfirmations(
+	identity services.Identity,
+	renderer *inertia.Renderer,
+	session *cookies.Session,
+) Confirmations {
+	return Confirmations{identity: identity, renderer: renderer, session: session}
 }
 
 func (c Confirmations) RegisterRoutes(r *router.Router) error {
@@ -50,7 +57,7 @@ func (c Confirmations) RegisterRoutes(r *router.Router) error {
 }
 
 func (c Confirmations) New(etx *echo.Context) error {
-	return inertia.Page(etx, "Auth/ConfirmEmail", inertia.Props{})
+	return c.renderer.Page(etx, "Auth/ConfirmEmail", inertia.Props{})
 }
 
 func (c Confirmations) Create(etx *echo.Context) error {
@@ -65,7 +72,7 @@ func (c Confirmations) Create(etx *echo.Context) error {
 			"error",
 			err,
 		)
-		return inertia.Page(etx, "Errors/BadRequest", inertia.Props{})
+		return c.renderer.Page(etx, "Errors/BadRequest", inertia.Props{})
 	}
 
 	user, err := c.identity.VerifyEmail(
@@ -76,7 +83,7 @@ func (c Confirmations) Create(etx *echo.Context) error {
 	)
 	if err != nil {
 		if validationErrors, ok := validation.As(err); ok {
-			return inertia.Page(
+			return c.renderer.Page(
 				etx,
 				"Auth/ConfirmEmail",
 				inertia.Props{},
@@ -101,13 +108,14 @@ func (c Confirmations) Create(etx *echo.Context) error {
 			errorMsg = "Failed to verify email"
 		}
 
-		if flashErr := cookies.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
-			return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+		if flashErr := c.session.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
+			return c.renderer.Page(etx, "Errors/InternalError", inertia.Props{})
 		}
-		return inertia.Redirect(etx, routes.ConfirmationNew.URL())
+
+		return c.renderer.Redirect(etx, routes.ConfirmationNew.URL(), http.StatusSeeOther)
 	}
 
-	if err := cookies.CreateAppSession(etx, user); err != nil {
+	if err := c.session.CreateAppSession(etx, user); err != nil {
 		slog.ErrorContext(
 			etx.Request().Context(),
 			"failed to create session",
@@ -115,12 +123,16 @@ func (c Confirmations) Create(etx *echo.Context) error {
 			err,
 		)
 
-		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+		return c.renderer.Page(etx, "Errors/InternalError", inertia.Props{})
 	}
 
-	if flashErr := cookies.AddFlash(etx, cookies.FlashSuccess, "Email verified successfully!"); flashErr != nil {
-		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	if flashErr := c.session.AddFlash(
+		etx,
+		cookies.FlashSuccess,
+		"Email verified successfully!",
+	); flashErr != nil {
+		return c.renderer.Page(etx, "Errors/InternalError", inertia.Props{})
 	}
 
-	return inertia.Location(etx, routes.HomePage.URL())
+	return c.renderer.Location(etx, routes.HomePage.URL())
 }
