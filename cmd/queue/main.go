@@ -1,0 +1,138 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"andurel-site/config"
+	"andurel-site/queue"
+	"andurel-site/telemetry"
+
+	"github.com/mbvlabs/andurel/pkg/email"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/riverqueue/river"
+	"go.uber.org/fx"
+)
+
+func main() {
+	if err := config.LoadEnvironment(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	app := fx.New(
+		fx.Provide(
+			func() context.Context { return ctx },
+			newEmailSenders,
+		),
+
+		config.Module,
+		databaseModule,
+		telemetry.Module,
+		queue.Module,
+		queueProcessorModule,
+	)
+
+	if err := app.Start(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
+
+	<-ctx.Done()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := app.Stop(shutdownCtx); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
+}
+
+var databaseModule = fx.Module(
+	"database",
+	fx.Provide(fx.Annotate(newDatabase, fx.As(new(storage.Connection)), fx.As(fx.Self()))),
+)
+
+var queueProcessorModule = fx.Module(
+	"queue-processor",
+	fx.Provide(
+		func(_ *telemetry.Telemetry) *slog.Logger { return slog.Default() },
+		newQueueProcessor,
+	),
+	fx.Invoke(queueProcessorLifecycle),
+)
+
+func newDatabase(
+	lifecycle fx.Lifecycle,
+	ctx context.Context,
+	cfg storage.Config,
+) (*storage.Postgres, error) {
+	db, err := storage.NewPostgres(ctx, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	lifecycle.Append(fx.Hook{OnStop: func(context.Context) error { return db.Close() }})
+	return db, nil
+}
+
+type queueProcessorParams struct {
+	fx.In
+
+	Connection   storage.Connection
+	Config       config.QueueWorker
+	Logger       *slog.Logger
+	Workers      *river.Workers
+	PeriodicJobs []*river.PeriodicJob `group:"periodic_jobs"`
+}
+
+func newQueueProcessor(params queueProcessorParams) (*storage.QueueProcessor, error) {
+	return storage.NewQueueProcessor(
+		params.Connection,
+		params.Config.Config,
+		storage.WithRiverWorkers(params.Workers),
+		storage.WithRiverPeriodicJobs(params.PeriodicJobs...),
+		storage.WithRiverLogger(params.Logger),
+	)
+}
+
+func newEmailSenders(
+	ctx context.Context,
+	cfg config.MailTransport,
+) (email.TransactionalSender, email.MarketingSender, error) {
+	switch cfg.Driver {
+	case config.MailpitDriver:
+		client, err := email.NewMailpit(cfg.Mailpit)
+		if err != nil {
+			return nil, nil, fmt.Errorf("create Mailpit client: %w", err)
+		}
+
+		return client, client, nil
+	default:
+		return nil, nil, fmt.Errorf("unsupported email provider %q", cfg.Driver)
+	}
+}
+
+func queueProcessorLifecycle(
+	lifecycle fx.Lifecycle,
+	appCtx context.Context,
+	processor *storage.QueueProcessor,
+) {
+	lifecycle.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+			return processor.Start(appCtx)
+		},
+		OnStop: func(ctx context.Context) error {
+			return processor.Stop(ctx)
+		},
+	})
+}

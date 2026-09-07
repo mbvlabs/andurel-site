@@ -1,89 +1,22 @@
-// Package config provides application-wide configuration settings.
+// Package config loads, validates, and provides application configuration.
 package config
 
-import (
-	"fmt"
-	"os"
-	"strings"
+import "go.uber.org/fx"
 
-	"andurel-site/internal/server"
-
-	"github.com/gosimple/slug"
-
-	"go.uber.org/fx"
+// Module registers independent configuration constructors. Fx evaluates only
+// the constructors required by the active application graph.
+var Module = fx.Module("config",
+	fx.Provide(
+		NewApp,
+		NewHTTP,
+		NewSession,
+		NewAuth,
+		NewDatabase,
+		NewQueueInsert,
+		NewQueueWorker,
+		NewTelemetry,
+		NewMail,
+		NewMailTransport,
+		NewInertia,
+	),
 )
-
-// Global application settings that can be used throughout the codebase with defaults.
-var (
-	Env = func() string {
-		if os.Getenv("ENVIRONMENT") != "" {
-			return os.Getenv("ENVIRONMENT")
-		}
-
-		return server.DevEnvironment
-	}()
-	ProjectName = func() string {
-		if os.Getenv("PROJECT_NAME") != "" {
-			return os.Getenv("PROJECT_NAME")
-		}
-
-		return "andurel"
-	}()
-	ServiceName = func() string {
-		if os.Getenv("TELEMETRY_SERVICE_NAME") != "" {
-			return os.Getenv("TELEMETRY_SERVICE_NAME")
-		}
-
-		return slug.Make(ProjectName)
-	}()
-	Domain = func() string {
-		if os.Getenv("DOMAIN") != "" {
-			return os.Getenv("DOMAIN")
-		}
-
-		return "localhost:8080"
-	}()
-	BaseURL = func() string {
-		var protocol string
-
-		if os.Getenv("PROTOCOL") != "" {
-			protocol = os.Getenv("PROTOCOL")
-		} else {
-			protocol = "http"
-		}
-
-		return fmt.Sprintf("%s://%s", protocol, Domain)
-	}()
-	AppCookieSessionName = func() string {
-		return "app_sess_" + slug.Make(strings.ToLower(ProjectName)) + "-" + Env
-	}()
-	DefaultSenderSignature = func() string {
-		if os.Getenv("DEFAULT_SENDER_SIGNATURE") != "" {
-			return os.Getenv("DEFAULT_SENDER_SIGNATURE")
-		}
-
-		return "noreply@" + Domain
-	}()
-)
-
-type Config struct {
-	App       app
-	DB        Database
-	Telemetry telemetry
-	Email     email
-	AwsSes    awsSes
-	Auth      auth
-}
-
-func NewConfig() Config {
-	return Config{
-		App:       newAppConfig(),
-		DB:        newDatabaseConfig(),
-		Telemetry: newTelemetryConfig(),
-		Email:     newEmailConfig(),
-		AwsSes:    newAwsSesConfig(),
-		Auth:      newAuthConfig(),
-	}
-}
-
-var Module = fx.Module("config", fx.Provide(NewConfig))

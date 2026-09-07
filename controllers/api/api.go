@@ -4,19 +4,19 @@ import (
 	"errors"
 	"net/http"
 
-	"andurel-site/internal/storage"
 	"andurel-site/router"
 	"andurel-site/router/routes"
 
 	"github.com/labstack/echo/v5"
+	"github.com/mbvlabs/andurel/pkg/storage"
 )
 
 type API struct {
-	db storage.Pool
+	db storage.Connection
 }
 
-func NewAPI(db storage.Pool) API {
-	return API{db}
+func NewAPI(db storage.Connection) API {
+	return API{db: db}
 }
 
 func (a API) RegisterRoutes(r *router.Router) error {
@@ -36,5 +36,12 @@ func (a API) RegisterRoutes(r *router.Router) error {
 }
 
 func (a API) Health(etx *echo.Context) error {
+	if err := a.db.Health(etx.Request().Context()); err != nil {
+		return echo.NewHTTPError(
+			http.StatusServiceUnavailable,
+			"database is unavailable",
+		).Wrap(err)
+	}
+
 	return etx.JSON(http.StatusOK, "app is healthy and running")
 }

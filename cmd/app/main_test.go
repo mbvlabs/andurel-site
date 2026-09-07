@@ -8,8 +8,7 @@ import (
 )
 
 func TestBackgroundLifecycleStopsOnceAndWaitsForExit(t *testing.T) {
-	appCtx, cancelApp := context.WithCancel(context.Background())
-	defer cancelApp()
+	appCtx := t.Context()
 	started := make(chan struct{})
 	release := make(chan struct{})
 	done := startInBackground(appCtx, "test worker", func(ctx context.Context) error {
@@ -27,6 +26,7 @@ func TestBackgroundLifecycleStopsOnceAndWaitsForExit(t *testing.T) {
 		if stopCalls.Add(1) == 1 {
 			close(release)
 		}
+
 		return nil
 	}
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second)

@@ -4,10 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"andurel-site/config"
-	"andurel-site/internal/server"
+	"github.com/mbvlabs/andurel/pkg/server"
 
-	"github.com/labstack/echo-contrib/v5/session"
 	"github.com/labstack/echo/v5"
 	"github.com/rs/xid"
 )
@@ -19,16 +17,15 @@ type FlashMessage struct {
 	Message   string
 }
 
-var (
-	flashSession = func() string {
-		if config.Env == server.ProdEnvironment {
-			return strings.ToLower(config.ProjectName) + "_" + "flash_key"
-		}
+func buildFlashSessionName(projectName, environment string) string {
+	if environment == server.ProdEnvironment {
+		return strings.ToLower(projectName) + "_" + "flash_key"
+	}
 
-		return strings.ToLower(config.ProjectName) + "_" + "dev_flash_key"
-	}()
-	flashSessionName = "flash_session"
-)
+	return strings.ToLower(projectName) + "_" + "dev_flash_key"
+}
+
+const flashSessionName = "flash_session"
 
 type FlashType string
 
@@ -39,10 +36,10 @@ const (
 	FlashInfo    FlashType = "info"
 )
 
-func AddFlash(
+func (s *Session) AddFlash(
 	c *echo.Context, flashType FlashType, msg string,
 ) error {
-	sess, err := session.Get(flashSession, c)
+	sess, err := getSession(s.flashSessionName, c)
 	if err != nil {
 		return err
 	}
@@ -57,8 +54,8 @@ func AddFlash(
 	return sess.Save(c.Request(), c.Response())
 }
 
-func ExtractFlashes(c *echo.Context) ([]FlashMessage, error) {
-	sess, err := session.Get(flashSession, c)
+func (s *Session) ExtractFlashes(c *echo.Context) ([]FlashMessage, error) {
+	sess, err := getSession(s.flashSessionName, c)
 	if err != nil {
 		return nil, err
 	}
@@ -75,4 +72,21 @@ func ExtractFlashes(c *echo.Context) ([]FlashMessage, error) {
 	}
 
 	return flashMessages, nil
+}
+
+// Reflash restores flashes consumed for the current request when Inertia
+// returns a redirect, so the next request can still render them.
+func (s *Session) Reflash(c *echo.Context, flashes []FlashMessage) error {
+	if len(flashes) == 0 {
+		return nil
+	}
+	sess, err := getSession(s.flashSessionName, c)
+	if err != nil {
+		return err
+	}
+	for _, flash := range flashes {
+		sess.AddFlash(flash, flashSessionName)
+	}
+
+	return sess.Save(c.Request(), c.Response())
 }
