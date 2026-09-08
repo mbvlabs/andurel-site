@@ -6,6 +6,7 @@ import (
 	"andurel-site/controllers/api"
 	"andurel-site/router"
 	"andurel-site/views"
+
 	"go.uber.org/fx"
 )
 
@@ -24,6 +25,7 @@ var constructors = fx.Provide(
 	NewRegistrations,
 	NewConfirmations,
 	NewResetPasswords,
+	NewDocumentations,
 )
 
 var Module = fx.Module(
@@ -49,6 +51,9 @@ var Module = fx.Module(
 		return c.RegisterRoutes(r)
 	}),
 	fx.Invoke(func(r *router.Router, c ResetPasswords) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c Documentations) error {
 		return c.RegisterRoutes(r)
 	}),
 )
