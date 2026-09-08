@@ -1,27 +1,71 @@
 package config
 
-import "github.com/caarlos0/env/v11"
+import (
+	"errors"
+	"fmt"
+	"net/url"
 
-type app struct {
-	Host                 string   `env:"HOST" envDefault:"localhost"`
-	Port                 string   `env:"PORT" envDefault:"8080"`
-	SessionKey           string   `env:"SESSION_KEY"`
-	SessionEncryptionKey string   `env:"SESSION_ENCRYPTION_KEY"`
-	SessionMaxAge        int      `env:"SESSION_MAX_AGE" envDefault:"604800"`
-	TokenSigningKey      string   `env:"TOKEN_SIGNING_KEY"`
-	CORSAllowedOrigins   []string `env:"CORS_ALLOWED_ORIGINS" envSeparator:","`
-	CSRFStrategy         string   `env:"CSRF_STRATEGY" envDefault:"header_only"`
-	CSRFTrustedOrigins   []string `env:"CSRF_TRUSTED_ORIGINS" envSeparator:","`
+	"github.com/mbvlabs/andurel/pkg/validation"
+)
+
+const (
+	DefaultEnvironment = "development"
+	DefaultProjectName = "andurel-site"
+	DefaultDomain      = "localhost:8080"
+)
+
+// App contains process-independent application identity and URL settings.
+type App struct {
+	Environment string
+	ProjectName string
+	Domain      string
+	Protocol    string
+	BaseURL     string
 }
 
-func newAppConfig() app {
-	appCfg := app{}
+func NewApp() (App, error) {
+	env := newEnvironment()
+	cfg := App{
+		Environment: env.String("ENVIRONMENT", DefaultEnvironment),
+		ProjectName: env.String("PROJECT_NAME", DefaultProjectName),
+		Domain:      env.String("DOMAIN", DefaultDomain),
+		Protocol:    env.String("PROTOCOL", ""),
+	}
+	cfg.BaseURL = cfg.baseURL()
 
-	if err := env.ParseWithOptions(&appCfg, env.Options{
-		RequiredIfNoDef: true,
-	}); err != nil {
-		panic(err)
+	if err := errors.Join(env.Err(), cfg.validate()); err != nil {
+		return App{}, fmt.Errorf("config: app: %w", err)
 	}
 
-	return appCfg
+	return cfg, nil
+}
+
+func (c App) validate() error {
+	b := validation.NewBuilder()
+	b.Required("Environment", c.Environment)
+	b.Required("ProjectName", c.ProjectName)
+	b.Required("Domain", c.Domain)
+	if err := b.Err(); err != nil {
+		return err
+	}
+	parsed, err := url.Parse(c.BaseURL)
+	if err != nil || parsed.Host == "" ||
+		(parsed.Scheme != "http" && parsed.Scheme != "https") {
+		return fmt.Errorf("application base URL must be an HTTP or HTTPS URL")
+	}
+
+	return nil
+}
+
+func (c App) baseURL() string {
+	protocol := c.Protocol
+	if protocol == "" {
+		protocol = "http"
+	}
+
+	return fmt.Sprintf("%s://%s", protocol, c.Domain)
+}
+
+func (c App) IsProduction() bool {
+	return c.Environment == "production"
 }

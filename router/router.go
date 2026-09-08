@@ -2,28 +2,25 @@
 package router
 
 import (
-	"encoding/gob"
-	"encoding/hex"
-	"errors"
-	"fmt"
-	"log/slog"
-	"net/http"
-	"strings"
-
 	"andurel-site/config"
-	"andurel-site/internal/inertia"
-	"andurel-site/internal/server"
+	"andurel-site/router/appctx"
 	"andurel-site/router/cookies"
 	"andurel-site/router/middleware"
 	"andurel-site/telemetry"
-
+	"encoding/gob"
+	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/v5/session"
 	"github.com/labstack/echo/v5"
 	echomw "github.com/labstack/echo/v5/middleware"
+	"github.com/mbvlabs/andurel/pkg/inertia"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/fx"
+	"log/slog"
+	"net/http"
+	"strings"
 )
 
 type Router struct {
@@ -32,20 +29,15 @@ type Router struct {
 }
 
 func New(
-	cfg config.Config,
+	appCfg config.App,
+	httpCfg config.HTTP,
+	sessionCfg config.Session,
+	cookieSession *cookies.Session,
 	tel *telemetry.Telemetry,
+	renderer *inertia.Renderer,
 ) (*Router, error) {
 	gob.Register(uuid.UUID{})
 	gob.Register(cookies.FlashMessage{})
-
-	authKey, err := hex.DecodeString(cfg.App.SessionKey)
-	if err != nil {
-		return nil, err
-	}
-	encKey, err := hex.DecodeString(cfg.App.SessionEncryptionKey)
-	if err != nil {
-		return nil, err
-	}
 
 	router := echo.New()
 	defaultHTTPErrorHandler := echo.DefaultHTTPErrorHandler(false)
@@ -72,7 +64,15 @@ func New(
 		defaultHTTPErrorHandler(c, err)
 	}
 
-	globalMiddleware, err := SetupGlobalMiddleware(cfg, tel, authKey, encKey, "_csrf")
+	globalMiddleware, err := SetupGlobalMiddleware(
+		appCfg,
+		httpCfg,
+		sessionCfg,
+		cookieSession,
+		tel,
+		"_csrf",
+		renderer,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -88,27 +88,43 @@ func New(
 }
 
 func SetupGlobalMiddleware(
-	cfg config.Config,
+	appCfg config.App,
+	httpCfg config.HTTP,
+	sessionCfg config.Session,
+	cookieSession *cookies.Session,
 	tel *telemetry.Telemetry,
-	authKey []byte,
-	encKey []byte,
 	csrfName string,
+	renderer *inertia.Renderer,
 ) ([]echo.MiddlewareFunc, error) {
-	csrfMiddleware, err := middleware.CSRFMiddleware(cfg, csrfName)
-	if err != nil {
-		return nil, err
-	}
-	sessionStore, err := newApplicationSessionStore(
-		authKey,
-		encKey,
-		cfg.App.SessionMaxAge,
-		config.Env == server.ProdEnvironment,
+	csrfMiddleware, err := middleware.CSRFMiddleware(
+		httpCfg.CSRFStrategy,
+		httpCfg.CSRFTrustedOrigins,
+		csrfName,
+		appCfg.BaseURL,
+		appCfg.Environment,
+		appCfg.Domain,
+		sessionCfg.Name,
 	)
 	if err != nil {
 		return nil, err
 	}
-	corsConfig, err := newCORSConfig(config.BaseURL, cfg.App.CORSAllowedOrigins)
+	sessionStore, err := newApplicationSessionStore(
+		sessionCfg.AuthenticationKey,
+		sessionCfg.EncryptionKey,
+		sessionCfg.MaxAge,
+		appCfg.IsProduction(),
+	)
 	if err != nil {
+		return nil, err
+	}
+	corsConfig, err := newCORSConfig(appCfg.BaseURL, httpCfg.CORSAllowedOrigins)
+	if err != nil {
+		return nil, err
+	}
+	if err := renderer.SetReflashHandler(func(etx *echo.Context) error {
+		flashes := appctx.Flashes(etx.Request().Context())
+		return cookieSession.Reflash(etx, flashes)
+	}); err != nil {
 		return nil, err
 	}
 
@@ -118,9 +134,9 @@ func SetupGlobalMiddleware(
 		middleware.TraceRouteAttributes(tel),
 		middleware.Logger(tel),
 		session.Middleware(sessionStore),
-		middleware.ValidateSession,
-		middleware.RegisterRequestMeta,
-		inertia.Middleware(),
+		middleware.ValidateSession(cookieSession),
+		renderer.Middleware(),
+		middleware.RegisterRequestMeta(cookieSession),
 		echomw.CORSWithConfig(corsConfig),
 		csrfMiddleware,
 		echomw.Recover(),
@@ -151,13 +167,19 @@ func newApplicationSessionStore(
 	return store, nil
 }
 
-func newCORSConfig(applicationOrigin string, additionalOrigins []string) (echomw.CORSConfig, error) {
+func newCORSConfig(
+	applicationOrigin string,
+	additionalOrigins []string,
+) (echomw.CORSConfig, error) {
 	applicationOrigin = strings.TrimSpace(applicationOrigin)
 	if applicationOrigin == "" {
 		return echomw.CORSConfig{}, errors.New("application origin must not be empty")
 	}
 	if strings.Contains(applicationOrigin, "*") {
-		return echomw.CORSConfig{}, fmt.Errorf("credentialed CORS origin %q must not contain a wildcard", applicationOrigin)
+		return echomw.CORSConfig{}, fmt.Errorf(
+			"credentialed CORS origin %q must not contain a wildcard",
+			applicationOrigin,
+		)
 	}
 
 	origins := []string{applicationOrigin}
@@ -167,7 +189,10 @@ func newCORSConfig(applicationOrigin string, additionalOrigins []string) (echomw
 			continue
 		}
 		if strings.Contains(origin, "*") {
-			return echomw.CORSConfig{}, fmt.Errorf("credentialed CORS origin %q must not contain a wildcard", origin)
+			return echomw.CORSConfig{}, fmt.Errorf(
+				"credentialed CORS origin %q must not contain a wildcard",
+				origin,
+			)
 		}
 		origins = append(origins, origin)
 	}
@@ -193,5 +218,14 @@ func (r *Router) AddRouteNotFound(
 
 var Module = fx.Module(
 	"router",
+	fx.Provide(newSession),
 	fx.Provide(New),
 )
+
+func newSession(appCfg config.App, sessionCfg config.Session) *cookies.Session {
+	return cookies.NewSession(
+		sessionCfg.Name,
+		appCfg.ProjectName,
+		appCfg.Environment,
+	)
+}

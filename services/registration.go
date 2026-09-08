@@ -5,18 +5,15 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-
 	"fmt"
-
 	"time"
 
-	"andurel-site/config"
-	"andurel-site/email"
-
-	"andurel-site/internal/validation"
+	appemail "andurel-site/email"
 	"andurel-site/models"
-
 	"andurel-site/queue/jobs"
+
+	"github.com/mbvlabs/andurel/pkg/email"
+	"github.com/mbvlabs/andurel/pkg/validation"
 )
 
 const userEmailVerification = "user_email_verification"
@@ -43,7 +40,7 @@ func (i Identity) RegisterUser(
 		return b.Errors()
 	}
 
-	tx, err := i.db.BeginTx(ctx, nil)
+	tx, err := i.db.BeginTransaction(ctx, nil)
 
 	if err != nil {
 
@@ -51,7 +48,10 @@ func (i Identity) RegisterUser(
 
 	}
 
-	user, err := models.User.Create(ctx, tx, i.pepper, models.CreateUserData{
+	users := i.users.WithTx(tx)
+	tokens := i.tokens.WithTx(tx)
+
+	user, err := users.Create(ctx, i.pepper, models.CreateUserData{
 
 		Email: data.Email,
 		PasswordPair: models.PasswordPair{
@@ -76,9 +76,8 @@ func (i Identity) RegisterUser(
 
 	}
 
-	code, err := models.Token.CreateCode(
+	code, err := tokens.CreateCode(
 		ctx,
-		tx,
 		i.tokenSigningKey,
 
 		userEmailVerification,
@@ -98,7 +97,7 @@ func (i Identity) RegisterUser(
 
 	}
 
-	vEmail := email.VerifyEmail{VerificationCode: code}
+	vEmail := appemail.VerifyEmail{VerificationCode: code}
 
 	html, err := vEmail.ToHTML()
 	if err != nil {
@@ -118,7 +117,7 @@ func (i Identity) RegisterUser(
 
 		Data: email.TransactionalData{
 			To:       user.Email,
-			From:     config.DefaultSenderSignature,
+			From:     i.defaultSenderSignature,
 			Subject:  "Verify Your Email Address",
 			HTMLBody: html,
 			TextBody: text,
@@ -146,24 +145,26 @@ type VerifyEmailData struct {
 func (i Identity) VerifyEmail(
 	ctx context.Context,
 	data VerifyEmailData,
-) (models.UserEntity, error) {
+) (models.User, error) {
 	b := validation.NewBuilder()
 	b.Required("code", data.Code)
 	if !b.Errors().Empty() {
-		return models.UserEntity{}, b.Errors()
+		return models.User{}, b.Errors()
 	}
 
-	tx, err := i.db.BeginTx(ctx, nil)
+	tx, err := i.db.BeginTransaction(ctx, nil)
 
 	if err != nil {
 
-		return models.UserEntity{}, fmt.Errorf("begin email verification transaction: %w", err)
+		return models.User{}, fmt.Errorf("begin email verification transaction: %w", err)
 
 	}
 
-	token, err := models.Token.FindByScopeAndHash(
+	users := i.users.WithTx(tx)
+	tokens := i.tokens.WithTx(tx)
+
+	token, err := tokens.FindByScopeAndHash(
 		ctx,
-		tx,
 		i.tokenSigningKey,
 
 		userEmailVerification,
@@ -173,23 +174,24 @@ func (i Identity) VerifyEmail(
 		_ = tx.Rollback()
 
 		if errors.Is(err, models.ErrNotFound) {
-			return models.UserEntity{}, ErrInvalidVerificationCode
+			return models.User{}, ErrInvalidVerificationCode
 		}
-		return models.UserEntity{}, fmt.Errorf("find email verification token: %w", err)
+
+		return models.User{}, fmt.Errorf("find email verification token: %w", err)
 
 	}
 
 	if !token.IsValid(data.Code, i.tokenSigningKey) {
 
 		_ = tx.Rollback()
-		return models.UserEntity{}, ErrExpiredVerificationCode
+		return models.User{}, ErrExpiredVerificationCode
 	}
 
 	var meta map[string]string
 	if err := json.Unmarshal(token.MetaData, &meta); err != nil {
 		_ = tx.Rollback()
 
-		return models.UserEntity{}, fmt.Errorf("unmarshal verification token metadata: %v", err)
+		return models.User{}, fmt.Errorf("unmarshal verification token metadata: %v", err)
 
 	}
 
@@ -197,23 +199,24 @@ func (i Identity) VerifyEmail(
 	if !ok {
 		_ = tx.Rollback()
 
-		return models.UserEntity{}, errors.New("verification token metadata missing email")
+		return models.User{}, errors.New("verification token metadata missing email")
 
 	}
 
-	user, err := models.User.FindByEmail(ctx, tx, emailAddr)
+	user, err := users.FindByEmail(ctx, emailAddr)
 	if err != nil {
 		_ = tx.Rollback()
 
 		if errors.Is(err, models.ErrNotFound) {
-			return models.UserEntity{}, ErrUserNotFound
+			return models.User{}, ErrUserNotFound
 		}
-		return models.UserEntity{}, fmt.Errorf("find verification user: %w", err)
+
+		return models.User{}, fmt.Errorf("find verification user: %w", err)
 
 	}
 
 	now := time.Now()
-	user, err = models.User.Update(ctx, tx, models.UpdateUserData{
+	user, err = users.Update(ctx, models.UpdateUserData{
 		ID:               user.ID,
 		Email:            user.Email,
 		EmailValidatedAt: sql.NullTime{Time: now, Valid: true},
@@ -224,22 +227,23 @@ func (i Identity) VerifyEmail(
 		_ = tx.Rollback()
 
 		if errors.Is(err, models.ErrNotFound) {
-			return models.UserEntity{}, ErrUserNotFound
+			return models.User{}, ErrUserNotFound
 		}
-		return models.UserEntity{}, fmt.Errorf("mark user email verified: %w", err)
+
+		return models.User{}, fmt.Errorf("mark user email verified: %w", err)
 
 	}
 
-	if err := models.Token.Destroy(ctx, tx, token.ID); err != nil {
+	if err := tokens.Destroy(ctx, token.ID); err != nil {
 		_ = tx.Rollback()
 
-		return models.UserEntity{}, fmt.Errorf("destroy email verification token: %w", err)
+		return models.User{}, fmt.Errorf("destroy email verification token: %w", err)
 
 	}
 
 	if err := tx.Commit(); err != nil {
 
-		return models.UserEntity{}, fmt.Errorf("commit email verification transaction: %w", err)
+		return models.User{}, fmt.Errorf("commit email verification transaction: %w", err)
 	}
 
 	return user, nil

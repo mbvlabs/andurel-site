@@ -8,9 +8,10 @@ import (
 	"os"
 	"strings"
 
-	"andurel-site/database/seeds"
-	"andurel-site/internal/storage"
-	"github.com/joho/godotenv"
+	"andurel-site/config"
+	"andurel-site/seeds"
+
+	"github.com/mbvlabs/andurel/pkg/storage"
 )
 
 func main() {
@@ -35,11 +36,17 @@ func run(args []string) error {
 		return fmt.Errorf("expected at most one seed name, got %d", flags.NArg())
 	}
 
-	godotenv.Load()
+	if err := config.LoadEnvironment(); err != nil {
+		return err
+	}
 
 	ctx := context.Background()
 
-	db, err := storage.NewPostgres(ctx, buildDatabaseURL())
+	cfg, err := config.NewDatabase()
+	if err != nil {
+		return err
+	}
+	db, err := storage.NewPostgres(ctx, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -60,16 +67,4 @@ func run(args []string) error {
 
 	fmt.Println("Seeding complete!")
 	return nil
-}
-
-func buildDatabaseURL() string {
-	return fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s",
-		os.Getenv("DB_KIND"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_SSL_MODE"),
-	)
 }

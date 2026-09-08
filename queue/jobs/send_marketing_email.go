@@ -1,6 +1,6 @@
 package jobs
 
-import "andurel-site/email"
+import "github.com/mbvlabs/andurel/pkg/email"
 
 type SendMarketingEmailArgs struct {
 	Data email.MarketingData

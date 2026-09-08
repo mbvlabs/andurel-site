@@ -5,23 +5,30 @@ import (
 	"log/slog"
 	"net/http"
 
-	"andurel-site/internal/inertia"
-	"andurel-site/internal/validation"
 	"andurel-site/router"
 	"andurel-site/router/cookies"
 	"andurel-site/router/middleware"
 	"andurel-site/router/routes"
 	"andurel-site/services"
 
+	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/validation"
+
 	"github.com/labstack/echo/v5"
 )
 
 type Registrations struct {
 	identity services.Identity
+	renderer *inertia.Renderer
+	session  *cookies.Session
 }
 
-func NewRegistrations(identity services.Identity) Registrations {
-	return Registrations{identity}
+func NewRegistrations(
+	identity services.Identity,
+	renderer *inertia.Renderer,
+	session *cookies.Session,
+) Registrations {
+	return Registrations{identity: identity, renderer: renderer, session: session}
 }
 
 func (r Registrations) RegisterRoutes(rtr *router.Router) error {
@@ -54,7 +61,7 @@ func (r Registrations) RegisterRoutes(rtr *router.Router) error {
 }
 
 func (r Registrations) New(etx *echo.Context) error {
-	return inertia.Page(etx, "Auth/Registration", inertia.Props{})
+	return r.renderer.Page(etx, "Auth/Registration", inertia.Props{}).Render()
 }
 
 func (r Registrations) Create(etx *echo.Context) error {
@@ -71,7 +78,7 @@ func (r Registrations) Create(etx *echo.Context) error {
 			"error",
 			err,
 		)
-		return inertia.Page(etx, "Errors/BadRequest", inertia.Props{})
+		return r.renderer.Page(etx, "Errors/BadRequest", inertia.Props{}).Render()
 	}
 
 	if err := r.identity.RegisterUser(
@@ -83,12 +90,11 @@ func (r Registrations) Create(etx *echo.Context) error {
 		},
 	); err != nil {
 		if validationErrors, ok := validation.As(err); ok {
-			return inertia.Page(
+			return r.renderer.Page(
 				etx,
 				"Auth/Registration",
 				inertia.Props{},
-				inertia.WithValidationErrors(validationErrors.ToMap()),
-			)
+			).ValidationErrors(validationErrors.ToMap()).Render()
 		}
 
 		slog.ErrorContext(
@@ -98,12 +104,16 @@ func (r Registrations) Create(etx *echo.Context) error {
 			err,
 		)
 
-		if flashErr := cookies.AddFlash(etx, cookies.FlashError, "Failed to register user"); flashErr != nil {
-			return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+		if flashErr := r.session.AddFlash(
+			etx,
+			cookies.FlashError,
+			"Failed to register user",
+		); flashErr != nil {
+			return r.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
 		}
 
-		return inertia.Redirect(etx, routes.RegistrationNew.URL())
+		return r.renderer.Redirect(etx, routes.RegistrationNew.URL(), http.StatusSeeOther)
 	}
 
-	return inertia.Redirect(etx, routes.ConfirmationNew.URL())
+	return r.renderer.Redirect(etx, routes.ConfirmationNew.URL(), http.StatusSeeOther)
 }

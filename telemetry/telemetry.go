@@ -4,24 +4,23 @@ package telemetry
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
+	"slices"
 	"strings"
+	"time"
 
 	"andurel-site/config"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
-
-	"go.uber.org/fx"
-
-	"golang.org/x/sync/errgroup"
-
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	"go.uber.org/fx"
 )
 
 type Telemetry struct {
@@ -33,25 +32,38 @@ type Telemetry struct {
 	config         *telemetryOptions
 }
 
-func New(cfg config.Config) (*Telemetry, error) {
+func New(cfg config.Telemetry) (*Telemetry, error) {
 	ctx := context.Background()
 
 	opts := []Option{
-		WithService(cfg.Telemetry.ServiceName, cfg.Telemetry.ServiceVersion),
-		WithBatchConfig(cfg.Telemetry.BatchSize, cfg.Telemetry.BatchTimeoutMs, 2048),
-		WithTraceSampleRate(cfg.Telemetry.TraceSampleRate),
+		WithService(cfg.ServiceName, cfg.ServiceVersion),
+		WithBatchConfig(cfg.BatchSize, cfg.BatchTimeoutMs, 2048),
+		WithTraceSampleRate(cfg.TraceSampleRate),
 	}
 
-	opts = append(opts, WithLogExporters(NewStdoutExporter()))
+	logExporters := []LogExporter{NewStdoutExporter()}
+	if cfg.OtlpLogsEndpoint != "" {
+		logExporters = append(logExporters, NewOtlpLogExporter(
+			cfg.OtlpLogsEndpoint,
+			parseHeaders(cfg.OtlpHeaders),
+			cfg.BatchSize,
+			time.Duration(cfg.BatchTimeoutMs)*time.Millisecond,
+		))
+	}
+	opts = append(opts, WithLogExporters(logExporters...))
 
-	if cfg.Telemetry.OtlpMetricsEndpoint != "" {
+	if cfg.OtlpMetricsEndpoint != "" {
 		opts = append(opts, WithMetricExporters(
-			NewOtlpMetricExporter(cfg.Telemetry.OtlpMetricsEndpoint, parseHeaders(cfg.Telemetry.OtlpHeaders))))
+			NewOtlpMetricExporter(
+				cfg.OtlpMetricsEndpoint,
+				parseHeaders(cfg.OtlpHeaders),
+			),
+		))
 	}
 
-	if cfg.Telemetry.OtlpTracesEndpoint != "" {
+	if cfg.OtlpTracesEndpoint != "" {
 		opts = append(opts, WithTraceExporters(
-			NewOtlpTraceExporter(cfg.Telemetry.OtlpTracesEndpoint, parseHeaders(cfg.Telemetry.OtlpHeaders))))
+			NewOtlpTraceExporter(cfg.OtlpTracesEndpoint, parseHeaders(cfg.OtlpHeaders))))
 	} else {
 		opts = append(opts, WithTraceExporters(NewNoopTraceExporter()))
 	}
@@ -93,6 +105,7 @@ func newWithOpts(ctx context.Context, opts ...Option) (*Telemetry, error) {
 	}
 
 	if err := t.initLogging(ctx); err != nil {
+		_ = t.Shutdown(ctx)
 		return nil, fmt.Errorf("failed to initialize logging: %w", err)
 	}
 
@@ -116,7 +129,7 @@ func (t *Telemetry) initLogging(ctx context.Context) error {
 
 	handlers := make([]slog.Handler, 0, len(t.config.logExporters))
 	for _, exporter := range t.config.logExporters {
-		handler, err := exporter.GetSlogHandler(ctx)
+		handler, err := exporter.GetSlogHandler(ctx, t.resource)
 		if err != nil {
 			return fmt.Errorf("failed to get slog handler from %s: %w", exporter.Name(), err)
 		}
@@ -143,6 +156,7 @@ func (t *Telemetry) initMetrics(ctx context.Context) error {
 		return nil
 	}
 
+	cleanupStart := len(t.shutdownFuncs)
 	exporters := make([]sdkmetric.Exporter, 0, len(t.config.metricExporters))
 	for _, exporter := range t.config.metricExporters {
 		exp, err := exporter.GetSdkMetricExporter(ctx, t.resource)
@@ -167,6 +181,8 @@ func (t *Telemetry) initMetrics(ctx context.Context) error {
 	meterProvider := sdkmetric.NewMeterProvider(opts...)
 
 	t.meterProvider = meterProvider
+	// The provider owns its readers and exporters after construction.
+	t.shutdownFuncs = t.shutdownFuncs[:cleanupStart]
 	t.shutdownFuncs = append(t.shutdownFuncs, meterProvider.Shutdown)
 	otel.SetMeterProvider(meterProvider)
 
@@ -178,11 +194,12 @@ func (t *Telemetry) initTracing(ctx context.Context) error {
 		return nil
 	}
 
+	cleanupStart := len(t.shutdownFuncs)
 	exporters := make([]sdktrace.SpanExporter, 0, len(t.config.traceExporters))
 	for _, exporter := range t.config.traceExporters {
 		exp, err := exporter.GetSpanExporter(ctx, t.resource)
 		if err != nil {
-			return fmt.Errorf("failed to get span exporter from %s: %w", exporter.Name(), err)
+			return fmt.Errorf("failed to get trace exporter from %s: %w", exporter.Name(), err)
 		}
 		exporters = append(exporters, exp)
 		t.shutdownFuncs = append(t.shutdownFuncs, exporter.Shutdown)
@@ -205,6 +222,8 @@ func (t *Telemetry) initTracing(ctx context.Context) error {
 	tracerProvider := sdktrace.NewTracerProvider(opts...)
 
 	t.tracerProvider = tracerProvider
+	// The provider owns its processors and exporters after construction.
+	t.shutdownFuncs = t.shutdownFuncs[:cleanupStart]
 	t.shutdownFuncs = append(t.shutdownFuncs, tracerProvider.Shutdown)
 	otel.SetTracerProvider(tracerProvider)
 
@@ -212,24 +231,21 @@ func (t *Telemetry) initTracing(ctx context.Context) error {
 }
 
 func (t *Telemetry) Shutdown(ctx context.Context) error {
-	eg := errgroup.Group{}
-	for _, fn := range t.shutdownFuncs {
-		fn := fn
-		eg.Go(func() error {
-			if err := fn(ctx); err != nil {
-				fmt.Fprintf(os.Stderr, "[telemetry] shutdown error: %v\n", err)
-				return err
-			}
-			return nil
-		})
+	var shutdownErr error
+	// Flush logging last so shutdown diagnostics can still be exported.
+	for _, shutdown := range slices.Backward(t.shutdownFuncs) {
+		shutdownErr = errors.Join(shutdownErr, shutdown(ctx))
 	}
-	return eg.Wait()
+
+	return shutdownErr
 }
 
 func (t *Telemetry) HealthCheck(ctx context.Context) error {
-	if len(t.config.logExporters) == 0 && len(t.config.metricExporters) == 0 && len(t.config.traceExporters) == 0 {
+	if len(t.config.logExporters) == 0 && len(t.config.metricExporters) == 0 &&
+		len(t.config.traceExporters) == 0 {
 		return fmt.Errorf("no exporters configured")
 	}
+
 	return nil
 }
 
@@ -245,6 +261,10 @@ func (t *Telemetry) HasLogging() bool {
 	return len(t.config.logExporters) > 0
 }
 
+func (t *Telemetry) ServiceName() string {
+	return t.config.serviceName
+}
+
 type multiHandler struct {
 	handlers []slog.Handler
 }
@@ -255,6 +275,7 @@ func (m *multiHandler) Enabled(ctx context.Context, level slog.Level) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -264,6 +285,7 @@ func (m *multiHandler) Handle(ctx context.Context, r slog.Record) error {
 			fmt.Fprintf(os.Stderr, "[telemetry] handler error: %v\n", err)
 		}
 	}
+
 	return nil
 }
 
@@ -272,6 +294,7 @@ func (m *multiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	for i, h := range m.handlers {
 		newHandlers[i] = h.WithAttrs(attrs)
 	}
+
 	return &multiHandler{handlers: newHandlers}
 }
 
@@ -280,6 +303,7 @@ func (m *multiHandler) WithGroup(name string) slog.Handler {
 	for i, h := range m.handlers {
 		newHandlers[i] = h.WithGroup(name)
 	}
+
 	return &multiHandler{handlers: newHandlers}
 }
 
@@ -300,4 +324,9 @@ func parseHeaders(headersStr string) map[string]string {
 	return headers
 }
 
-var Module = fx.Module("telemetry", fx.Provide(New))
+var Module = fx.Module("telemetry",
+	fx.Provide(New),
+	fx.Invoke(func(lifecycle fx.Lifecycle, tel *Telemetry) {
+		lifecycle.Append(fx.Hook{OnStop: tel.Shutdown})
+	}),
+)

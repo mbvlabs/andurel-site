@@ -5,22 +5,29 @@ import (
 	"log/slog"
 	"net/http"
 
-	"andurel-site/internal/inertia"
-	"andurel-site/internal/validation"
 	"andurel-site/router"
 	"andurel-site/router/cookies"
 	"andurel-site/router/routes"
 	"andurel-site/services"
+
+	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/validation"
 
 	"github.com/labstack/echo/v5"
 )
 
 type ResetPasswords struct {
 	identity services.Identity
+	renderer *inertia.Renderer
+	session  *cookies.Session
 }
 
-func NewResetPasswords(identity services.Identity) ResetPasswords {
-	return ResetPasswords{identity}
+func NewResetPasswords(
+	identity services.Identity,
+	renderer *inertia.Renderer,
+	session *cookies.Session,
+) ResetPasswords {
+	return ResetPasswords{identity: identity, renderer: renderer, session: session}
 }
 
 func (rp ResetPasswords) RegisterRoutes(r *router.Router) error {
@@ -70,7 +77,7 @@ func (rp ResetPasswords) RegisterRoutes(r *router.Router) error {
 }
 
 func (rp ResetPasswords) New(etx *echo.Context) error {
-	return inertia.Page(etx, "Auth/ResetPasswordRequest", inertia.Props{})
+	return rp.renderer.Page(etx, "Auth/ResetPasswordRequest", inertia.Props{}).Render()
 }
 
 func (rp ResetPasswords) Create(etx *echo.Context) error {
@@ -86,7 +93,7 @@ func (rp ResetPasswords) Create(etx *echo.Context) error {
 			err,
 		)
 
-		return inertia.Page(etx, "Errors/BadRequest", inertia.Props{})
+		return rp.renderer.Page(etx, "Errors/BadRequest", inertia.Props{}).Render()
 	}
 
 	if err := rp.identity.RequestResetPassword(
@@ -96,12 +103,11 @@ func (rp ResetPasswords) Create(etx *echo.Context) error {
 		},
 	); err != nil {
 		if validationErrors, ok := validation.As(err); ok {
-			return inertia.Page(
+			return rp.renderer.Page(
 				etx,
 				"Auth/ResetPasswordRequest",
 				inertia.Props{},
-				inertia.WithValidationErrors(validationErrors.ToMap()),
-			)
+			).ValidationErrors(validationErrors.ToMap()).Render()
 		}
 
 		slog.ErrorContext(
@@ -110,18 +116,26 @@ func (rp ResetPasswords) Create(etx *echo.Context) error {
 			"error",
 			err,
 		)
-		if flashErr := cookies.AddFlash(etx, cookies.FlashError, "Failed to send password reset code"); flashErr != nil {
-			return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+		if flashErr := rp.session.AddFlash(
+			etx,
+			cookies.FlashError,
+			"Failed to send password reset code",
+		); flashErr != nil {
+			return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
 		}
 
-		return inertia.Redirect(etx, routes.PasswordNew.URL(), http.StatusSeeOther)
+		return rp.renderer.Redirect(etx, routes.PasswordNew.URL(), http.StatusSeeOther)
 	}
 
-	if flashErr := cookies.AddFlash(etx, cookies.FlashSuccess, "If an account exists with that email, you will receive password reset instructions."); flashErr != nil {
-		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	if flashErr := rp.session.AddFlash(
+		etx,
+		cookies.FlashSuccess,
+		"If an account exists with that email, you will receive password reset instructions.",
+	); flashErr != nil {
+		return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
 	}
 
-	return inertia.Redirect(etx, routes.SessionNew.URL(), http.StatusSeeOther)
+	return rp.renderer.Redirect(etx, routes.SessionNew.URL(), http.StatusSeeOther)
 }
 
 func (rp ResetPasswords) Edit(etx *echo.Context) error {
@@ -129,15 +143,20 @@ func (rp ResetPasswords) Edit(etx *echo.Context) error {
 
 	token := etx.Param("token")
 	if token == "" {
-		if flashErr := cookies.AddFlash(etx, cookies.FlashError, "Invalid or missing reset token"); flashErr != nil {
-			return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+		if flashErr := rp.session.AddFlash(
+			etx,
+			cookies.FlashError,
+			"Invalid or missing reset token",
+		); flashErr != nil {
+			return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
 		}
-		return inertia.Redirect(etx, routes.PasswordNew.URL(), http.StatusSeeOther)
+
+		return rp.renderer.Redirect(etx, routes.PasswordNew.URL(), http.StatusSeeOther)
 	}
 
-	return inertia.Page(etx, "Auth/ResetPassword", inertia.Props{
+	return rp.renderer.Page(etx, "Auth/ResetPassword", inertia.Props{
 		"token": token,
-	})
+	}).Render()
 }
 
 func (rp ResetPasswords) Update(etx *echo.Context) error {
@@ -154,7 +173,7 @@ func (rp ResetPasswords) Update(etx *echo.Context) error {
 			"error",
 			err,
 		)
-		return inertia.Page(etx, "Errors/BadRequest", inertia.Props{})
+		return rp.renderer.Page(etx, "Errors/BadRequest", inertia.Props{}).Render()
 	}
 
 	if err := rp.identity.ResetPassword(
@@ -166,12 +185,11 @@ func (rp ResetPasswords) Update(etx *echo.Context) error {
 		},
 	); err != nil {
 		if validationErrors, ok := validation.As(err); ok {
-			return inertia.Page(
+			return rp.renderer.Page(
 				etx,
 				"Auth/ResetPassword",
 				inertia.Props{"token": payload.Token},
-				inertia.WithValidationErrors(validationErrors.ToMap()),
-			)
+			).ValidationErrors(validationErrors.ToMap()).Render()
 		}
 
 		slog.ErrorContext(
@@ -191,20 +209,24 @@ func (rp ResetPasswords) Update(etx *echo.Context) error {
 			errorMsg = "Failed to reset password"
 		}
 
-		if flashErr := cookies.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
-			return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+		if flashErr := rp.session.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
+			return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
 		}
 		redirectPath := routes.PasswordEdit.URL(payload.Token)
 		if payload.Token != "" {
 			redirectPath = routes.PasswordEdit.URL(payload.Token)
 		}
 
-		return inertia.Redirect(etx, redirectPath, http.StatusSeeOther)
+		return rp.renderer.Redirect(etx, redirectPath, http.StatusSeeOther)
 	}
 
-	if flashErr := cookies.AddFlash(etx, cookies.FlashSuccess, "Password reset successfully! Please log in."); flashErr != nil {
-		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	if flashErr := rp.session.AddFlash(
+		etx,
+		cookies.FlashSuccess,
+		"Password reset successfully! Please log in.",
+	); flashErr != nil {
+		return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
 	}
 
-	return inertia.Redirect(etx, routes.SessionNew.URL(), http.StatusSeeOther)
+	return rp.renderer.Redirect(etx, routes.SessionNew.URL(), http.StatusSeeOther)
 }

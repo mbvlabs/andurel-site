@@ -1,0 +1,113 @@
+import '../../css/base.css'
+
+import { useEffect, useState } from 'react'
+import { createRoot, hydrateRoot } from 'react-dom/client'
+import { createInertiaApp, router, type ResolvedComponent } from '@inertiajs/react'
+
+type FlashMessage = {
+  Type: string
+  Message: string
+}
+
+type PageProps = {
+  [key: string]: unknown
+}
+
+type PageModule = {
+  default: ResolvedComponent
+}
+
+function isFlashMessage(value: unknown): value is FlashMessage {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const flash = value as Record<string, unknown>
+  return typeof flash.Type === 'string' && typeof flash.Message === 'string'
+}
+
+function pageFlashes(value: unknown): FlashMessage[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined
+  }
+
+  return value.filter(isFlashMessage)
+}
+
+function FlashToasts({ initialFlashes }: { initialFlashes?: FlashMessage[] }) {
+  const [toasts, setToasts] = useState<Array<FlashMessage & { id: number }>>([])
+
+  useEffect(() => {
+    let nextId = 0
+
+    function pushFlashes(flashes?: FlashMessage[]) {
+      if (!flashes || flashes.length === 0) {
+        return
+      }
+
+      for (const flash of flashes) {
+        const id = nextId++
+        setToasts((current) => [...current, { ...flash, id }])
+        window.setTimeout(() => {
+          setToasts((current) => current.filter((toast) => toast.id !== id))
+        }, 5000)
+      }
+    }
+
+    pushFlashes(initialFlashes)
+
+    const removeListener = router.on('success', (event) => {
+      pushFlashes(pageFlashes(event.detail.page.flash))
+    })
+
+    return () => {
+      removeListener()
+    }
+  }, [initialFlashes])
+
+  if (toasts.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50">
+      {toasts.map((toast) => {
+        const colorClass =
+          toast.Type === 'success'
+            ? 'border-[#8df7a4] text-[#8df7a4]'
+            : toast.Type === 'error'
+              ? 'border-[#ff875f] text-[#ff875f]'
+              : 'border-[#ff6b1a] text-[#e4dfd2]'
+
+        return (
+          <div
+            key={toast.id}
+            className={`${colorClass} mb-2 border bg-[#101414] px-4 py-3 shadow-lg shadow-black/40 transition-opacity duration-300`}
+          >
+            {toast.Message}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+createInertiaApp<PageProps>({
+  resolve: (name: string) => {
+    const pages = import.meta.glob<PageModule>('./Pages/**/*.tsx', { eager: true })
+    return pages[`./Pages/${name}.tsx`].default
+  },
+  setup({ el, App, props }) {
+    const app = (
+      <>
+        <App {...props} />
+        <FlashToasts initialFlashes={pageFlashes(props.initialPage.flash)} />
+      </>
+    )
+    if (el.dataset.serverRendered === 'true') {
+      hydrateRoot(el, app)
+    } else {
+      createRoot(el).render(app)
+    }
+  },
+})

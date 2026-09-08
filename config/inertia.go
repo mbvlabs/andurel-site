@@ -1,0 +1,118 @@
+package config
+
+import (
+	"errors"
+	"fmt"
+	"time"
+
+	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/validation"
+)
+
+const (
+	DefaultInertiaContainerID         = "app"
+	DefaultInertiaViteDevURL          = "http://localhost:5173/assets/dist"
+	DefaultInertiaProtocolDebug       = false
+	DefaultInertiaSSRRuntime          = "node"
+	DefaultInertiaSSRBundle           = "assets/dist/ssr/ssr.js"
+	DefaultInertiaSSRURL              = "http://127.0.0.1:13714"
+	DefaultInertiaSSRStartupTimeout   = 10 * time.Second
+	DefaultInertiaSSRRequestTimeout   = 2 * time.Second
+	DefaultInertiaSSRMaxResponseBytes = int64(2097152)
+	DefaultInertiaSSRMinimumMajor     = 22
+	DefaultInertiaSSRFailFast         = false
+	DefaultInertiaEntryPoint          = "resources/js/app.tsx"
+)
+
+type Inertia struct {
+	ContainerID         string
+	ViteDevURL          string
+	ProtocolDebug       bool
+	SSRRuntime          string
+	SSRBundle           string
+	SSRURL              string
+	SSRStartupTimeout   time.Duration
+	SSRRequestTimeout   time.Duration
+	SSRMaxResponseBytes int64
+	SSRMinimumMajor     int
+	SSRFailFast         bool
+	EntryPoint          string
+}
+
+func NewInertia() (Inertia, error) {
+	env := newEnvironment()
+	cfg := Inertia{
+		ContainerID:   env.String("INERTIA_CONTAINER_ID", DefaultInertiaContainerID),
+		ViteDevURL:    env.String("INERTIA_VITE_DEV_URL", DefaultInertiaViteDevURL),
+		ProtocolDebug: env.Bool("INERTIA_PROTOCOL_DEBUG", DefaultInertiaProtocolDebug),
+		SSRRuntime:    env.String("INERTIA_SSR_RUNTIME", DefaultInertiaSSRRuntime),
+		SSRBundle:     env.String("INERTIA_SSR_BUNDLE", DefaultInertiaSSRBundle),
+		SSRURL:        env.String("INERTIA_SSR_URL", DefaultInertiaSSRURL),
+		SSRStartupTimeout: env.Duration(
+			"INERTIA_SSR_STARTUP_TIMEOUT",
+			DefaultInertiaSSRStartupTimeout,
+		),
+		SSRRequestTimeout: env.Duration(
+			"INERTIA_SSR_REQUEST_TIMEOUT",
+			DefaultInertiaSSRRequestTimeout,
+		),
+		SSRMaxResponseBytes: env.Int64(
+			"INERTIA_SSR_MAX_RESPONSE_BYTES",
+			DefaultInertiaSSRMaxResponseBytes,
+		),
+		SSRMinimumMajor: env.Int("INERTIA_SSR_MINIMUM_MAJOR", DefaultInertiaSSRMinimumMajor),
+		SSRFailFast:     env.Bool("INERTIA_SSR_FAIL_FAST", DefaultInertiaSSRFailFast),
+		EntryPoint:      env.String("INERTIA_ENTRY_POINT", DefaultInertiaEntryPoint),
+	}
+
+	if err := errors.Join(env.Err(), cfg.validate()); err != nil {
+		return Inertia{}, fmt.Errorf("config: inertia: %w", err)
+	}
+
+	return cfg, nil
+}
+
+func (c Inertia) validate() error {
+	b := validation.NewBuilder()
+	b.Required("ContainerID", c.ContainerID)
+	b.Required("ViteDevURL", c.ViteDevURL)
+	b.Required("EntryPoint", c.EntryPoint)
+	b.Required("SSRRuntime", c.SSRRuntime)
+	b.Required("SSRBundle", c.SSRBundle)
+	if err := b.Err(); err != nil {
+		return err
+	}
+
+	http := inertia.SSRClientConfig{
+		URL:              c.SSRURL,
+		Timeout:          c.SSRRequestTimeout,
+		MaxResponseBytes: c.SSRMaxResponseBytes,
+	}
+	if err := http.Validate(); err != nil {
+		return err
+	}
+	if c.SSRStartupTimeout <= 0 {
+		return fmt.Errorf("SSRStartupTimeout must be positive")
+	}
+	if c.SSRMinimumMajor <= 0 {
+		return fmt.Errorf("SSRMinimumMajor must be positive")
+	}
+
+	return nil
+}
+
+// SSRConfig returns settings for cmd/ssr to start the Node process.
+func (c Inertia) SSRConfig() inertia.SSRConfig {
+	return inertia.SSRConfig{
+		Enabled:        true,
+		Executable:     c.SSRRuntime,
+		BundlePath:     c.SSRBundle,
+		StartupTimeout: c.SSRStartupTimeout,
+		MinimumMajor:   c.SSRMinimumMajor,
+		HTTP: inertia.SSRClientConfig{
+			URL:              c.SSRURL,
+			Timeout:          c.SSRRequestTimeout,
+			MaxResponseBytes: c.SSRMaxResponseBytes,
+		},
+	}
+}

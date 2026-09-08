@@ -1,11 +1,12 @@
 package routes
 
 import (
-	"andurel-site/internal/routing"
+	"github.com/mbvlabs/andurel/pkg/routing"
 )
 
 var HomePage = routing.NewSimpleRoute(
 	"/",
 	"pages.home",
 	"",
+	routing.InertiaRoute(),
 )
