@@ -1,9 +1,10 @@
 module andurel-site
 
-go 1.27.0
+go 1.26.2
 
 require (
 	github.com/a-h/templ v0.3.1020
+	github.com/alecthomas/chroma/v2 v2.2.0
 	github.com/go-faker/faker/v4 v4.9.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/securecookie v1.1.2
@@ -15,7 +16,6 @@ require (
 	github.com/lmittmann/tint v1.2.0
 	github.com/maypok86/otter/v2 v2.3.0
 	github.com/mbvlabs/andurel/pkg/email v0.3.1
-	github.com/mbvlabs/andurel/pkg/hypermedia v0.2.2
 	github.com/mbvlabs/andurel/pkg/inertia v0.4.1
 	github.com/mbvlabs/andurel/pkg/routing v0.2.0
 	github.com/mbvlabs/andurel/pkg/server v0.3.1
@@ -24,6 +24,8 @@ require (
 	github.com/riverqueue/river v0.40.0
 	github.com/rs/xid v1.6.0
 	github.com/uptrace/bun v1.2.18
+	github.com/yuin/goldmark v1.8.4
+	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
 	go.opentelemetry.io/contrib/bridges/otelslog v0.19.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.69.0
 	go.opentelemetry.io/otel v1.44.0
@@ -53,6 +55,7 @@ require (
 	github.com/cpuguy83/dockercfg v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
+	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/docker/go-connections v0.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/ebitengine/purego v0.10.0 // indirect
@@ -106,7 +109,6 @@ require (
 	github.com/tklauser/numcpus v0.11.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/uptrace/bun/dialect/pgdialect v1.2.18 // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
