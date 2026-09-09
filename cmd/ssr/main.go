@@ -9,8 +9,7 @@ import (
 	"time"
 
 	"andurel-site/config"
-
-	"github.com/mbvlabs/andurel/pkg/inertia"
+	"andurel-site/ssr"
 )
 
 func main() {
@@ -25,7 +24,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	runtime, err := inertia.NewSSRRuntime(cfg.SSRConfig())
+	runtime, err := ssr.NewRuntime(cfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "inertia SSR runtime: %v\n", err)
 		os.Exit(1)
@@ -38,7 +37,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "start inertia SSR: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("Inertia SSR listening on %s\n", cfg.SSRURL)
+	fmt.Printf("Inertia SSR listening on %s\n", cfg.SSRListen)
 
 	select {
 	case <-ctx.Done():

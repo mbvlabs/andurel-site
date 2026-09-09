@@ -15,6 +15,18 @@ type DocumentationShowParams struct {
 	Slug    string `param:"slug"`
 }
 
+var DocumentationIndex = routing.NewSimpleRoute(
+	"",
+	"documentations.index",
+	DocumentationPrefix,
+)
+
+var DocumentationVersion = routing.NewRouteWithParams[DocumentationVersionParams](
+	"/:version",
+	"documentations.version",
+	DocumentationPrefix,
+)
+
 var DocumentationShow = routing.NewRouteWithParams[DocumentationShowParams](
 	"/:version/:slug",
 	"documentations.show",

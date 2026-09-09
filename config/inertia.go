@@ -3,6 +3,9 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/mbvlabs/andurel/pkg/inertia"
@@ -15,6 +18,7 @@ const (
 	DefaultInertiaProtocolDebug       = false
 	DefaultInertiaSSRRuntime          = "node"
 	DefaultInertiaSSRBundle           = "assets/dist/ssr/ssr.js"
+	DefaultInertiaSSRListen           = "http://127.0.0.1:13714"
 	DefaultInertiaSSRURL              = "http://127.0.0.1:13714"
 	DefaultInertiaSSRStartupTimeout   = 10 * time.Second
 	DefaultInertiaSSRRequestTimeout   = 2 * time.Second
@@ -30,6 +34,7 @@ type Inertia struct {
 	ProtocolDebug       bool
 	SSRRuntime          string
 	SSRBundle           string
+	SSRListen           string
 	SSRURL              string
 	SSRStartupTimeout   time.Duration
 	SSRRequestTimeout   time.Duration
@@ -47,6 +52,7 @@ func NewInertia() (Inertia, error) {
 		ProtocolDebug: env.Bool("INERTIA_PROTOCOL_DEBUG", DefaultInertiaProtocolDebug),
 		SSRRuntime:    env.String("INERTIA_SSR_RUNTIME", DefaultInertiaSSRRuntime),
 		SSRBundle:     env.String("INERTIA_SSR_BUNDLE", DefaultInertiaSSRBundle),
+		SSRListen:     env.String("INERTIA_SSR_LISTEN", DefaultInertiaSSRListen),
 		SSRURL:        env.String("INERTIA_SSR_URL", DefaultInertiaSSRURL),
 		SSRStartupTimeout: env.Duration(
 			"INERTIA_SSR_STARTUP_TIMEOUT",
@@ -79,7 +85,12 @@ func (c Inertia) validate() error {
 	b.Required("EntryPoint", c.EntryPoint)
 	b.Required("SSRRuntime", c.SSRRuntime)
 	b.Required("SSRBundle", c.SSRBundle)
+	b.Required("SSRListen", c.SSRListen)
 	if err := b.Err(); err != nil {
+		return err
+	}
+
+	if _, _, err := parseSSRListen(c.SSRListen); err != nil {
 		return err
 	}
 
@@ -101,18 +112,77 @@ func (c Inertia) validate() error {
 	return nil
 }
 
-// SSRConfig returns settings for cmd/ssr to start the Node process.
-func (c Inertia) SSRConfig() inertia.SSRConfig {
-	return inertia.SSRConfig{
-		Enabled:        true,
-		Executable:     c.SSRRuntime,
-		BundlePath:     c.SSRBundle,
-		StartupTimeout: c.SSRStartupTimeout,
-		MinimumMajor:   c.SSRMinimumMajor,
-		HTTP: inertia.SSRClientConfig{
-			URL:              c.SSRURL,
-			Timeout:          c.SSRRequestTimeout,
-			MaxResponseBytes: c.SSRMaxResponseBytes,
-		},
+// SSRClientConfig is where cmd/app POSTs /render.
+func (c Inertia) SSRClientConfig() inertia.SSRClientConfig {
+	return inertia.SSRClientConfig{
+		URL:              c.SSRURL,
+		Timeout:          c.SSRRequestTimeout,
+		MaxResponseBytes: c.SSRMaxResponseBytes,
 	}
+}
+
+// SSRBindHost is the address Node listens on (INERTIA_SSR_HOST).
+func (c Inertia) SSRBindHost() string {
+	host, _, err := parseSSRListen(c.SSRListen)
+	if err != nil {
+		return ""
+	}
+
+	return host
+}
+
+// SSRBindPort is the port Node listens on (INERTIA_SSR_PORT).
+func (c Inertia) SSRBindPort() string {
+	_, port, err := parseSSRListen(c.SSRListen)
+	if err != nil {
+		return ""
+	}
+
+	return port
+}
+
+// SSRHealthConfig is used by cmd/ssr to probe the process it just started.
+// When Node binds 0.0.0.0, health still goes to loopback on the same port.
+func (c Inertia) SSRHealthConfig() inertia.SSRClientConfig {
+	host, port, err := parseSSRListen(c.SSRListen)
+	if err != nil {
+		return inertia.SSRClientConfig{}
+	}
+	if ip := net.ParseIP(host); ip != nil && ip.IsUnspecified() {
+		host = "127.0.0.1"
+	}
+
+	return inertia.SSRClientConfig{
+		URL:              "http://" + net.JoinHostPort(host, port),
+		Timeout:          c.SSRRequestTimeout,
+		MaxResponseBytes: c.SSRMaxResponseBytes,
+	}
+}
+
+func parseSSRListen(raw string) (string, string, error) {
+	parsed, err := url.Parse(strings.TrimSpace(raw))
+	if err != nil || parsed.Host == "" || parsed.Scheme != "http" {
+		return "", "", fmt.Errorf("SSRListen must be an HTTP URL")
+	}
+
+	host := parsed.Hostname()
+	port := parsed.Port()
+	if port == "" {
+		return "", "", fmt.Errorf("SSRListen must include a port")
+	}
+	if !validSSRListenHost(host) {
+		return "", "", fmt.Errorf(
+			"SSRListen must bind an IP address or localhost, not a service hostname",
+		)
+	}
+
+	return host, port, nil
+}
+
+func validSSRListenHost(host string) bool {
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+
+	return net.ParseIP(host) != nil
 }

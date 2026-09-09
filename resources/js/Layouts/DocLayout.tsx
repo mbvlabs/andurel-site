@@ -29,13 +29,14 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { routes } from '@/routes'
-import type { DocNavigationProps, DocVersion } from '@/types/docs'
+import type { DocHeading, DocNavigationProps, DocVersion } from '@/types/docs'
 
 const DOC_ARTICLE_ID = 'doc-article'
-const docsPad = 'px-14 sm:px-16'
+const docsPadRight = 'pr-10 sm:pr-12'
 
 type DocLayoutProps = DocNavigationProps & {
   children: ReactNode
+  headings?: DocHeading[]
 }
 
 function currentCatalog(versions: DocVersion[], currentVersion: string) {
@@ -90,12 +91,13 @@ function HeaderActions({
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <a
-        className="px-2 py-1 text-muted-foreground transition hover:text-foreground"
-        href="https://github.com/mbvlabs/andurel"
+      <Button
+        variant="ghost"
+        size="sm"
+        render={<a href="https://github.com/mbvlabs/andurel" />}
       >
         GitHub
-      </a>
+      </Button>
     </nav>
   )
 }
@@ -105,6 +107,7 @@ export default function DocLayout({
   versions,
   currentVersion,
   currentSlug,
+  headings,
 }: DocLayoutProps) {
   const catalog = currentCatalog(versions, currentVersion)
 
@@ -141,8 +144,8 @@ export default function DocLayout({
 
       <SidebarInset>
         <header className="sticky top-0 z-30 border-b border-sidebar-border bg-background">
-          <div className="relative flex h-14 items-center">
-            <div className={`absolute inset-y-0 left-0 z-10 flex items-center ${docsPad}`}>
+          <div className={`flex h-14 items-center ${docsPadRight}`}>
+            <div className="flex min-w-0 flex-1 items-center pl-2">
               <SidebarTrigger />
               <a
                 className="ml-3 inline-flex items-center gap-2 text-sm font-semibold md:hidden"
@@ -152,27 +155,29 @@ export default function DocLayout({
                 <span className="sr-only">Andurel Docs</span>
               </a>
             </div>
-            <div className={`flex w-full items-center justify-center ${docsPad}`}>
-              <div className="w-full max-w-3xl">
-                <DocsSearch versions={versions} currentVersion={currentVersion} />
-              </div>
+            <div className="w-full min-w-0 max-w-3xl">
+              <DocsSearch versions={versions} currentVersion={currentVersion} />
             </div>
-            <div className={`absolute inset-y-0 right-0 z-10 flex items-center ${docsPad}`}>
+            <div className="flex flex-1 items-center justify-end">
               <HeaderActions versions={versions} currentVersion={currentVersion} />
             </div>
           </div>
         </header>
 
-        <div className={`flex flex-1 py-8 ${docsPad}`}>
-          <div className="hidden w-64 shrink-0 xl:block" aria-hidden="true" />
-          <div className="flex min-w-0 flex-1 justify-center">
-            <div id={DOC_ARTICLE_ID} className="w-full max-w-3xl">
-              {children}
-            </div>
+        <div className={`flex flex-1 py-8 ${docsPadRight}`}>
+          <div className="min-w-0 flex-1" aria-hidden="true" />
+          <div id={DOC_ARTICLE_ID} className="w-full min-w-0 max-w-3xl">
+            {children}
           </div>
-          <aside className="hidden w-64 shrink-0 xl:block">
-            <DocsToc rootId={DOC_ARTICLE_ID} pageKey={`${currentVersion}:${currentSlug}`} />
-          </aside>
+          <div className="min-w-0 flex-1">
+            <aside className="sticky top-20 hidden max-w-64 self-start pl-6 xl:block">
+              <DocsToc
+                rootId={DOC_ARTICLE_ID}
+                pageKey={`${currentVersion}:${currentSlug}`}
+                headings={headings}
+              />
+            </aside>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

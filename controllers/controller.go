@@ -4,6 +4,7 @@ package controllers
 import (
 	"andurel-site/config"
 	"andurel-site/controllers/api"
+	"andurel-site/docs"
 	"andurel-site/router"
 	"andurel-site/views"
 
@@ -25,6 +26,7 @@ var constructors = fx.Provide(
 	NewRegistrations,
 	NewConfirmations,
 	NewResetPasswords,
+	docs.New,
 	NewDocumentations,
 )
 

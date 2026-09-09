@@ -166,16 +166,12 @@ func newInertia(
 	appCfg config.App,
 	cfg config.Inertia,
 ) (*inertia.Renderer, error) {
-	renderer, err := inertia.NewRenderer(
+	return inertia.NewRenderer(
 		cfg.ContainerID,
 		routes.ViteBuild.Path(),
 		cfg.EntryPoint,
 		cfg.ViteDevURL,
-		inertia.SSRClientConfig{
-			URL:              cfg.SSRURL,
-			Timeout:          cfg.SSRRequestTimeout,
-			MaxResponseBytes: cfg.SSRMaxResponseBytes,
-		},
+		cfg.SSRClientConfig(),
 		inertia.WithRoot(views.Root),
 		inertia.WithAssetFS(assets.Files),
 		inertia.WithProjectName(appCfg.ProjectName),
@@ -184,11 +180,6 @@ func newInertia(
 		inertia.WithShared(inertia.Props{"appVersion": appVersion}),
 		inertia.WithSSRFailFast(cfg.SSRFailFast),
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	return renderer, nil
 }
 
 func newEmailSenders(

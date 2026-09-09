@@ -1,3 +1,14 @@
+export type DocHeading = {
+  id: string
+  text: string
+  level: number
+}
+
+export type DocLink = {
+  title: string
+  url: string
+}
+
 export type DocPage = {
   slug: string
   title: string

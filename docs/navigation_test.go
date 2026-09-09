@@ -22,7 +22,7 @@ func TestFindUnknownPage(t *testing.T) {
 }
 
 func TestLatestURL(t *testing.T) {
-	if got, want := LatestURL(), "/docs/latest/installation"; got != want {
+	if got, want := LatestURL(), "/docs/latest/introduction"; got != want {
 		t.Fatalf("LatestURL() = %q, want %q", got, want)
 	}
 }
