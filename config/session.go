@@ -32,14 +32,17 @@ func NewSession(app App) (Session, error) {
 	} else {
 		cfg.AuthenticationKey = value
 	}
+
 	if value, err := hex.DecodeString(encryptionKey); err != nil {
 		errs = append(errs, fmt.Errorf("SESSION_ENCRYPTION_KEY must be hexadecimal: %w", err))
 	} else {
 		cfg.EncryptionKey = value
 	}
+
 	if cfg.MaxAge < 1 {
 		errs = append(errs, fmt.Errorf("SESSION_MAX_AGE must be greater than zero"))
 	}
+
 	errs = append(errs, env.Err())
 	if err := errors.Join(errs...); err != nil {
 		return Session{}, fmt.Errorf("config: session: %w", err)

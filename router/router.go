@@ -16,7 +16,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
-	"github.com/gosimple/slug"
 	"github.com/labstack/echo-contrib/v5/session"
 	"github.com/labstack/echo/v5"
 	echomw "github.com/labstack/echo/v5/middleware"
@@ -105,7 +104,7 @@ func SetupGlobalMiddleware(
 		appCfg.BaseURL,
 		appCfg.Environment,
 		appCfg.Domain,
-		slug.Make(sessionCfg.Name),
+		sessionCfg.Name,
 	)
 	if err != nil {
 		return nil, err
