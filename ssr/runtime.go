@@ -23,10 +23,11 @@ type Runtime struct {
 	healthHTTP *http.Client
 	errors     chan error
 
-	mu       sync.Mutex
-	command  *exec.Cmd
-	done     chan error
-	stopping bool
+	mu            sync.Mutex
+	command       *exec.Cmd
+	done          chan error
+	stopping      bool
+	bundleCleanup func()
 }
 
 func NewRuntime(cfg config.Inertia) (*Runtime, error) {
@@ -53,14 +54,23 @@ func (runtime *Runtime) Errors() <-chan error {
 	return runtime.errors
 }
 
-func (runtime *Runtime) Start(ctx context.Context) error {
+func (runtime *Runtime) Start(ctx context.Context) (err error) {
 	if runtime == nil {
 		return nil
 	}
 
-	if _, err := os.Stat(runtime.cfg.SSRBundle); err != nil {
-		return fmt.Errorf("inertia SSR bundle %q: %w", runtime.cfg.SSRBundle, err)
+	bundlePath, cleanup, err := resolveSSRBundle(runtime.cfg.SSRBundle)
+	if err != nil {
+		return err
 	}
+	defer func() {
+		if err != nil && cleanup != nil {
+			runtime.mu.Lock()
+			runtime.bundleCleanup = nil
+			runtime.mu.Unlock()
+			cleanup()
+		}
+	}()
 
 	executable, err := exec.LookPath(runtime.cfg.SSRRuntime)
 	if err != nil {
@@ -95,7 +105,7 @@ func (runtime *Runtime) Start(ctx context.Context) error {
 		return fmt.Errorf("inertia SSR runtime is already started")
 	}
 
-	command := exec.Command(executable, runtime.cfg.SSRBundle)
+	command := exec.Command(executable, bundlePath)
 	command.Env = append(os.Environ(),
 		"INERTIA_SSR_HOST="+runtime.cfg.SSRBindHost(),
 		"INERTIA_SSR_PORT="+runtime.cfg.SSRBindPort(),
@@ -112,6 +122,7 @@ func (runtime *Runtime) Start(ctx context.Context) error {
 	runtime.command = command
 	runtime.done = done
 	runtime.stopping = false
+	runtime.bundleCleanup = cleanup
 	runtime.mu.Unlock()
 
 	go func() {
@@ -147,6 +158,7 @@ func (runtime *Runtime) Start(ctx context.Context) error {
 
 	for {
 		if err := runtime.health(startupCtx); err == nil {
+			cleanup = nil
 			return nil
 		}
 
@@ -168,6 +180,7 @@ func (runtime *Runtime) Stop(ctx context.Context) error {
 	if runtime == nil {
 		return nil
 	}
+	defer runtime.removeExtractedBundle()
 
 	runtime.mu.Lock()
 	command := runtime.command
@@ -191,6 +204,16 @@ func (runtime *Runtime) Stop(ctx context.Context) error {
 	case <-ctx.Done():
 		killErr := command.Process.Kill()
 		return errors.Join(shutdownErr, ctx.Err(), killErr)
+	}
+}
+
+func (runtime *Runtime) removeExtractedBundle() {
+	runtime.mu.Lock()
+	cleanup := runtime.bundleCleanup
+	runtime.bundleCleanup = nil
+	runtime.mu.Unlock()
+	if cleanup != nil {
+		cleanup()
 	}
 }
 
