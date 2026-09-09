@@ -3,9 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"net"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/mbvlabs/andurel/pkg/inertia"
@@ -90,16 +87,14 @@ func (c Inertia) validate() error {
 		return err
 	}
 
-	if _, _, err := parseSSRListen(c.SSRListen); err != nil {
+	if err := inertia.ValidateSSRListen(c.SSRListen); err != nil {
 		return err
 	}
-
-	http := inertia.SSRClientConfig{
-		URL:              c.SSRURL,
-		Timeout:          c.SSRRequestTimeout,
-		MaxResponseBytes: c.SSRMaxResponseBytes,
-	}
-	if err := http.Validate(); err != nil {
+	if err := inertia.ValidateSSRClient(
+		c.SSRURL,
+		c.SSRRequestTimeout,
+		c.SSRMaxResponseBytes,
+	); err != nil {
 		return err
 	}
 	if c.SSRStartupTimeout <= 0 {
@@ -110,75 +105,4 @@ func (c Inertia) validate() error {
 	}
 
 	return nil
-}
-
-// SSRClientConfig is where cmd/app POSTs /render.
-func (c Inertia) SSRClientConfig() inertia.SSRClientConfig {
-	return inertia.SSRClientConfig{
-		URL:              c.SSRURL,
-		Timeout:          c.SSRRequestTimeout,
-		MaxResponseBytes: c.SSRMaxResponseBytes,
-	}
-}
-
-// SSRBindHost is the address Node listens on (INERTIA_SSR_HOST).
-func (c Inertia) SSRBindHost() string {
-	host, _, err := parseSSRListen(c.SSRListen)
-	if err != nil {
-		return ""
-	}
-
-	return host
-}
-
-// SSRBindPort is the port Node listens on (INERTIA_SSR_PORT).
-func (c Inertia) SSRBindPort() string {
-	_, port, err := parseSSRListen(c.SSRListen)
-	if err != nil {
-		return ""
-	}
-
-	return port
-}
-
-// SSRHealthURL is loopback on the listen port so cmd/ssr can probe the process
-// it started, even when Node binds 0.0.0.0.
-func (c Inertia) SSRHealthURL() string {
-	host, port, err := parseSSRListen(c.SSRListen)
-	if err != nil {
-		return ""
-	}
-	if ip := net.ParseIP(host); ip != nil && ip.IsUnspecified() {
-		host = "127.0.0.1"
-	}
-
-	return "http://" + net.JoinHostPort(host, port)
-}
-
-func parseSSRListen(raw string) (string, string, error) {
-	parsed, err := url.Parse(strings.TrimSpace(raw))
-	if err != nil || parsed.Host == "" || parsed.Scheme != "http" {
-		return "", "", fmt.Errorf("SSRListen must be an HTTP URL")
-	}
-
-	host := parsed.Hostname()
-	port := parsed.Port()
-	if port == "" {
-		return "", "", fmt.Errorf("SSRListen must include a port")
-	}
-	if !validSSRListenHost(host) {
-		return "", "", fmt.Errorf(
-			"SSRListen must bind an IP address or localhost, not a service hostname",
-		)
-	}
-
-	return host, port, nil
-}
-
-func validSSRListenHost(host string) bool {
-	if strings.EqualFold(host, "localhost") {
-		return true
-	}
-
-	return net.ParseIP(host) != nil
 }

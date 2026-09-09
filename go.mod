@@ -16,7 +16,7 @@ require (
 	github.com/lmittmann/tint v1.2.0
 	github.com/maypok86/otter/v2 v2.3.0
 	github.com/mbvlabs/andurel/pkg/email v0.3.2
-	github.com/mbvlabs/andurel/pkg/inertia v0.4.2
+	github.com/mbvlabs/andurel/pkg/inertia v0.5.0
 	github.com/mbvlabs/andurel/pkg/routing v0.2.1
 	github.com/mbvlabs/andurel/pkg/server v0.3.2
 	github.com/mbvlabs/andurel/pkg/storage v0.7.1
