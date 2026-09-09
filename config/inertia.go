@@ -141,22 +141,18 @@ func (c Inertia) SSRBindPort() string {
 	return port
 }
 
-// SSRHealthConfig is used by cmd/ssr to probe the process it just started.
-// When Node binds 0.0.0.0, health still goes to loopback on the same port.
-func (c Inertia) SSRHealthConfig() inertia.SSRClientConfig {
+// SSRHealthURL is loopback on the listen port so cmd/ssr can probe the process
+// it started, even when Node binds 0.0.0.0.
+func (c Inertia) SSRHealthURL() string {
 	host, port, err := parseSSRListen(c.SSRListen)
 	if err != nil {
-		return inertia.SSRClientConfig{}
+		return ""
 	}
 	if ip := net.ParseIP(host); ip != nil && ip.IsUnspecified() {
 		host = "127.0.0.1"
 	}
 
-	return inertia.SSRClientConfig{
-		URL:              "http://" + net.JoinHostPort(host, port),
-		Timeout:          c.SSRRequestTimeout,
-		MaxResponseBytes: c.SSRMaxResponseBytes,
-	}
+	return "http://" + net.JoinHostPort(host, port)
 }
 
 func parseSSRListen(raw string) (string, string, error) {

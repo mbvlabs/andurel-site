@@ -16,8 +16,8 @@ func TestInertiaSSRListenAllowsUnspecifiedBind(t *testing.T) {
 	if cfg.SSRBindPort() != "13714" {
 		t.Fatalf("SSRBindPort = %q, want 13714", cfg.SSRBindPort())
 	}
-	if got := cfg.SSRHealthConfig().URL; got != "http://127.0.0.1:13714" {
-		t.Fatalf("SSRHealthConfig.URL = %q, want http://127.0.0.1:13714", got)
+	if got := cfg.SSRHealthURL(); got != "http://127.0.0.1:13714" {
+		t.Fatalf("SSRHealthURL = %q, want http://127.0.0.1:13714", got)
 	}
 	if cfg.SSRClientConfig().URL != "http://ssr-worker:13714" {
 		t.Fatalf("SSRClientConfig.URL = %q, want http://ssr-worker:13714", cfg.SSRClientConfig().URL)

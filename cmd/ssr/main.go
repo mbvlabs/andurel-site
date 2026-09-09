@@ -37,7 +37,11 @@ func main() {
 		fmt.Fprintf(os.Stderr, "start inertia SSR: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("Inertia SSR listening on %s\n", cfg.SSRListen)
+	fmt.Printf(
+		"Inertia SSR listening on %s (health %s)\n",
+		cfg.SSRListen,
+		cfg.SSRHealthURL(),
+	)
 
 	select {
 	case <-ctx.Done():

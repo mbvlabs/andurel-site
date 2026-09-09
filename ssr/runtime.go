@@ -2,8 +2,11 @@ package ssr
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -11,16 +14,14 @@ import (
 	"time"
 
 	"andurel-site/config"
-
-	"github.com/mbvlabs/andurel/pkg/inertia"
 )
 
-// Runtime starts Node using INERTIA_SSR_LISTEN (bind) and health-checks loopback.
-// cmd/app talks to the renderer through INERTIA_SSR_URL, which is independent.
+// Runtime starts Node from INERTIA_SSR_LISTEN. It never reads INERTIA_SSR_URL.
 type Runtime struct {
-	cfg      config.Inertia
-	renderer *inertia.HTTPRenderer
-	errors   chan error
+	cfg        config.Inertia
+	healthURL  string
+	healthHTTP *http.Client
+	errors     chan error
 
 	mu       sync.Mutex
 	command  *exec.Cmd
@@ -29,15 +30,18 @@ type Runtime struct {
 }
 
 func NewRuntime(cfg config.Inertia) (*Runtime, error) {
-	renderer, err := inertia.NewHTTPRenderer(cfg.SSRHealthConfig())
-	if err != nil {
-		return nil, err
+	healthURL := cfg.SSRHealthURL()
+	if healthURL == "" {
+		return nil, fmt.Errorf("inertia SSR listen address is invalid")
 	}
 
 	return &Runtime{
-		cfg:      cfg,
-		renderer: renderer,
-		errors:   make(chan error, 1),
+		cfg:       cfg,
+		healthURL: healthURL,
+		healthHTTP: &http.Client{
+			Timeout: cfg.SSRRequestTimeout,
+		},
+		errors: make(chan error, 1),
 	}, nil
 }
 
@@ -142,7 +146,7 @@ func (runtime *Runtime) Start(ctx context.Context) error {
 	defer ticker.Stop()
 
 	for {
-		if err := runtime.renderer.Health(startupCtx); err == nil {
+		if err := runtime.health(startupCtx); err == nil {
 			return nil
 		}
 
@@ -176,7 +180,7 @@ func (runtime *Runtime) Stop(ctx context.Context) error {
 	runtime.stopping = true
 	runtime.mu.Unlock()
 
-	shutdownErr := runtime.renderer.Shutdown(ctx)
+	shutdownErr := runtime.shutdown(ctx)
 	select {
 	case waitErr := <-done:
 		if waitErr != nil && shutdownErr == nil {
@@ -188,6 +192,66 @@ func (runtime *Runtime) Stop(ctx context.Context) error {
 		killErr := command.Process.Kill()
 		return errors.Join(shutdownErr, ctx.Err(), killErr)
 	}
+}
+
+func (runtime *Runtime) health(ctx context.Context) error {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, runtime.healthURL+"/health", nil)
+	if err != nil {
+		return err
+	}
+
+	response, err := runtime.healthHTTP.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(io.LimitReader(response.Body, 64<<10))
+	if err != nil {
+		return err
+	}
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return fmt.Errorf("health status %d", response.StatusCode)
+	}
+
+	var health struct {
+		Status string `json:"status"`
+	}
+	if err := json.Unmarshal(body, &health); err != nil {
+		return err
+	}
+	if !strings.EqualFold(health.Status, "ok") {
+		return fmt.Errorf("renderer is not healthy")
+	}
+
+	return nil
+}
+
+func (runtime *Runtime) shutdown(ctx context.Context) error {
+	request, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		runtime.healthURL+"/shutdown",
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	response, err := runtime.healthHTTP.Do(request)
+	if err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		return err
+	}
+	defer response.Body.Close()
+	_, _ = io.Copy(io.Discard, io.LimitReader(response.Body, 64<<10))
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return fmt.Errorf("shutdown status %d", response.StatusCode)
+	}
+
+	return nil
 }
 
 func normalizeWaitError(err error) error {
