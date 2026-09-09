@@ -1,6 +1,6 @@
 module andurel-site
 
-go 1.27.0
+go 1.26.2
 
 require (
 	github.com/a-h/templ v0.3.1020
@@ -15,12 +15,12 @@ require (
 	github.com/labstack/echo/v5 v5.3.0
 	github.com/lmittmann/tint v1.2.0
 	github.com/maypok86/otter/v2 v2.3.0
-	github.com/mbvlabs/andurel/pkg/email v0.3.1
-	github.com/mbvlabs/andurel/pkg/inertia v0.4.1
-	github.com/mbvlabs/andurel/pkg/routing v0.2.0
-	github.com/mbvlabs/andurel/pkg/server v0.3.1
-	github.com/mbvlabs/andurel/pkg/storage v0.7.0
-	github.com/mbvlabs/andurel/pkg/validation v0.1.2
+	github.com/mbvlabs/andurel/pkg/email v0.3.2
+	github.com/mbvlabs/andurel/pkg/inertia v0.4.2
+	github.com/mbvlabs/andurel/pkg/routing v0.2.1
+	github.com/mbvlabs/andurel/pkg/server v0.3.2
+	github.com/mbvlabs/andurel/pkg/storage v0.7.1
+	github.com/mbvlabs/andurel/pkg/validation v0.1.3
 	github.com/riverqueue/river v0.40.0
 	github.com/rs/xid v1.6.0
 	github.com/uptrace/bun v1.2.18
