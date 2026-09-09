@@ -29,7 +29,7 @@ func NewApp() (App, error) {
 		Environment: env.String("ENVIRONMENT", DefaultEnvironment),
 		ProjectName: env.String("PROJECT_NAME", DefaultProjectName),
 		Domain:      env.String("DOMAIN", DefaultDomain),
-		Protocol:    env.String("PROTOCOL", ""),
+		Protocol:    env.String("PROTOCOL", "http"),
 	}
 	cfg.BaseURL = cfg.baseURL()
 

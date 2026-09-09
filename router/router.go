@@ -10,17 +10,19 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net/http"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
+	"github.com/gosimple/slug"
 	"github.com/labstack/echo-contrib/v5/session"
 	"github.com/labstack/echo/v5"
 	echomw "github.com/labstack/echo/v5/middleware"
 	"github.com/mbvlabs/andurel/pkg/inertia"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/fx"
-	"log/slog"
-	"net/http"
-	"strings"
 )
 
 type Router struct {
@@ -103,7 +105,7 @@ func SetupGlobalMiddleware(
 		appCfg.BaseURL,
 		appCfg.Environment,
 		appCfg.Domain,
-		sessionCfg.Name,
+		slug.Make(sessionCfg.Name),
 	)
 	if err != nil {
 		return nil, err
