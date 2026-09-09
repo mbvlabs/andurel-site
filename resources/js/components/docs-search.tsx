@@ -52,12 +52,25 @@ export default function DocsSearch({
       <Button
         type="button"
         variant="outline"
-        className={cn('h-8 w-full justify-start text-muted-foreground', className)}
+        size="icon"
+        className={cn('md:hidden', className)}
+        onClick={() => setOpen(true)}
+        aria-label="Search documentation"
+      >
+        <SearchIcon />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        className={cn(
+          'hidden h-8 w-full justify-start text-muted-foreground md:inline-flex',
+          className,
+        )}
         onClick={() => setOpen(true)}
       >
         <SearchIcon />
         <span className="flex-1 truncate text-left">Search documentation...</span>
-        <kbd className="pointer-events-none hidden h-5 items-center gap-1 border border-border bg-muted px-1.5 font-mono text-[0.65rem] text-muted-foreground sm:inline-flex">
+        <kbd className="pointer-events-none hidden h-5 items-center gap-1 border border-border bg-muted px-1.5 font-mono text-[0.65rem] text-muted-foreground lg:inline-flex">
           ⌘K
         </kbd>
       </Button>

@@ -43681,6 +43681,28 @@ const __iconData = {
 };
 __iconData.node;
 const X$1 = createLucideIcon(__iconData);
+const defaultColor = "#181717";
+const SiGithub = reactExports.forwardRef(function SiGithub2({ title = "GitHub", color = "currentColor", size: size2 = 24, ...others }, ref) {
+  if (color === "default") {
+    color = defaultColor;
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "svg",
+    {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: size2,
+      height: size2,
+      fill: color,
+      viewBox: "0 0 24 24",
+      ref,
+      ...others,
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("title", { children: title }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" })
+      ]
+    }
+  );
+});
 function hasWindow() {
   return typeof window !== "undefined";
 }
@@ -55436,17 +55458,32 @@ function DocsSearch({
     router.visit(url);
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Button2,
+      {
+        type: "button",
+        variant: "outline",
+        size: "icon",
+        className: cn("md:hidden", className),
+        onClick: () => setOpen(true),
+        "aria-label": "Search documentation",
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(Search, {})
+      }
+    ),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       Button2,
       {
         type: "button",
         variant: "outline",
-        className: cn("h-8 w-full justify-start text-muted-foreground", className),
+        className: cn(
+          "hidden h-8 w-full justify-start text-muted-foreground md:inline-flex",
+          className
+        ),
         onClick: () => setOpen(true),
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Search, {}),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "flex-1 truncate text-left", children: "Search documentation..." }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("kbd", { className: "pointer-events-none hidden h-5 items-center gap-1 border border-border bg-muted px-1.5 font-mono text-[0.65rem] text-muted-foreground sm:inline-flex", children: "⌘K" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("kbd", { className: "pointer-events-none hidden h-5 items-center gap-1 border border-border bg-muted px-1.5 font-mono text-[0.65rem] text-muted-foreground lg:inline-flex", children: "⌘K" })
         ]
       }
     ),
@@ -59151,7 +59188,8 @@ function SidebarMenuButton({
   ] });
 }
 const DOC_ARTICLE_ID = "doc-article";
-const docsPadRight = "pr-10 sm:pr-12";
+const docsGutter = "px-4 sm:px-6 md:pl-2 md:pr-10 xl:pr-12";
+const docsColumns = "grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[1fr_minmax(0,48rem)_1fr]";
 function currentCatalog(versions, currentVersion) {
   return versions.find((version) => version.name === currentVersion) ?? versions[0];
 }
@@ -59180,7 +59218,7 @@ function HeaderActions({
   versions,
   currentVersion
 }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "flex shrink-0 items-center gap-2 text-sm", children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "flex shrink-0 items-center gap-1 sm:gap-2 text-sm", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(DropdownMenu, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(DropdownMenuTrigger, { render: /* @__PURE__ */ jsxRuntimeExports.jsx(Button2, { variant: "outline", size: "sm" }), children: [
         currentVersion,
@@ -59191,13 +59229,17 @@ function HeaderActions({
         versions.map((version) => /* @__PURE__ */ jsxRuntimeExports.jsx(DropdownMenuItem, { render: /* @__PURE__ */ jsxRuntimeExports.jsx(Link_default, { href: version.url }), children: version.name }, version.name))
       ] }) })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
       Button2,
       {
         variant: "ghost",
         size: "sm",
+        "aria-label": "GitHub",
         render: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://github.com/mbvlabs/andurel" }),
-        children: "GitHub"
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(SiGithub, { title: "", color: "currentColor" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "hidden sm:inline", children: "GitHub" })
+        ]
       }
     )
   ] });
@@ -59227,14 +59269,14 @@ function DocLayout({
         ) }, page2.slug)) }) })
       ] }, section.title)) })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(SidebarInset, { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("header", { className: "sticky top-0 z-30 border-b border-sidebar-border bg-background", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `flex h-14 items-center ${docsPadRight}`, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex min-w-0 flex-1 items-center pl-2", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(SidebarInset, { className: "min-w-0 overflow-x-clip", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("header", { className: "sticky top-0 z-30 border-b border-sidebar-border bg-background", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `h-14 items-center ${docsColumns} ${docsGutter}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(SidebarTrigger, {}),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "a",
             {
-              className: "ml-3 inline-flex items-center gap-2 text-sm font-semibold md:hidden",
+              className: "ml-2 hidden items-center gap-2 text-sm font-semibold sm:inline-flex md:hidden",
               href: routes.homePage(),
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(BrandMark, {}),
@@ -59243,20 +59285,20 @@ function DocLayout({
             }
           )
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full min-w-0 max-w-3xl", children: /* @__PURE__ */ jsxRuntimeExports.jsx(DocsSearch, { versions, currentVersion }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-1 items-center justify-end", children: /* @__PURE__ */ jsxRuntimeExports.jsx(HeaderActions, { versions, currentVersion }) })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex min-w-0 items-center justify-end md:block", children: /* @__PURE__ */ jsxRuntimeExports.jsx(DocsSearch, { versions, currentVersion }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-end", children: /* @__PURE__ */ jsxRuntimeExports.jsx(HeaderActions, { versions, currentVersion }) })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `flex flex-1 py-8 ${docsPadRight}`, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-w-0 flex-1", "aria-hidden": "true" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: DOC_ARTICLE_ID, className: "w-full min-w-0 max-w-3xl", children }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-w-0 flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { className: "sticky top-20 hidden max-w-64 self-start pl-6 xl:block", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `min-w-0 flex-1 items-start py-6 sm:py-8 ${docsColumns} ${docsGutter}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { "aria-hidden": "true" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: DOC_ARTICLE_ID, className: "min-w-0", children }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { className: "sticky top-20 hidden min-w-0 max-w-64 self-start pl-6 xl:block", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           DocsToc,
           {
             rootId: DOC_ARTICLE_ID,
             pageKey: `${currentVersion}:${currentSlug}`,
             headings
           }
-        ) }) })
+        ) })
       ] })
     ] })
   ] });
@@ -59413,14 +59455,21 @@ function PagerCard({
   label,
   page: page2
 }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Link_default, { href: page2.url, className: cn("block h-full", align === "end" && "sm:col-start-2"), children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { size: "sm", className: "h-full transition-colors hover:bg-muted/50", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: align === "end" ? "items-end text-right" : void 0, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(CardDescription, { children: label }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "flex items-center gap-1.5", children: [
-      align === "start" && /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronLeft, { className: "size-4" }),
-      page2.title,
-      align === "end" && /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "size-4" })
-    ] })
-  ] }) }) });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    Link_default,
+    {
+      href: page2.url,
+      className: cn("block h-full min-w-0", align === "end" && "sm:col-start-2"),
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { size: "sm", className: "h-full transition-colors hover:bg-muted/50", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: align === "end" ? "items-end text-right" : void 0, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CardDescription, { children: label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "flex min-w-0 items-center gap-1.5", children: [
+          align === "start" && /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronLeft, { className: "size-4 shrink-0" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate", children: page2.title }),
+          align === "end" && /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "size-4 shrink-0" })
+        ] })
+      ] }) })
+    }
+  );
 }
 function Show({
   versions,
@@ -59444,18 +59493,18 @@ function Show({
       headings,
       children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Head_default, { title, children: /* @__PURE__ */ jsxRuntimeExports.jsx("meta", { "head-key": "description", name: "description", content: description }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Breadcrumb, { className: "mb-7", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(BreadcrumbList, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Breadcrumb, { className: "mb-6 min-w-0 sm:mb-7", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(BreadcrumbList, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(BreadcrumbItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(BreadcrumbLink, { render: /* @__PURE__ */ jsxRuntimeExports.jsx(Link_default, { href: versionUrl }), children: currentVersion }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(BreadcrumbSeparator, {}),
           /* @__PURE__ */ jsxRuntimeExports.jsx(BreadcrumbItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: currentSection }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(BreadcrumbSeparator, {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(BreadcrumbItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(BreadcrumbPage, { children: title }) })
+          /* @__PURE__ */ jsxRuntimeExports.jsx(BreadcrumbItem, { className: "min-w-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(BreadcrumbPage, { className: "truncate", children: title }) })
         ] }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("article", { className: "docs-content", dangerouslySetInnerHTML: { __html: html } }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("article", { className: "docs-content min-w-0", dangerouslySetInnerHTML: { __html: html } }),
         (previous || next) && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Separator, { className: "mt-14" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Separator, { className: "mt-10 sm:mt-14" }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "mt-6 grid gap-3 sm:grid-cols-2", "aria-label": "Documentation pagination", children: [
-            previous ? /* @__PURE__ */ jsxRuntimeExports.jsx(PagerCard, { align: "start", label: "Previous", page: previous }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", {}),
+            previous ? /* @__PURE__ */ jsxRuntimeExports.jsx(PagerCard, { align: "start", label: "Previous", page: previous }) : null,
             next ? /* @__PURE__ */ jsxRuntimeExports.jsx(PagerCard, { align: "end", label: "Next", page: next }) : null
           ] })
         ] })

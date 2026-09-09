@@ -35,14 +35,17 @@ function PagerCard({
   page: DocLink
 }) {
   return (
-    <Link href={page.url} className={cn('block h-full', align === 'end' && 'sm:col-start-2')}>
+    <Link
+      href={page.url}
+      className={cn('block h-full min-w-0', align === 'end' && 'sm:col-start-2')}
+    >
       <Card size="sm" className="h-full transition-colors hover:bg-muted/50">
         <CardHeader className={align === 'end' ? 'items-end text-right' : undefined}>
           <CardDescription>{label}</CardDescription>
-          <CardTitle className="flex items-center gap-1.5">
-            {align === 'start' && <ChevronLeftIcon className="size-4" />}
-            {page.title}
-            {align === 'end' && <ChevronRightIcon className="size-4" />}
+          <CardTitle className="flex min-w-0 items-center gap-1.5">
+            {align === 'start' && <ChevronLeftIcon className="size-4 shrink-0" />}
+            <span className="truncate">{page.title}</span>
+            {align === 'end' && <ChevronRightIcon className="size-4 shrink-0" />}
           </CardTitle>
         </CardHeader>
       </Card>
@@ -76,7 +79,7 @@ export default function Show({
       <Head title={title}>
         <meta head-key="description" name="description" content={description} />
       </Head>
-      <Breadcrumb className="mb-7">
+      <Breadcrumb className="mb-6 min-w-0 sm:mb-7">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink render={<Link href={versionUrl} />}>{currentVersion}</BreadcrumbLink>
@@ -86,17 +89,17 @@ export default function Show({
             <span>{currentSection}</span>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{title}</BreadcrumbPage>
+          <BreadcrumbItem className="min-w-0">
+            <BreadcrumbPage className="truncate">{title}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <article className="docs-content" dangerouslySetInnerHTML={{ __html: html }} />
+      <article className="docs-content min-w-0" dangerouslySetInnerHTML={{ __html: html }} />
       {(previous || next) && (
         <>
-          <Separator className="mt-14" />
+          <Separator className="mt-10 sm:mt-14" />
           <nav className="mt-6 grid gap-3 sm:grid-cols-2" aria-label="Documentation pagination">
-            {previous ? <PagerCard align="start" label="Previous" page={previous} /> : <span />}
+            {previous ? <PagerCard align="start" label="Previous" page={previous} /> : null}
             {next ? <PagerCard align="end" label="Next" page={next} /> : null}
           </nav>
         </>

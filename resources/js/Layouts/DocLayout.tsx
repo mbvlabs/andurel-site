@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import SiGithub from '@icons-pack/react-simple-icons/icons/SiGithub'
 import { Link } from '@inertiajs/react'
 import { ChevronDownIcon } from 'lucide-react'
 
@@ -32,7 +33,9 @@ import { routes } from '@/routes'
 import type { DocHeading, DocNavigationProps, DocVersion } from '@/types/docs'
 
 const DOC_ARTICLE_ID = 'doc-article'
-const docsPadRight = 'pr-10 sm:pr-12'
+const docsGutter = 'px-4 sm:px-6 md:pl-2 md:pr-10 xl:pr-12'
+const docsColumns =
+  'grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[1fr_minmax(0,48rem)_1fr]'
 
 type DocLayoutProps = DocNavigationProps & {
   children: ReactNode
@@ -74,7 +77,7 @@ function HeaderActions({
   currentVersion: string
 }) {
   return (
-    <nav className="flex shrink-0 items-center gap-2 text-sm">
+    <nav className="flex shrink-0 items-center gap-1 sm:gap-2 text-sm">
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
           {currentVersion}
@@ -94,9 +97,11 @@ function HeaderActions({
       <Button
         variant="ghost"
         size="sm"
+        aria-label="GitHub"
         render={<a href="https://github.com/mbvlabs/andurel" />}
       >
-        GitHub
+        <SiGithub title="" color="currentColor" />
+        <span className="hidden sm:inline">GitHub</span>
       </Button>
     </nav>
   )
@@ -142,42 +147,40 @@ export default function DocLayout({
         </SidebarContent>
       </Sidebar>
 
-      <SidebarInset>
+      <SidebarInset className="min-w-0 overflow-x-clip">
         <header className="sticky top-0 z-30 border-b border-sidebar-border bg-background">
-          <div className={`flex h-14 items-center ${docsPadRight}`}>
-            <div className="flex min-w-0 flex-1 items-center pl-2">
+          <div className={`h-14 items-center ${docsColumns} ${docsGutter}`}>
+            <div className="flex items-center">
               <SidebarTrigger />
               <a
-                className="ml-3 inline-flex items-center gap-2 text-sm font-semibold md:hidden"
+                className="ml-2 hidden items-center gap-2 text-sm font-semibold sm:inline-flex md:hidden"
                 href={routes.homePage()}
               >
                 <BrandMark />
                 <span className="sr-only">Andurel Docs</span>
               </a>
             </div>
-            <div className="w-full min-w-0 max-w-3xl">
+            <div className="flex min-w-0 items-center justify-end md:block">
               <DocsSearch versions={versions} currentVersion={currentVersion} />
             </div>
-            <div className="flex flex-1 items-center justify-end">
+            <div className="flex items-center justify-end">
               <HeaderActions versions={versions} currentVersion={currentVersion} />
             </div>
           </div>
         </header>
 
-        <div className={`flex flex-1 py-8 ${docsPadRight}`}>
-          <div className="min-w-0 flex-1" aria-hidden="true" />
-          <div id={DOC_ARTICLE_ID} className="w-full min-w-0 max-w-3xl">
+        <div className={`min-w-0 flex-1 items-start py-6 sm:py-8 ${docsColumns} ${docsGutter}`}>
+          <div aria-hidden="true" />
+          <div id={DOC_ARTICLE_ID} className="min-w-0">
             {children}
           </div>
-          <div className="min-w-0 flex-1">
-            <aside className="sticky top-20 hidden max-w-64 self-start pl-6 xl:block">
-              <DocsToc
-                rootId={DOC_ARTICLE_ID}
-                pageKey={`${currentVersion}:${currentSlug}`}
-                headings={headings}
-              />
-            </aside>
-          </div>
+          <aside className="sticky top-20 hidden min-w-0 max-w-64 self-start pl-6 xl:block">
+            <DocsToc
+              rootId={DOC_ARTICLE_ID}
+              pageKey={`${currentVersion}:${currentSlug}`}
+              headings={headings}
+            />
+          </aside>
         </div>
       </SidebarInset>
     </SidebarProvider>

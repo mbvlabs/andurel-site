@@ -160,6 +160,7 @@ body {
 	color: var(--muted-foreground);
 	font-size: 1rem;
 	line-height: 1.8;
+	overflow-wrap: break-word;
 }
 
 .docs-content > :first-child {
@@ -177,17 +178,28 @@ body {
 }
 
 .docs-content h1 {
-	font-size: clamp(2.25rem, 5vw, 3.4rem);
+	font-size: clamp(1.85rem, 7vw, 3.4rem);
 	letter-spacing: -0.04em;
-	margin-bottom: 1.5rem;
+	margin-bottom: 1.25rem;
 }
 
 .docs-content h2 {
 	border-top: 1px solid var(--border);
-	font-size: 1.65rem;
+	font-size: clamp(1.35rem, 4vw, 1.65rem);
 	letter-spacing: -0.025em;
-	margin-top: 3.5rem;
-	padding-top: 2rem;
+	margin-top: 2.5rem;
+	padding-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+	.docs-content h1 {
+		margin-bottom: 1.5rem;
+	}
+
+	.docs-content h2 {
+		margin-top: 3.5rem;
+		padding-top: 2rem;
+	}
 }
 
 .docs-content h3 {
@@ -238,21 +250,30 @@ body {
 	text-decoration-color: var(--accent);
 }
 
-.docs-content code {
+.docs-content :not(pre) > code {
 	border: 1px solid var(--border);
 	background: var(--muted);
 	color: var(--foreground);
-	padding: 0.12rem 0.35rem;
+	padding: 0.1em 0.35em;
 	font-size: 0.88em;
+	white-space: nowrap;
+	word-break: keep-all;
+}
+
+.docs-content p,
+.docs-content li {
+	line-height: 1.9;
 }
 
 .docs-content pre {
 	position: relative;
+	max-width: 100%;
 	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
 	border: 1px solid var(--border);
 	background: var(--card);
 	color: var(--foreground);
-	padding: 1.2rem;
+	padding: 1rem 1.1rem;
 	box-shadow: 0 12px 28px rgb(0 0 0 / 0.2);
 }
 
@@ -356,9 +377,13 @@ body {
 }
 
 .docs-content table {
+	display: block;
 	width: 100%;
+	max-width: 100%;
 	border-collapse: collapse;
 	font-size: 0.9rem;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .docs-content th,
