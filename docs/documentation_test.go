@@ -57,3 +57,43 @@ func TestSiteLoadsCatalogContent(t *testing.T) {
 		t.Fatal("expected missing page to be absent")
 	}
 }
+
+func TestNestedInertiaPagesLoadInReadingOrder(t *testing.T) {
+	site, err := New()
+	if err != nil {
+		t.Fatalf("load documentation: %v", err)
+	}
+
+	overview, ok := site.Find("latest", "inertia")
+	if !ok {
+		t.Fatal("expected latest/inertia to exist")
+	}
+	if overview.Parent != nil {
+		t.Fatalf("overview parent = %+v, want nil", overview.Parent)
+	}
+	if overview.Next == nil || overview.Next.URL != "/docs/latest/inertia-renderer" {
+		t.Fatalf("overview next = %+v, want renderer", overview.Next)
+	}
+
+	props, ok := site.Find("latest", "inertia-props")
+	if !ok {
+		t.Fatal("expected latest/inertia-props to exist")
+	}
+	if props.Parent == nil || props.Parent.URL != "/docs/latest/inertia" {
+		t.Fatalf("props parent = %+v, want inertia overview", props.Parent)
+	}
+	if props.Previous == nil || props.Previous.URL != "/docs/latest/inertia-vite" {
+		t.Fatalf("props previous = %+v, want vite", props.Previous)
+	}
+	if !strings.Contains(props.HTML, "FromStruct") {
+		t.Fatal("expected props page to document FromStruct")
+	}
+
+	generators, ok := site.Find("latest", "inertia-generators")
+	if !ok {
+		t.Fatal("expected latest/inertia-generators to exist")
+	}
+	if generators.Next == nil || generators.Next.URL != "/docs/latest/hypermedia" {
+		t.Fatalf("generators next = %+v, want hypermedia", generators.Next)
+	}
+}

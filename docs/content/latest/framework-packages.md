@@ -41,7 +41,7 @@ This means packages work without Fx or environment variables, applications can a
 
 Each package has its own module, semantic version, and changelog. Versions may differ from one another and from the CLI release. `go.mod` is the source of truth for code dependencies; `andurel.lock` records the framework version, scaffold choices, extensions, and tools used to maintain the project.
 
-Updating the CLI does not rewrite existing imports. Update packages deliberately, read each changelog, compile generated code, and test the owning process. Storage changes require database, transaction, migration, queue-insertion, and worker coverage. Inertia changes require initial HTML, client visits, partial reloads, redirects, validation, Vite development, production assets, and configured SSR modes.
+Updating the CLI does not rewrite existing imports. Update packages deliberately, read each changelog, compile generated code, and test the owning process. Storage changes require database, transaction, migration, queue-insertion, and worker coverage. Inertia changes require initial HTML, client visits, partial reloads, redirects, validation, Vite development, production assets, and the configured SSR client plus `cmd/ssr`.
 
 ## Extending and replacing implementations
 

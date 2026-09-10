@@ -73,7 +73,7 @@ Keep rules deterministic and side-effect free. Database uniqueness, authorizatio
 
 ## Templ and Inertia presentation
 
-Templ controllers can pass `ValidationErrors` to a typed form component and return a 422 full response or fragment patch. Inertia controllers normally call `ToMap()` and pass it through `inertia.WithValidationErrors`; named error bags follow the request protocol.
+Templ controllers can pass `ValidationErrors` to a typed form component and return a 422 full response or fragment patch. Inertia controllers normally call `ToMap()` and pass it through `Page(...).ValidationErrors(...)`; named error bags follow the request protocol.
 
 Domain validation stays identical across frontend choices. Only transport and presentation differ.
 

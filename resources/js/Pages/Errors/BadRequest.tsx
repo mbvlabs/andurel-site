@@ -2,7 +2,11 @@ import Layout from '@/Layouts/Layout'
 
 export default function BadRequest() {
   return (
-    <Layout>
+    <Layout
+      title="Bad request"
+      description="The request made was invalid."
+      robots="noindex, nofollow"
+    >
       <section className="w-full max-w-md border border-[#2f3a37] bg-[#101414]/90 p-6 text-center shadow-sm shadow-black/40">
         <p className="text-sm font-medium uppercase tracking-wide text-[#8df7a4]">400</p>
         <h1 className="mt-2 text-2xl font-semibold text-[#f2ead8]">Bad request</h1>

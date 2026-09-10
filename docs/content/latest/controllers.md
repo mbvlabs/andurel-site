@@ -30,7 +30,7 @@ func (p Products) Index(etx *echo.Context) error {
 }
 ```
 
-For Inertia, inject `*inertia.Renderer` and call its page, redirect, or location helpers. For JSON controllers, return Echo JSON responses and keep application types at the boundary.
+For Inertia, inject `*inertia.Renderer` and call its page, redirect, or location helpers. See [Inertia](/docs/latest/inertia). For JSON controllers, return Echo JSON responses and keep application types at the boundary.
 
 ## Generate controllers
 

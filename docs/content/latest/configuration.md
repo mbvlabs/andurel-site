@@ -112,17 +112,18 @@ Edit `NewQueueWorker` for named queues or per-queue concurrency. Validation cove
 | `INERTIA_CONTAINER_ID` | `app` | DOM mount ID |
 | `INERTIA_VITE_DEV_URL` | `http://localhost:5173/assets/dist` | Development assets |
 | `INERTIA_ENTRY_POINT` | `resources/js/app.ts` or `.tsx` | Vite entry |
-| `INERTIA_PROTOCOL_DEBUG` | `false` | Safe metadata diagnostics |
-| `INERTIA_SSR_MODE` | `disabled` | `disabled`, `managed`, or `external` |
-| `INERTIA_SSR_RUNTIME` | `node` | Managed executable |
-| `INERTIA_SSR_BUNDLE` | `assets/dist/ssr/ssr.js` | Managed bundle |
-| `INERTIA_SSR_URL` | `http://127.0.0.1:13714` | SSR service URL |
-| `INERTIA_SSR_STARTUP_TIMEOUT` | `10s` | Managed health deadline |
+| `INERTIA_PROTOCOL_DEBUG` | `true` in generated apps | Safe metadata diagnostics |
+| `INERTIA_SSR_RUNTIME` | `node` | `cmd/ssr` executable |
+| `INERTIA_SSR_BUNDLE` | `assets/dist/ssr/ssr.js` | `cmd/ssr` bundle |
+| `INERTIA_SSR_LISTEN` | `http://127.0.0.1:13714` | Node bind URL (IP or localhost) |
+| `INERTIA_SSR_URL` | `http://127.0.0.1:13714` | Where `cmd/app` POSTs `/render` |
+| `INERTIA_SSR_STARTUP_TIMEOUT` | `10s` | Health deadline for `cmd/ssr` |
 | `INERTIA_SSR_REQUEST_TIMEOUT` | `2s` | Render deadline |
 | `INERTIA_SSR_MAX_RESPONSE_BYTES` | `2097152` | Response-size bound |
-| `INERTIA_SSR_FAIL_FAST` | `false` | Error instead of client fallback |
+| `INERTIA_SSR_MINIMUM_MAJOR` | `22` | Minimum Node major |
+| `INERTIA_SSR_FAIL_FAST` | `true` in generated apps | Error instead of client fallback |
 
-Disabled mode ignores runtime needs, external validates HTTP settings without process ownership, and managed validates the runtime, bundle, startup, and HTTP policy. See [Inertia](/docs/latest/inertia).
+`INERTIA_SSR_LISTEN` is the address Node binds. `INERTIA_SSR_URL` is the HTTP client URL and may be a service hostname. Pages still opt into SSR individually. See [Inertia](/docs/latest/inertia) and [SSR](/docs/latest/inertia-ssr).
 
 ## Adding application settings
 

@@ -54,6 +54,19 @@ func joinAssetURL(base, path string) string {
 	return strings.TrimRight(base, "/") + "/" + strings.TrimLeft(path, "/")
 }
 
+const defaultFaviconBaseURL = "https://media.andurel.com/favicon"
+
+templ faviconLinks(baseURL string) {
+	<link rel="icon" type="image/svg+xml" href={ joinAssetURL(baseURL, "favicon.svg") }/>
+	<link rel="icon" type="image/x-icon" href={ joinAssetURL(baseURL, "favicon.ico") }/>
+	<link rel="icon" type="image/png" sizes="16x16" href={ joinAssetURL(baseURL, "favicon-16x16.png") }/>
+	<link rel="icon" type="image/png" sizes="32x32" href={ joinAssetURL(baseURL, "favicon-32x32.png") }/>
+	<link rel="apple-touch-icon" sizes="180x180" href={ joinAssetURL(baseURL, "apple-touch-icon.png") }/>
+	<link rel="icon" type="image/png" sizes="192x192" href={ joinAssetURL(baseURL, "android-chrome-192x192.png") }/>
+	<link rel="icon" type="image/png" sizes="512x512" href={ joinAssetURL(baseURL, "android-chrome-512x512.png") }/>
+	<link rel="manifest" href={ joinAssetURL(baseURL, "site.webmanifest") }/>
+}
+
 func SetTitle(title string) HeadDataOption {
 	return func(hd *HeadData) {
 		hd.Title = title + " - " + hd.siteName
@@ -94,7 +107,12 @@ templ head(data HeadData) {
 	<head>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<meta name="theme-color" content={ themeColor }/>
+		<meta name="color-scheme" content="dark"/>
+		<meta name="application-name" content={ siteName }/>
+		<meta name="author" content="MBV Labs"/>
 		<meta name="twitter:card" content="summary_large_image"/>
+		<meta name="twitter:site" content={ twitterSite }/>
 		if data.twitterCreator != "" {
 			<meta name="twitter:creator" content={ data.twitterCreator }/>
 		}
@@ -115,6 +133,7 @@ templ head(data HeadData) {
 			<meta property="og:image" content={ data.Image }/>
 			if data.ImageAlt != "" {
 				<meta property="og:image:alt" content={ data.ImageAlt }/>
+				<meta name="twitter:image:alt" content={ data.ImageAlt }/>
 			}
 		}
 		for _, extraMeta := range data.ExtraMeta {
@@ -133,13 +152,7 @@ templ head(data HeadData) {
 		<meta name="description" content={ data.Description }/>
 		<link rel="canonical" href={ data.canonicalURL }/>
 		if data.faviconBaseURL != "" {
-			<link rel="icon" type="image/x-icon" href={ joinAssetURL(data.faviconBaseURL, "favicon.ico") }/>
-			<link rel="icon" type="image/png" sizes="16x16" href={ joinAssetURL(data.faviconBaseURL, "favicon-16x16.png") }/>
-			<link rel="icon" type="image/png" sizes="32x32" href={ joinAssetURL(data.faviconBaseURL, "favicon-32x32.png") }/>
-			<link rel="apple-touch-icon" sizes="180x180" href={ joinAssetURL(data.faviconBaseURL, "apple-touch-icon.png") }/>
-			<link rel="icon" type="image/png" sizes="192x192" href={ joinAssetURL(data.faviconBaseURL, "android-chrome-192x192.png") }/>
-			<link rel="icon" type="image/png" sizes="512x512" href={ joinAssetURL(data.faviconBaseURL, "android-chrome-512x512.png") }/>
-			<link rel="manifest" href={ joinAssetURL(data.faviconBaseURL, "site.webmanifest") }/>
+			@faviconLinks(data.faviconBaseURL)
 		}
 		<script src={ data.scriptSrc } type="module"></script>
 	</head>
@@ -159,11 +172,13 @@ func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 	data := &HeadData{
 		siteName:       headDefaults.projectName,
 		Title:          headDefaults.projectName,
-		Description:    "Andurel is the web development framework for Go.",
+		Description:    siteDescription,
+		Image:          defaultOgImage,
+		ImageAlt:       defaultOgAlt,
 		Slug:           "/",
 		canonical:      headDefaults.baseURL,
-		twitterCreator: "@mbvisti",
-		faviconBaseURL: "https://media.andurel.com/favicon",
+		twitterCreator: twitterCreator,
+		faviconBaseURL: defaultFaviconBaseURL,
 		MetaType:       "website",
 		stylesheetHref: routes.Stylesheet.URL(),
 		scriptSrc:      routes.Scripts.URL(),

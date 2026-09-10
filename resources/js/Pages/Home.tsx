@@ -23,6 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { homeJsonLd, homeTitle, siteDescription, useCanonicalUrl } from '@/lib/seo'
 import { routes } from '@/routes'
 
 const INSTALL_COMMAND = 'go install github.com/mbvlabs/andurel@latest'
@@ -175,8 +176,10 @@ function InstallCommand() {
 }
 
 export default function Home() {
+  const canonical = useCanonicalUrl()
+
   return (
-    <Layout>
+    <Layout title={homeTitle} description={siteDescription} jsonLd={homeJsonLd(canonical)}>
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-20 px-6 py-4 pb-20">
         <section className="flex min-h-[34rem] flex-col justify-center gap-8 py-20 lg:min-h-[40rem] lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col">

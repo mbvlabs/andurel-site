@@ -4,6 +4,35 @@ type Page struct {
 	Slug        string
 	Title       string
 	Description string
+	Children    []Page
+}
+
+// WalkPages visits each page depth-first, parent before children. The parent
+// pointer is only valid for the duration of fn.
+func WalkPages(pages []Page, fn func(parent *Page, page Page)) {
+	var walk func(parent *Page, pages []Page)
+	walk = func(parent *Page, pages []Page) {
+		for i := range pages {
+			page := pages[i]
+			fn(parent, page)
+			if len(page.Children) > 0 {
+				walk(&page, page.Children)
+			}
+		}
+	}
+	walk(nil, pages)
+}
+
+func findPage(pages []Page, slug string) (Page, bool) {
+	for _, page := range pages {
+		if page.Slug == slug {
+			return page, true
+		}
+		if child, ok := findPage(page.Children, slug); ok {
+			return child, true
+		}
+	}
+	return Page{}, false
 }
 
 type Section struct {
@@ -44,7 +73,21 @@ var Catalog = []Version{
 				Pages: []Page{
 					{Slug: "framework-packages", Title: "Framework Packages", Description: "Understand package boundaries, composition, and versioning."},
 					{Slug: "storage", Title: "Storage", Description: "Configure PostgreSQL, transactions, sqlc, tests, and River clients."},
-					{Slug: "inertia", Title: "Inertia", Description: "Understand the Inertia v3 protocol, props, Vite, and SSR lifecycle."},
+					{
+						Slug:        "inertia",
+						Title:       "Inertia",
+						Description: "Understand the Inertia v3 protocol, props, Vite, SSR, and generators.",
+						Children: []Page{
+							{Slug: "inertia-renderer", Title: "Renderer", Description: "Construct the renderer, register middleware, and wire application lifecycle."},
+							{Slug: "inertia-pages", Title: "Pages and Visits", Description: "Render initial documents and client visits from one Page call."},
+							{Slug: "inertia-vite", Title: "Root Document and Vite", Description: "Own the Templ root, Vite tags, and asset versioning."},
+							{Slug: "inertia-props", Title: "Props", Description: "Build JSON payloads and compose evaluation policies."},
+							{Slug: "inertia-shared", Title: "Shared Data and Redirects", Description: "Share props, flash, validation errors, and protocol redirects."},
+							{Slug: "inertia-ssr", Title: "SSR", Description: "Opt pages into SSR with a separate Node runtime."},
+							{Slug: "inertia-diagnostics", Title: "Diagnostics", Description: "Classify protocol failures without leaking prop values."},
+							{Slug: "inertia-generators", Title: "Generators", Description: "Scaffold Inertia apps and generate pages, types, and routes."},
+						},
+					},
 					{Slug: "hypermedia", Title: "Hypermedia", Description: "Render Templ and build Datastar element, signal, and SSE flows."},
 					{Slug: "routing-package", Title: "Routing Package", Description: "Construct typed Go URLs and generated Inertia route helpers."},
 					{Slug: "server-package", Title: "Server", Description: "Configure HTTP bounds, lifecycle, and graceful shutdown."},

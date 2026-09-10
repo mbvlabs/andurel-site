@@ -41,6 +41,7 @@ type Document struct {
 	HTML        string
 	Source      string
 	Headings    []Heading
+	Parent      *Link
 	Previous    *Link
 	Next        *Link
 }
@@ -86,26 +87,39 @@ func New() (*Site, error) {
 		documents: make(map[string]*Document),
 	}
 	expectedFiles := make(map[string]bool)
+	var loadErr error
 
 	for _, version := range Catalog {
 		for _, section := range version.Sections {
-			for _, page := range section.Pages {
+			WalkPages(section.Pages, func(parent *Page, page Page) {
+				if loadErr != nil {
+					return
+				}
 				name := fmt.Sprintf("content/%s/%s.md", version.Name, page.Slug)
 				expectedFiles[name] = true
 				source, err := content.ReadFile(name)
 				if err != nil {
-					return nil, fmt.Errorf("documentation: read %s: %w", name, err)
+					loadErr = fmt.Errorf("documentation: read %s: %w", name, err)
+					return
 				}
 				document, err := render(markdown, version.Name, section.Title, page, source)
 				if err != nil {
-					return nil, fmt.Errorf("documentation: %s: %w", name, err)
+					loadErr = fmt.Errorf("documentation: %s: %w", name, err)
+					return
+				}
+				if parent != nil {
+					document.Parent = &Link{Title: parent.Title, URL: PageURL(version.Name, parent.Slug)}
 				}
 				key := version.Name + "/" + page.Slug
 				if _, exists := site.documents[key]; exists {
-					return nil, fmt.Errorf("documentation: duplicate page %s", key)
+					loadErr = fmt.Errorf("documentation: duplicate page %s", key)
+					return
 				}
 				site.documents[key] = document
 				site.ordered = append(site.ordered, document)
+			})
+			if loadErr != nil {
+				return nil, loadErr
 			}
 		}
 	}

@@ -14,12 +14,26 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import type { DocVersion } from '@/types/docs'
+import type { DocPage, DocVersion } from '@/types/docs'
 
 type DocsSearchProps = {
   versions: DocVersion[]
   currentVersion: string
   className?: string
+}
+
+function flattenDocPages(pages: DocPage[], parentTitle?: string): DocPage[] {
+  const flattened: DocPage[] = []
+  for (const page of pages) {
+    flattened.push({
+      ...page,
+      title: parentTitle ? `${parentTitle} / ${page.title}` : page.title,
+    })
+    if (page.children?.length) {
+      flattened.push(...flattenDocPages(page.children, page.title))
+    }
+  }
+  return flattened
 }
 
 export default function DocsSearch({
@@ -86,7 +100,7 @@ export default function DocsSearch({
             <CommandEmpty>No documentation found.</CommandEmpty>
             {catalog?.sections.map((section) => (
               <CommandGroup key={section.title} heading={section.title}>
-                {section.pages.map((page) => (
+                {flattenDocPages(section.pages).map((page) => (
                   <CommandItem
                     key={page.url}
                     value={`${section.title} ${page.title} ${page.description}`}

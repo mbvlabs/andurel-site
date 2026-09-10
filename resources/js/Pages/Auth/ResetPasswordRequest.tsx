@@ -16,7 +16,11 @@ export default function ResetPasswordRequest({ errors = {} }: ResetPasswordReque
   }
 
   return (
-    <Layout>
+    <Layout
+      title="Reset password"
+      description="Request a password reset for your Andurel account."
+      robots="noindex, nofollow"
+    >
       <section className="w-full max-w-md border border-[#2f3a37] bg-[#101414]/90 shadow-sm shadow-black/40">
         <div className="p-6 pb-0">
           <h1 className="text-xl font-semibold text-[#f2ead8]">Reset Password</h1>

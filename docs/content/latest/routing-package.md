@@ -9,7 +9,7 @@ A route stores its local path, name, optional prefix, and whether it should appe
 ```go
 var ProductsIndex = routing.NewSimpleRoute("", "index", "/products")
 var ProductShow = routing.NewRouteWithUUIDID(
-    "/:id", "show", "/products", routing.IncludeInInertia(),
+    "/:id", "show", "/products", routing.InertiaRoute(),
 )
 ```
 
@@ -63,7 +63,7 @@ Values are appended as supplied, so encode arbitrary input before passing it. Ro
 
 ## Inertia TypeScript generation
 
-`IncludeInInertia()` marks a route for `andurel generate routes`, which writes typed helpers to `resources/js/routes.ts`. Opt-in avoids exporting internal endpoints or assets into the browser bundle. `JsExpr` marks a JavaScript expression for generator interpolation; it is not a general escaping function.
+`InertiaRoute()` marks a route for `andurel generate routes`, which writes typed helpers to `resources/js/routes.ts`. Opt-in avoids exporting internal endpoints or assets into the browser bundle. `JsExpr` marks a JavaScript expression for generator interpolation; it is not a general escaping function.
 
 After changing a marked route, regenerate helpers and compile the frontend. A parameter or path change is a cross-boundary API change.
 

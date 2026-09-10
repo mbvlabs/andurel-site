@@ -17,7 +17,11 @@ export default function ResetPassword({ token, errors = {} }: ResetPasswordProps
   }
 
   return (
-    <Layout>
+    <Layout
+      title="Choose a new password"
+      description="Choose a new password for your Andurel account."
+      robots="noindex, nofollow"
+    >
       <section className="w-full max-w-md border border-[#2f3a37] bg-[#101414]/90 shadow-sm shadow-black/40">
         <div className="p-6 pb-0">
           <h1 className="text-xl font-semibold text-[#f2ead8]">Reset Your Password</h1>

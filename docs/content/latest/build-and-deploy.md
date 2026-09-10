@@ -10,7 +10,7 @@ andurel build --version v2.0.0-dev
 
 The command runs sqlc when query files exist, compiles email templates, generates Templ code, minifies Tailwind CSS, installs frontend dependencies and builds Vite assets for Inertia projects, downloads Go dependencies, and compiles the application release.
 
-The JavaScript package manager comes from `andurel.lock`. It is independent from the Node runtime used by managed Inertia SSR.
+The JavaScript package manager comes from `andurel.lock`. It is independent from the Node runtime used by `cmd/ssr`.
 
 ## Deploy both process types
 

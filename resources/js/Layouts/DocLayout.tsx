@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
 
 import SiGithub from '@icons-pack/react-simple-icons/icons/SiGithub'
-import { Link } from '@inertiajs/react'
-import { ChevronDownIcon } from 'lucide-react'
+import { Link, usePage } from '@inertiajs/react'
+import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
 
 import DocsSearch from '@/components/docs-search'
 import DocsToc from '@/components/docs-toc'
+import SeoHead from '@/components/seo-head'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -26,11 +27,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
+import { docsJsonLd, useCanonicalUrl } from '@/lib/seo'
 import { routes } from '@/routes'
-import type { DocHeading, DocNavigationProps, DocVersion } from '@/types/docs'
+import type { DocHeading, DocNavigationProps, DocPage, DocVersion } from '@/types/docs'
+import type { SharedPageProps } from '@/types/page'
 
 const DOC_ARTICLE_ID = 'doc-article'
 const docsGutter = 'px-4 sm:px-6 lg:px-8'
@@ -42,10 +48,57 @@ const headerColumns =
 type DocLayoutProps = DocNavigationProps & {
   children: ReactNode
   headings?: DocHeading[]
+  title: string
+  description: string
+  currentSection: string
 }
 
 function currentCatalog(versions: DocVersion[], currentVersion: string) {
   return versions.find((version) => version.name === currentVersion) ?? versions[0]
+}
+
+function pageOrDescendantIsCurrent(page: DocPage, currentSlug: string): boolean {
+  if (page.slug === currentSlug) {
+    return true
+  }
+  return page.children?.some((child) => pageOrDescendantIsCurrent(child, currentSlug)) ?? false
+}
+
+function DocNavPage({ page, currentSlug }: { page: DocPage; currentSlug: string }) {
+  const children = page.children ?? []
+  const expanded = children.length > 0 && pageOrDescendantIsCurrent(page, currentSlug)
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        isActive={currentSlug === page.slug}
+        aria-current={currentSlug === page.slug ? 'page' : undefined}
+        aria-expanded={children.length > 0 ? expanded : undefined}
+        tooltip={page.title}
+        render={<Link href={page.url} />}
+      >
+        <span>{page.title}</span>
+        {children.length > 0 ? (
+          <ChevronRightIcon className={expanded ? 'ml-auto rotate-90' : 'ml-auto'} />
+        ) : null}
+      </SidebarMenuButton>
+      {expanded ? (
+        <SidebarMenuSub>
+          {children.map((child) => (
+            <SidebarMenuSubItem key={child.slug}>
+              <SidebarMenuSubButton
+                isActive={currentSlug === child.slug}
+                aria-current={currentSlug === child.slug ? 'page' : undefined}
+                render={<Link href={child.url} />}
+              >
+                <span>{child.title}</span>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+          ))}
+        </SidebarMenuSub>
+      ) : null}
+    </SidebarMenuItem>
+  )
 }
 
 function BrandMark() {
@@ -115,12 +168,31 @@ export default function DocLayout({
   versions,
   currentVersion,
   currentSlug,
+  currentSection,
+  title,
+  description,
   headings,
 }: DocLayoutProps) {
   const catalog = currentCatalog(versions, currentVersion)
+  const canonical = useCanonicalUrl()
+  const { appUrl } = usePage<SharedPageProps>().props
 
   return (
     <SidebarProvider>
+      <SeoHead
+        title={title}
+        description={description}
+        type="article"
+        suffix="Andurel Docs"
+        jsonLd={docsJsonLd({
+          canonical,
+          title,
+          description,
+          version: currentVersion,
+          section: currentSection,
+          appUrl,
+        })}
+      />
       <Sidebar className="border-sidebar-border">
         <SidebarHeader className="h-14 flex-row items-center border-b border-sidebar-border px-4 py-0">
           <DocBrand />
@@ -132,16 +204,7 @@ export default function DocLayout({
               <SidebarGroupContent>
                 <SidebarMenu>
                   {section.pages.map((page) => (
-                    <SidebarMenuItem key={page.slug}>
-                      <SidebarMenuButton
-                        isActive={currentSlug === page.slug}
-                        aria-current={currentSlug === page.slug ? 'page' : undefined}
-                        tooltip={page.title}
-                        render={<Link href={page.url} />}
-                      >
-                        <span>{page.title}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    <DocNavPage key={page.slug} page={page} currentSlug={currentSlug} />
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>

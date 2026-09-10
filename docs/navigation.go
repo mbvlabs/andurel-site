@@ -3,10 +3,11 @@ package docs
 const docsPrefix = "/docs"
 
 type NavigationPage struct {
-	Slug        string `json:"slug"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	URL         string `json:"url"`
+	Slug        string           `json:"slug"`
+	Title       string           `json:"title"`
+	Description string           `json:"description"`
+	URL         string           `json:"url"`
+	Children    []NavigationPage `json:"children,omitempty"`
 }
 
 type NavigationSection struct {
@@ -72,10 +73,8 @@ func Find(version, slug string) (Version, Section, Page, bool) {
 			continue
 		}
 		for _, section := range entry.Sections {
-			for _, page := range section.Pages {
-				if page.Slug == slug {
-					return entry, section, page, true
-				}
+			if page, ok := findPage(section.Pages, slug); ok {
+				return entry, section, page, true
 			}
 		}
 	}
@@ -93,18 +92,9 @@ func Navigation() []NavigationVersion {
 
 		sections := make([]NavigationSection, 0, len(version.Sections))
 		for _, section := range version.Sections {
-			pages := make([]NavigationPage, 0, len(section.Pages))
-			for _, page := range section.Pages {
-				pages = append(pages, NavigationPage{
-					Slug:        page.Slug,
-					Title:       page.Title,
-					Description: page.Description,
-					URL:         PageURL(version.Name, page.Slug),
-				})
-			}
 			sections = append(sections, NavigationSection{
 				Title: section.Title,
-				Pages: pages,
+				Pages: navigationPages(version.Name, section.Pages),
 			})
 		}
 
@@ -116,4 +106,21 @@ func Navigation() []NavigationVersion {
 	}
 
 	return versions
+}
+
+func navigationPages(version string, pages []Page) []NavigationPage {
+	result := make([]NavigationPage, 0, len(pages))
+	for _, page := range pages {
+		entry := NavigationPage{
+			Slug:        page.Slug,
+			Title:       page.Title,
+			Description: page.Description,
+			URL:         PageURL(version, page.Slug),
+		}
+		if len(page.Children) > 0 {
+			entry.Children = navigationPages(version, page.Children)
+		}
+		result = append(result, entry)
+	}
+	return result
 }

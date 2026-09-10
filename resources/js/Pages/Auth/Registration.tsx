@@ -16,7 +16,11 @@ export default function Registration({ errors = {} }: RegistrationProps) {
   }
 
   return (
-    <Layout>
+    <Layout
+      title="Create an account"
+      description="Create an Andurel account."
+      robots="noindex, nofollow"
+    >
       <section className="w-full max-w-md border border-[#2f3a37] bg-[#101414]/90 shadow-sm shadow-black/40">
         <div className="p-6 pb-0">
           <h1 className="text-xl font-semibold text-[#f2ead8]">Create an account</h1>

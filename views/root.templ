@@ -8,12 +8,18 @@ import (
 // Root is the application-owned initial Inertia document. Customize it to add
 // metadata, fonts, analytics, or other application-wide document elements.
 templ Root(data inertia.RootData) {
+	@rootDocument(data, inertiaPageSEO(data))
+}
+
+templ rootDocument(data inertia.RootData, seo pageSEO) {
 	<!DOCTYPE html>
 	<html lang="en" class="dark">
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
-			<title>{ data.ProjectName }</title>
+			<title>{ seo.Title }</title>
+			@faviconLinks(defaultFaviconBaseURL)
+			@seoTags(seo)
 			@inertia.SSRHead(data.SSR)
 			@templ.Raw(string(data.ViteHead))
 		</head>

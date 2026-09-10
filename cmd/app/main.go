@@ -179,7 +179,10 @@ func newInertia(
 		inertia.WithProjectName(appCfg.ProjectName),
 		inertia.WithEnvironment(appCfg.Environment),
 		inertia.WithProtocolDebug(cfg.ProtocolDebug),
-		inertia.WithShared(inertia.Props{"appVersion": appVersion}),
+		inertia.WithShared(inertia.Props{
+			"appVersion": appVersion,
+			"appUrl":     appCfg.BaseURL,
+		}),
 		inertia.WithSSRFailFast(cfg.SSRFailFast),
 	)
 }

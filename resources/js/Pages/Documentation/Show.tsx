@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react'
+import { Link } from '@inertiajs/react'
 import { cn } from 'cn'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 
@@ -21,6 +21,7 @@ type ShowProps = DocNavigationProps & {
   description: string
   html: string
   headings: DocHeading[]
+  parent: DocLink | null
   previous: DocLink | null
   next: DocLink | null
 }
@@ -62,6 +63,7 @@ export default function Show({
   description,
   html,
   headings,
+  parent,
   previous,
   next,
 }: ShowProps) {
@@ -74,11 +76,11 @@ export default function Show({
       versions={versions}
       currentVersion={currentVersion}
       currentSlug={currentSlug}
+      currentSection={currentSection}
+      title={title}
+      description={description}
       headings={headings}
     >
-      <Head title={title}>
-        <meta head-key="description" name="description" content={description} />
-      </Head>
       <Breadcrumb className="mb-6 min-w-0 sm:mb-7">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -88,6 +90,16 @@ export default function Show({
           <BreadcrumbItem>
             <span>{currentSection}</span>
           </BreadcrumbItem>
+          {parent ? (
+            <>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem className="min-w-0">
+                <BreadcrumbLink render={<Link href={parent.url} />} className="truncate">
+                  {parent.title}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </>
+          ) : null}
           <BreadcrumbSeparator />
           <BreadcrumbItem className="min-w-0">
             <BreadcrumbPage className="truncate">{title}</BreadcrumbPage>

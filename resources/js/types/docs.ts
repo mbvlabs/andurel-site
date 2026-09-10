@@ -14,6 +14,7 @@ export type DocPage = {
   title: string
   description: string
   url: string
+  children?: DocPage[]
 }
 
 export type DocSection = {

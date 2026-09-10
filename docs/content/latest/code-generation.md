@@ -12,7 +12,7 @@ andurel database migrate up
 andurel generate scaffold Product
 ```
 
-The scaffold includes a constructed model API, entity and data types, a synchronized factory, controller, typed routes, and views. Pass `--inertia` for pages using the configured adapter or `--api` for JSON handlers.
+The scaffold includes a constructed model API, entity and data types, a synchronized factory, controller, typed routes, and views. Pass `--inertia` for pages using the configured adapter or `--api` for JSON handlers. See [Generators](/docs/latest/inertia-generators) for the Inertia payload, TypeScript, and route-helper flow.
 
 ## Generate individual parts
 

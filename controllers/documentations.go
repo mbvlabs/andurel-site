@@ -85,6 +85,7 @@ func (d Documentations) Show(etx *echo.Context) error {
 		"description":    document.Description,
 		"html":           document.HTML,
 		"headings":       document.Headings,
+		"parent":         document.Parent,
 		"previous":       document.Previous,
 		"next":           document.Next,
 	}).SSR().Render()

@@ -2,13 +2,19 @@ import type { FormEvent, ReactNode } from 'react'
 
 import AndurelWordmark from '@/components/andurel-wordmark'
 import AsciiSky from '@/components/ascii-sky'
+import SeoHead from '@/components/seo-head'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { trackEvent } from '@/lib/palantir'
+import { siteDescription, siteName } from '@/lib/seo'
 import { routes } from '@/routes'
 
 type LayoutProps = {
   children: ReactNode
+  title?: string
+  description?: string
+  robots?: string
+  jsonLd?: unknown
 }
 
 const socials = [
@@ -22,9 +28,16 @@ const socials = [
   { href: 'https://twitch.tv/mbvlabs', label: 'twitch.tv/mbvlabs' },
 ]
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({
+  children,
+  title = siteName,
+  description = siteDescription,
+  robots,
+  jsonLd,
+}: LayoutProps) {
   return (
     <main className="relative flex min-h-screen flex-col overflow-x-clip bg-[#090b0d] text-[#e4dfd2]">
+      <SeoHead title={title} description={description} robots={robots} jsonLd={jsonLd} />
       <AsciiSky />
       <header className="relative">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-3">
