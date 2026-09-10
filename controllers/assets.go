@@ -14,11 +14,11 @@ import (
 
 	"andurel-site/assets"
 	"andurel-site/config"
+	"andurel-site/docs"
 	"andurel-site/router"
 	"andurel-site/router/routes"
 
 	"github.com/labstack/echo/v5"
-	"github.com/mbvlabs/andurel/pkg/routing"
 )
 
 const threeMonthsCache = "7776000"
@@ -27,10 +27,11 @@ type Assets struct {
 	cache      *Cache[string]
 	appCfg     config.App
 	viteDevURL string
+	site       *docs.Site
 }
 
-func NewAssets(cache *Cache[string], appCfg config.App, inertiaCfg config.Inertia) Assets {
-	return Assets{cache: cache, appCfg: appCfg, viteDevURL: inertiaCfg.ViteDevURL}
+func NewAssets(cache *Cache[string], appCfg config.App, inertiaCfg config.Inertia, site *docs.Site) Assets {
+	return Assets{cache: cache, appCfg: appCfg, viteDevURL: inertiaCfg.ViteDevURL, site: site}
 }
 
 func (a Assets) RegisterRoutes(r *router.Router) error {
@@ -171,7 +172,7 @@ func (a Assets) Sitemap(etx *echo.Context) error {
 	cacheKey := "assets:sitemap"
 
 	sitemap, err := a.cache.Get(cacheKey, func() (string, error) {
-		return createSitemap(a.appCfg.BaseURL, []routing.Route{})
+		return createSitemap(a.appCfg.BaseURL, a.site)
 	})
 	if err != nil {
 		slog.ErrorContext(
@@ -180,7 +181,7 @@ func (a Assets) Sitemap(etx *echo.Context) error {
 			"error", err,
 		)
 
-		result, err := createSitemap(a.appCfg.BaseURL, []routing.Route{})
+		result, err := createSitemap(a.appCfg.BaseURL, a.site)
 		if err != nil {
 			return err
 		}
@@ -205,15 +206,28 @@ type Sitemap struct {
 	URL     []URL    `xml:"url"`
 }
 
-func createSitemap(baseURL string, routes []routing.Route) (string, error) {
-	var urls []URL
+func createSitemap(baseURL string, site *docs.Site) (string, error) {
+	urls := []URL{
+		{
+			Loc:        sitemapLoc(baseURL, routes.HomePage.URL()),
+			ChangeFreq: "weekly",
+			Priority:   "1.0",
+		},
+	}
 
-	urls = append(urls, URL{
-		Loc:        baseURL,
-		ChangeFreq: "monthly",
-		LastMod:    "2024-10-22T09:43:09+00:00",
-		Priority:   "1",
-	})
+	if site != nil {
+		for _, document := range site.Documents() {
+			priority := "0.8"
+			if document.Version != "latest" {
+				priority = "0.6"
+			}
+			urls = append(urls, URL{
+				Loc:        sitemapLoc(baseURL, document.URL()),
+				ChangeFreq: "weekly",
+				Priority:   priority,
+			})
+		}
+	}
 
 	sitemap := Sitemap{
 		XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9",
@@ -226,6 +240,10 @@ func createSitemap(baseURL string, routes []routing.Route) (string, error) {
 	}
 
 	return xml.Header + string(xmlBytes), nil
+}
+
+func sitemapLoc(baseURL, path string) string {
+	return strings.TrimRight(baseURL, "/") + "/" + strings.TrimLeft(path, "/")
 }
 
 func (a Assets) Stylesheet(etx *echo.Context) error {

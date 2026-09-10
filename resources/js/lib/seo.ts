@@ -13,7 +13,7 @@ export const githubURL = 'https://github.com/mbvlabs/andurel'
 export const organizationURL = 'https://mbvlabs.com'
 export const xURL = 'https://x.com/mbvlabs'
 
-export const homeTitle = `${siteName} — ${siteTagline}`
+export const homeTitle = `${siteName} · ${siteTagline}`
 
 export function useCanonicalUrl() {
   const page = usePage<SharedPageProps>()
@@ -32,7 +32,7 @@ export function absoluteUrl(path: string, base = '') {
 }
 
 export function documentTitle(title: string, suffix = siteName) {
-  if (!suffix || title === suffix || title.endsWith(` · ${suffix}`) || title.startsWith(`${suffix} —`)) {
+  if (!suffix || title === suffix || title.endsWith(` · ${suffix}`) || title.startsWith(`${suffix} ·`)) {
     return title
   }
   return `${title} · ${suffix}`

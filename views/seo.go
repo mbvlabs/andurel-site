@@ -39,7 +39,7 @@ func stringProp(props map[string]any, key string) string {
 func inertiaPageSEO(data inertia.RootData) pageSEO {
 	canonical := buildCanonicalURL(headDefaults.baseURL, data.Page.URL)
 	seo := pageSEO{
-		Title:       siteName + " — " + siteTagline,
+		Title:       siteName + " · " + siteTagline,
 		Description: siteDescription,
 		Canonical:   canonical,
 		Robots:      "index, follow",

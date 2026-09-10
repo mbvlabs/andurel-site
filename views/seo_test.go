@@ -16,7 +16,7 @@ func TestInertiaPageSEOHome(t *testing.T) {
 	seo := inertiaPageSEO(inertia.RootData{
 		Page: inertia.Page{Component: "Home", URL: "/"},
 	})
-	if seo.Title != siteName+" — "+siteTagline {
+	if seo.Title != siteName+" · "+siteTagline {
 		t.Fatalf("title = %q", seo.Title)
 	}
 	if seo.Canonical != "https://andurel.com/" {
