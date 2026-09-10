@@ -24,6 +24,14 @@ var Sitemap = routing.NewSimpleRoute(
 	"",
 )
 
+const IndexNowKey = "apcjhbexrqfdfjmevdnh77d1ws6bhf59"
+
+var IndexNow = routing.NewSimpleRoute(
+	"/"+IndexNowKey+".txt",
+	"assets.indexnow",
+	"",
+)
+
 var Stylesheet = routing.NewSimpleRoute(
 	fmt.Sprintf("/css/%v/style.css", startTime),
 	"css.stylesheet",

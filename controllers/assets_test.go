@@ -2,12 +2,43 @@ package controllers
 
 import (
 	"encoding/xml"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"andurel-site/docs"
 	"andurel-site/router/routes"
+
+	"github.com/labstack/echo/v5"
 )
+
+func TestIndexNowServesKeyFile(t *testing.T) {
+	wantPath := "/" + routes.IndexNowKey + ".txt"
+	if routes.IndexNow.Path() != wantPath {
+		t.Fatalf("IndexNow path = %q, want %q", routes.IndexNow.Path(), wantPath)
+	}
+
+	request := httptest.NewRequest(http.MethodGet, routes.IndexNow.Path(), nil)
+	recorder := httptest.NewRecorder()
+	ctx := echo.New().NewContext(request, recorder)
+
+	if err := (Assets{}).IndexNow(ctx); err != nil {
+		t.Fatalf("IndexNow: %v", err)
+	}
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusOK)
+	}
+	if got := recorder.Body.String(); got != routes.IndexNowKey {
+		t.Fatalf("body = %q, want %q", got, routes.IndexNowKey)
+	}
+	if contentType := recorder.Header().Get("Content-Type"); !strings.Contains(
+		strings.ToLower(contentType),
+		"text/plain",
+	) {
+		t.Fatalf("Content-Type = %q, want text/plain", contentType)
+	}
+}
 
 func TestCreateSitemapIncludesPublicPages(t *testing.T) {
 	site, err := docs.New()
