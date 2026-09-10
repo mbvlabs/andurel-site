@@ -17,9 +17,12 @@ templ rootDocument(data inertia.RootData, seo pageSEO) {
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
-			<title>{ seo.Title }</title>
 			@faviconLinks(defaultFaviconBaseURL)
-			@seoTags(seo)
+			@seoDocumentTags()
+			if data.SSR == nil {
+				<title data-inertia="">{ seo.Title }</title>
+				@seoPageTags(seo)
+			}
 			@inertia.SSRHead(data.SSR)
 			@templ.Raw(string(data.ViteHead))
 		</head>

@@ -100,6 +100,53 @@ func TestRootRendersSEOTags(t *testing.T) {
 			t.Fatalf("root html missing %q", needle)
 		}
 	}
+	assertUniqueHeadTags(t, html)
+}
+
+func TestRootSSRDoesNotDuplicateTitleAndDescription(t *testing.T) {
+	ConfigureHead("andurel-site", "https://andurel.com")
+
+	component := Root(inertia.RootData{
+		Page:        inertia.Page{Component: "Home", URL: "/"},
+		ContainerID: "app",
+		ProjectName: "andurel-site",
+		Environment: server.DevEnvironment,
+		PageJSON:    []byte(`{"component":"Home","props":{},"url":"/","version":"1"}`),
+		SSR: &inertia.SSRResponse{
+			Head: []string{
+				`<title data-inertia="">Andurel · Space-grade Go framework for humans and agents</title>`,
+				`<meta name="description" content="Andurel is the web development framework for Go. Everything you and your agents need to build robust, performant applications." data-inertia="description">`,
+				`<script type="application/ld+json" data-inertia="json-ld">{"@type":"SoftwareApplication"}</script>`,
+			},
+			Body: `<div id="app" data-server-rendered="true"></div>`,
+		},
+	})
+
+	var buf strings.Builder
+	if err := component.Render(context.Background(), &buf); err != nil {
+		t.Fatal(err)
+	}
+	html := buf.String()
+	assertUniqueHeadTags(t, html)
+	if !strings.Contains(html, `property="og:site_name"`) {
+		t.Fatal("expected document-level og:site_name to remain when SSR is present")
+	}
+}
+
+func assertUniqueHeadTags(t *testing.T, html string) {
+	t.Helper()
+	for _, check := range []struct {
+		name  string
+		count int
+	}{
+		{"<title", strings.Count(html, "<title")},
+		{`name="description"`, strings.Count(html, `name="description"`)},
+		{"application/ld+json", strings.Count(html, "application/ld+json")},
+	} {
+		if check.count != 1 {
+			t.Fatalf("%s count = %d, want 1", check.name, check.count)
+		}
+	}
 }
 
 func TestRootDoesNotPanicWithoutPageJSON(t *testing.T) {

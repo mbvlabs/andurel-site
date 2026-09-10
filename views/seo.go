@@ -106,7 +106,7 @@ func marshalJSONLD(value any) string {
 }
 
 func jsonLDScript(json string) templ.Component {
-	return templ.Raw(`<script type="application/ld+json" head-key="json-ld">` + json + `</script>`)
+	return templ.Raw(`<script type="application/ld+json" data-inertia="json-ld">` + json + `</script>`)
 }
 
 func organizationNode() map[string]any {

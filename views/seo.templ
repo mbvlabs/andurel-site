@@ -1,33 +1,36 @@
 package views
 
-templ seoTags(seo pageSEO) {
+templ seoDocumentTags() {
 	<meta name="theme-color" content={ themeColor }/>
 	<meta name="color-scheme" content="dark"/>
 	<meta name="application-name" content={ siteName }/>
 	<meta name="author" content="MBV Labs"/>
-	<meta name="robots" head-key="robots" content={ seo.Robots }/>
-	<meta name="description" head-key="description" content={ seo.Description }/>
-	<link rel="canonical" head-key="canonical" href={ seo.Canonical }/>
 	<link rel="me" href={ githubURL }/>
 	<link rel="me" href={ xURL }/>
 	<meta property="og:site_name" content={ siteName }/>
 	<meta property="og:locale" content="en_US"/>
-	<meta property="og:type" head-key="og:type" content={ seo.Type }/>
-	<meta property="og:title" head-key="og:title" content={ seo.Title }/>
-	<meta property="og:description" head-key="og:description" content={ seo.Description }/>
-	<meta property="og:url" head-key="og:url" content={ seo.Canonical }/>
-	<meta property="og:image" head-key="og:image" content={ defaultOgImage }/>
-	<meta property="og:image:alt" head-key="og:image:alt" content={ defaultOgAlt }/>
 	<meta property="og:image:width" content="1200"/>
 	<meta property="og:image:height" content="630"/>
 	<meta property="og:image:type" content="image/png"/>
 	<meta name="twitter:card" content="summary_large_image"/>
 	<meta name="twitter:site" content={ twitterSite }/>
 	<meta name="twitter:creator" content={ twitterCreator }/>
-	<meta name="twitter:title" head-key="twitter:title" content={ seo.Title }/>
-	<meta name="twitter:description" head-key="twitter:description" content={ seo.Description }/>
-	<meta name="twitter:image" head-key="twitter:image" content={ defaultOgImage }/>
-	<meta name="twitter:image:alt" head-key="twitter:image:alt" content={ defaultOgAlt }/>
+}
+
+templ seoPageTags(seo pageSEO) {
+	<meta name="robots" data-inertia="robots" content={ seo.Robots }/>
+	<meta name="description" data-inertia="description" content={ seo.Description }/>
+	<link rel="canonical" data-inertia="canonical" href={ seo.Canonical }/>
+	<meta property="og:type" data-inertia="og:type" content={ seo.Type }/>
+	<meta property="og:title" data-inertia="og:title" content={ seo.Title }/>
+	<meta property="og:description" data-inertia="og:description" content={ seo.Description }/>
+	<meta property="og:url" data-inertia="og:url" content={ seo.Canonical }/>
+	<meta property="og:image" data-inertia="og:image" content={ defaultOgImage }/>
+	<meta property="og:image:alt" data-inertia="og:image:alt" content={ defaultOgAlt }/>
+	<meta name="twitter:title" data-inertia="twitter:title" content={ seo.Title }/>
+	<meta name="twitter:description" data-inertia="twitter:description" content={ seo.Description }/>
+	<meta name="twitter:image" data-inertia="twitter:image" content={ defaultOgImage }/>
+	<meta name="twitter:image:alt" data-inertia="twitter:image:alt" content={ defaultOgAlt }/>
 	if seo.JSONLD != "" {
 		@jsonLDScript(seo.JSONLD)
 	}
