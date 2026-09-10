@@ -33,9 +33,11 @@ import { routes } from '@/routes'
 import type { DocHeading, DocNavigationProps, DocVersion } from '@/types/docs'
 
 const DOC_ARTICLE_ID = 'doc-article'
-const docsGutter = 'px-4 sm:px-6 md:pl-2 md:pr-10 xl:pr-12'
+const docsGutter = 'px-4 sm:px-6 lg:px-8'
 const docsColumns =
-  'grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[1fr_minmax(0,48rem)_1fr]'
+  'grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_minmax(0,48rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,48rem)_minmax(14rem,1fr)] xl:gap-x-24'
+const headerColumns =
+  'grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] gap-x-3 sm:gap-x-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,48rem)_minmax(14rem,1fr)] xl:gap-x-24'
 
 type DocLayoutProps = DocNavigationProps & {
   children: ReactNode
@@ -149,8 +151,8 @@ export default function DocLayout({
 
       <SidebarInset className="min-w-0 overflow-x-clip">
         <header className="sticky top-0 z-30 border-b border-sidebar-border bg-background">
-          <div className={`h-14 items-center ${docsColumns} ${docsGutter}`}>
-            <div className="flex items-center">
+          <div className={`h-14 items-center ${headerColumns} ${docsGutter}`}>
+            <div className="flex shrink-0 items-center">
               <SidebarTrigger />
               <a
                 className="ml-2 hidden items-center gap-2 text-sm font-semibold sm:inline-flex md:hidden"
@@ -163,7 +165,7 @@ export default function DocLayout({
             <div className="flex min-w-0 items-center justify-end md:block">
               <DocsSearch versions={versions} currentVersion={currentVersion} />
             </div>
-            <div className="flex items-center justify-end">
+            <div className="flex shrink-0 items-center justify-end">
               <HeaderActions versions={versions} currentVersion={currentVersion} />
             </div>
           </div>
@@ -174,7 +176,7 @@ export default function DocLayout({
           <div id={DOC_ARTICLE_ID} className="min-w-0">
             {children}
           </div>
-          <aside className="sticky top-20 hidden min-w-0 max-w-64 self-start pl-6 xl:block">
+          <aside className="sticky top-20 hidden w-56 min-w-0 self-start xl:block">
             <DocsToc
               rootId={DOC_ARTICLE_ID}
               pageKey={`${currentVersion}:${currentSlug}`}

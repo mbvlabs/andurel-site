@@ -17,7 +17,7 @@ export default function Layout({ children }: LayoutProps) {
         }}
       />
       <header className="relative">
-        <div className="mx-auto flex w-full max-w-[960px] items-center justify-between px-4 py-3">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-3">
           <a className="inline-flex items-center gap-3 text-sm font-semibold text-[#f2ead8]" href={routes.homePage()}>
             <span className="grid size-8 grid-cols-2 gap-1 border border-[#52605c] bg-[#101414] p-1 shadow-sm shadow-black/40">
               <span className="border border-[#8df7a4]" />
@@ -28,13 +28,12 @@ export default function Layout({ children }: LayoutProps) {
             <span>Andurel.</span>
           </a>
           <nav className="flex flex-wrap items-center justify-end gap-3 text-sm">
-            <a className="px-2 py-1 text-[#aaa393] transition hover:text-[#f2ead8]" href="https://andurel.com">Documentation</a>
-            <a className="px-2 py-1 text-[#aaa393] transition hover:text-[#f2ead8]" href={routes.sessionNew()}>Log in</a>
-            <a className="px-2 py-1 text-[#aaa393] transition hover:text-[#f2ead8]" href={routes.registrationNew()}>Register</a>
+            <a className="px-2 py-1 text-[#aaa393] transition hover:text-[#f2ead8]" href="https://github.com/mbvlabs/andurel">GitHub</a>
+            <a className="px-2 py-1 text-[#aaa393] transition hover:text-[#f2ead8]" href={routes.documentationShow('latest', 'introduction')}>Docs</a>
           </nav>
         </div>
       </header>
-      <div className="relative flex flex-1 items-center justify-center px-6 py-6">{children}</div>
+      <div className="relative flex flex-1 items-center justify-center py-6">{children}</div>
       <footer className="relative py-3 text-center text-sm text-[#8f8a7d]">&copy; {new Date().getFullYear()} andurel.</footer>
     </main>
   )

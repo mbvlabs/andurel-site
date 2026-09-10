@@ -59189,7 +59189,7 @@ function SidebarMenuButton({
 }
 const DOC_ARTICLE_ID = "doc-article";
 const docsGutter = "px-4 sm:px-6 md:pl-2 md:pr-10 xl:pr-12";
-const docsColumns = "grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[1fr_minmax(0,48rem)_1fr]";
+const docsColumns = "grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:grid-cols-[2.5rem_minmax(0,48rem)_minmax(0,1fr)]";
 function currentCatalog(versions, currentVersion) {
   return versions.find((version) => version.name === currentVersion) ?? versions[0];
 }
@@ -59291,7 +59291,7 @@ function DocLayout({
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `min-w-0 flex-1 items-start py-6 sm:py-8 ${docsColumns} ${docsGutter}`, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { "aria-hidden": "true" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: DOC_ARTICLE_ID, className: "min-w-0", children }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { className: "sticky top-20 hidden min-w-0 max-w-64 self-start pl-6 xl:block", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { className: "sticky top-20 hidden w-56 min-w-0 self-start xl:ml-20 xl:block", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           DocsToc,
           {
             rootId: DOC_ARTICLE_ID,
@@ -86026,25 +86026,18 @@ const serverOptions = {
   host: process.env.INERTIA_SSR_HOST ?? "127.0.0.1",
   port: Number(process.env.INERTIA_SSR_PORT ?? "13714")
 };
-const renderPage = (page2) => createInertiaApp({
-  page: page2,
-  render: ReactDOMServer.renderToString,
-  resolve: (name) => {
-    const pages = /* @__PURE__ */ Object.assign({ "./Pages/Auth/ConfirmEmail.tsx": __vite_glob_0_0, "./Pages/Auth/Login.tsx": __vite_glob_0_1, "./Pages/Auth/Registration.tsx": __vite_glob_0_2, "./Pages/Auth/ResetPassword.tsx": __vite_glob_0_3, "./Pages/Auth/ResetPasswordRequest.tsx": __vite_glob_0_4, "./Pages/Documentation/Show.tsx": __vite_glob_0_5, "./Pages/Errors/BadRequest.tsx": __vite_glob_0_6, "./Pages/Errors/InternalError.tsx": __vite_glob_0_7, "./Pages/Errors/NotFound.tsx": __vite_glob_0_8, "./Pages/Home.tsx": __vite_glob_0_9 });
-    return pages[`./Pages/${name}.tsx`].default;
-  },
-  setup: ({ App: App2, props }) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(App2, { ...props }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(FlashToasts, { initialFlashes: pageFlashes(props.initialPage?.flash) })
-  ] })
-});
-{
-  server_default(
-    renderPage,
-    serverOptions
-  );
-}
-export {
-  renderPage as default
-};
-//# sourceMappingURL=ssr.js.map
+server_default(
+  (page2) => createInertiaApp({
+    page: page2,
+    render: ReactDOMServer.renderToString,
+    resolve: (name) => {
+      const pages = /* @__PURE__ */ Object.assign({ "./Pages/Auth/ConfirmEmail.tsx": __vite_glob_0_0, "./Pages/Auth/Login.tsx": __vite_glob_0_1, "./Pages/Auth/Registration.tsx": __vite_glob_0_2, "./Pages/Auth/ResetPassword.tsx": __vite_glob_0_3, "./Pages/Auth/ResetPasswordRequest.tsx": __vite_glob_0_4, "./Pages/Documentation/Show.tsx": __vite_glob_0_5, "./Pages/Errors/BadRequest.tsx": __vite_glob_0_6, "./Pages/Errors/InternalError.tsx": __vite_glob_0_7, "./Pages/Errors/NotFound.tsx": __vite_glob_0_8, "./Pages/Home.tsx": __vite_glob_0_9 });
+      return pages[`./Pages/${name}.tsx`].default;
+    },
+    setup: ({ App: App2, props }) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(App2, { ...props }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(FlashToasts, { initialFlashes: pageFlashes(props.initialPage?.flash) })
+    ] })
+  }),
+  serverOptions
+);

@@ -63,7 +63,7 @@ export default function DocsSearch({
         type="button"
         variant="outline"
         className={cn(
-          'hidden h-8 w-full justify-start text-muted-foreground md:inline-flex',
+          'hidden h-8 w-full min-w-0 shrink justify-start text-muted-foreground md:inline-flex',
           className,
         )}
         onClick={() => setOpen(true)}

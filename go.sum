@@ -116,8 +116,6 @@ github.com/maypok86/otter/v2 v2.3.0 h1:8H8AVVFUSzJwIegKwv1uF5aGitTY+AIrtktg7OcLs
 github.com/maypok86/otter/v2 v2.3.0/go.mod h1:XgIdlpmL6jYz882/CAx1E4C1ukfgDKSaw4mWq59+7l8=
 github.com/mbvlabs/andurel/pkg/email v0.3.2 h1:rRtlPg1LNEZ3gg3P9C+81IkAu00/5HUN5FRv9s3RSHo=
 github.com/mbvlabs/andurel/pkg/email v0.3.2/go.mod h1:qyTSU/InfTLhCHzMAxn80VdwRp9pYRvBFz9d540kOeQ=
-github.com/mbvlabs/andurel/pkg/inertia v0.5.0 h1:fV9rba20ZOGpApjRWYRnqyA0hcpsxX81ttcrmDvU7qM=
-github.com/mbvlabs/andurel/pkg/inertia v0.5.0/go.mod h1:iisw0dG8nB7O0rMYze+vAbD3aDQ0VnRxHxwe/PQiJfk=
 github.com/mbvlabs/andurel/pkg/routing v0.2.1 h1:zftsatUrJ+6HObGTSi5dPpkaqa0NIaEX+BwgMlNKOWU=
 github.com/mbvlabs/andurel/pkg/routing v0.2.1/go.mod h1:g0KpCFpevH9O5S+CiNz4WUIFrzhrSE9KrYKtwt1TjeY=
 github.com/mbvlabs/andurel/pkg/server v0.3.2 h1:XnW6Q/uOOs4MAYf0eQ4dDCnx18mbz1nWNGDmbqgzHps=
