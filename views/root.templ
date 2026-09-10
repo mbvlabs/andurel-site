@@ -1,6 +1,9 @@
 package views
 
-import "github.com/mbvlabs/andurel/pkg/inertia"
+import (
+	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/server"
+)
 
 // Root is the application-owned initial Inertia document. Customize it to add
 // metadata, fonts, analytics, or other application-wide document elements.
@@ -22,6 +25,9 @@ templ Root(data inertia.RootData) {
 				@inertia.AppMount(data.ContainerID)
 			}
 			@templ.Raw(string(data.ViteBody))
+			if data.Environment == server.ProdEnvironment {
+				<script defer data-website-id="8ced4d29-c1ad-46aa-a885-2cf193222376" src="https://analytics.mbvlabs.com/t/script.js"></script>
+			}
 		</body>
 	</html>
 }
