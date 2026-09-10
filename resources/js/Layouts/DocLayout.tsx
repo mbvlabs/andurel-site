@@ -100,6 +100,7 @@ function HeaderActions({
         variant="ghost"
         size="sm"
         aria-label="GitHub"
+        nativeButton={false}
         render={<a href="https://github.com/mbvlabs/andurel" />}
       >
         <SiGithub title="" color="currentColor" />

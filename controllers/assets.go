@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"path"
 	"strings"
 
@@ -22,12 +24,13 @@ import (
 const threeMonthsCache = "7776000"
 
 type Assets struct {
-	cache  *Cache[string]
-	appCfg config.App
+	cache      *Cache[string]
+	appCfg     config.App
+	viteDevURL string
 }
 
-func NewAssets(cache *Cache[string], appCfg config.App) Assets {
-	return Assets{cache: cache, appCfg: appCfg}
+func NewAssets(cache *Cache[string], appCfg config.App, inertiaCfg config.Inertia) Assets {
+	return Assets{cache: cache, appCfg: appCfg, viteDevURL: inertiaCfg.ViteDevURL}
 }
 
 func (a Assets) RegisterRoutes(r *router.Router) error {
@@ -90,6 +93,18 @@ func (a Assets) RegisterRoutes(r *router.Router) error {
 	})
 	if err != nil {
 		errs = append(errs, err)
+	}
+
+	if !a.appCfg.IsProduction() {
+		_, err = r.AddRoute(echo.Route{
+			Method:  http.MethodGet,
+			Path:    routes.ViteDevFiles.Path(),
+			Name:    routes.ViteDevFiles.Name(),
+			Handler: a.ViteDevFiles,
+		})
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
 
 	return errors.Join(errs...)
@@ -260,6 +275,10 @@ func contentTypeByExt(name string) string {
 		return "application/json"
 	case strings.HasSuffix(name, ".svg"):
 		return "image/svg+xml"
+	case strings.HasSuffix(name, ".woff2"):
+		return "font/woff2"
+	case strings.HasSuffix(name, ".woff"):
+		return "font/woff"
 	default:
 		return "application/octet-stream"
 	}
@@ -279,4 +298,18 @@ func (a Assets) ViteBuild(etx *echo.Context) error {
 
 	etx = a.enableCaching(etx, data)
 	return etx.Blob(http.StatusOK, contentTypeByExt(param), data)
+}
+
+func (a Assets) ViteDevFiles(etx *echo.Context) error {
+	target, err := url.Parse(a.viteDevURL)
+	if err != nil {
+		return err
+	}
+
+	proxy := httputil.NewSingleHostReverseProxy(&url.URL{
+		Scheme: target.Scheme,
+		Host:   target.Host,
+	})
+	proxy.ServeHTTP(etx.Response(), etx.Request())
+	return nil
 }

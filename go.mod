@@ -131,5 +131,3 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/mbvlabs/andurel/pkg/inertia => ../andurel/pkg/inertia
