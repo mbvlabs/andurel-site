@@ -4,6 +4,7 @@ import AndurelWordmark from '@/components/andurel-wordmark'
 import AsciiSky from '@/components/ascii-sky'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { trackEvent } from '@/lib/palantir'
 import { routes } from '@/routes'
 
 type LayoutProps = {
@@ -52,6 +53,12 @@ export default function Layout({ children }: LayoutProps) {
                 className="flex flex-col gap-2"
                 onSubmit={(event: FormEvent<HTMLFormElement>) => {
                   event.preventDefault()
+                  const form = new FormData(event.currentTarget)
+                  trackEvent('newsletter-signup', {
+                    firstName: String(form.get('firstName') ?? '').trim(),
+                    lastName: String(form.get('lastName') ?? '').trim(),
+                    email: String(form.get('email') ?? '').trim(),
+                  })
                 }}
               >
                 <div className="grid grid-cols-2 gap-2">

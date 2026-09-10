@@ -157,6 +157,7 @@ function InstallCommand() {
                     <InputGroupButton
                       size="icon-sm"
                       aria-label={copied ? 'Copied' : 'Copy install command'}
+                      data-palantir-event="copy-install-command"
                       onClick={copy}
                     />
                   }
