@@ -1,6 +1,7 @@
 import type { FormEvent, ReactNode } from 'react'
 
 import AndurelWordmark from '@/components/andurel-wordmark'
+import AsciiSky from '@/components/ascii-sky'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { routes } from '@/routes'
@@ -23,13 +24,7 @@ const socials = [
 export default function Layout({ children }: LayoutProps) {
   return (
     <main className="relative flex min-h-screen flex-col overflow-x-clip bg-[#090b0d] text-[#e4dfd2]">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 12% 18%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 82% 22%, #aaa393 0 1px, transparent 1.5px), radial-gradient(circle at 67% 72%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 24% 83%, #8f8a7d 0 1px, transparent 1.5px)',
-        }}
-      />
+      <AsciiSky />
       <header className="relative">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-3">
           <a className="inline-flex items-center gap-3 text-sm font-semibold text-[#f2ead8]" href={routes.homePage()}>
