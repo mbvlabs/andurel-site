@@ -52,7 +52,7 @@ Behind a proxy, a normal split is `DOMAIN=app.example.com`, `PROTOCOL=https`, `H
 | `DB_CONNECTION_MAX_IDLE_TIME` | `30m` | Idle connection lifetime |
 | `DB_OPEN_TELEMETRY` | `true` | pgx instrumentation |
 
-Budget connections across all web and queue replicas, leaving room for migrations and administration. See [Storage](/docs/latest/storage).
+Budget connections across all web and queue replicas, leaving room for migrations and administration. See [Storage](/docs/head/storage).
 
 ## Sessions and authentication
 
@@ -123,7 +123,7 @@ Edit `NewQueueWorker` for named queues or per-queue concurrency. Validation cove
 | `INERTIA_SSR_MINIMUM_MAJOR` | `22` | Minimum Node major |
 | `INERTIA_SSR_FAIL_FAST` | `true` in generated apps | Error instead of client fallback |
 
-`INERTIA_SSR_LISTEN` is the address Node binds. `INERTIA_SSR_URL` is the HTTP client URL and may be a service hostname. Pages still opt into SSR individually. See [Inertia](/docs/latest/inertia) and [SSR](/docs/latest/inertia-ssr).
+`INERTIA_SSR_LISTEN` is the address Node binds. `INERTIA_SSR_URL` is the HTTP client URL and may be a service hostname. Pages still opt into SSR individually. See [Inertia](/docs/head/inertia) and [SSR](/docs/head/inertia-ssr).
 
 ## Adding application settings
 

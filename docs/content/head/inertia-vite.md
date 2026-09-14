@@ -64,7 +64,7 @@ In production the renderer reads `dist/vite/manifest.json` from `WithAssetFS`. I
 
 `andurel build` installs frontend dependencies, runs the Vite client build, and embeds `assets/` in the Go binary. A missing manifest, unknown entry point, or nil asset filesystem fails `NewRenderer` at startup rather than serving a document without JavaScript.
 
-The SSR bundle is a second Vite build, typically `assets/dist/ssr/ssr.js`. `cmd/app` does not execute it. See [SSR](/docs/latest/inertia-ssr).
+The SSR bundle is a second Vite build, typically `assets/dist/ssr/ssr.js`. `cmd/app` does not execute it. See [SSR](/docs/head/inertia-ssr).
 
 ## Asset version
 
@@ -84,4 +84,4 @@ POST, PUT, PATCH, and DELETE are not converted into version reloads. Finish the 
 
 Generated `resources/js/app.tsx` (or `app.ts`) calls `createInertiaApp`, resolves `./Pages/${name}.tsx`, and hydrates when `data-server-rendered="true"`. Flash toasts typically wrap the page tree so both initial and client visits can read the page `flash` field.
 
-Page components receive JSON props as function arguments. Import generated TypeScript declarations instead of re-declaring the shape. See [Generators](/docs/latest/inertia-generators) and [Props](/docs/latest/inertia-props).
+Page components receive JSON props as function arguments. Import generated TypeScript declarations instead of re-declaring the shape. See [Generators](/docs/head/inertia-generators) and [Props](/docs/head/inertia-props).

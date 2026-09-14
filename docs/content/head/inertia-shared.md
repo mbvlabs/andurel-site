@@ -113,4 +113,4 @@ A typical mutating action:
 
 Generated `--inertia` resource controllers follow this pattern for create, update, and destroy. Auth controllers mix `ValidationErrors` redisplay with `Location` after login so the root document picks up the session cookie.
 
-See [Pages and Visits](/docs/latest/inertia-pages) for `Page` and [Generators](/docs/latest/inertia-generators) for the scaffolded form flow.
+See [Pages and Visits](/docs/head/inertia-pages) for `Page` and [Generators](/docs/head/inertia-generators) for the scaffolded form flow.

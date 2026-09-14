@@ -11,7 +11,7 @@ func TestSiteLoadsCatalogContent(t *testing.T) {
 		t.Fatalf("load documentation: %v", err)
 	}
 
-	document, ok := site.Find("latest", "installation")
+	document, ok := site.Find(LatestVersion, "installation")
 	if !ok {
 		t.Fatal("expected latest/installation to exist")
 	}
@@ -30,8 +30,11 @@ func TestSiteLoadsCatalogContent(t *testing.T) {
 	if strings.Contains(document.HTML, "background-color:#282828") {
 		t.Fatal("highlighted code still uses gruvbox inline colors")
 	}
+	if !strings.Contains(document.HTML, "/docs/latest/frontend-options") {
+		t.Fatal("expected latest alias to rewrite shared 1.5.5 links")
+	}
 
-	views, ok := site.Find("latest", "views")
+	views, ok := site.Find(LatestVersion, "views")
 	if !ok {
 		t.Fatal("expected latest/views to exist")
 	}
@@ -45,7 +48,15 @@ func TestSiteLoadsCatalogContent(t *testing.T) {
 		t.Fatalf("next = %+v, want configuration", document.Next)
 	}
 
-	legacy, ok := site.Find("1.5.2", "introduction")
+	pinned, ok := site.Find(LatestRelease, "installation")
+	if !ok {
+		t.Fatal("expected 1.5.5/installation to exist")
+	}
+	if !strings.Contains(pinned.HTML, "/docs/1.5.5/frontend-options") {
+		t.Fatal("expected 1.5.5 pages to keep pinned version links")
+	}
+
+	legacy, ok := site.Find(V152Release, "introduction")
 	if !ok {
 		t.Fatal("expected 1.5.2/introduction to exist")
 	}
@@ -53,7 +64,15 @@ func TestSiteLoadsCatalogContent(t *testing.T) {
 		t.Fatalf("legacy title = %q, want Introduction", legacy.Title)
 	}
 
-	if _, ok := site.Find("latest", "missing"); ok {
+	head, ok := site.Find(HeadVersion, "installation")
+	if !ok {
+		t.Fatal("expected head/installation to exist")
+	}
+	if !strings.Contains(head.HTML, "@master") {
+		t.Fatal("expected head installation to document the master CLI")
+	}
+
+	if _, ok := site.Find(LatestVersion, "missing"); ok {
 		t.Fatal("expected missing page to be absent")
 	}
 }
@@ -64,36 +83,36 @@ func TestNestedInertiaPagesLoadInReadingOrder(t *testing.T) {
 		t.Fatalf("load documentation: %v", err)
 	}
 
-	overview, ok := site.Find("latest", "inertia")
+	overview, ok := site.Find(HeadVersion, "inertia")
 	if !ok {
-		t.Fatal("expected latest/inertia to exist")
+		t.Fatal("expected head/inertia to exist")
 	}
 	if overview.Parent != nil {
 		t.Fatalf("overview parent = %+v, want nil", overview.Parent)
 	}
-	if overview.Next == nil || overview.Next.URL != "/docs/latest/inertia-renderer" {
+	if overview.Next == nil || overview.Next.URL != "/docs/head/inertia-renderer" {
 		t.Fatalf("overview next = %+v, want renderer", overview.Next)
 	}
 
-	props, ok := site.Find("latest", "inertia-props")
+	props, ok := site.Find(HeadVersion, "inertia-props")
 	if !ok {
-		t.Fatal("expected latest/inertia-props to exist")
+		t.Fatal("expected head/inertia-props to exist")
 	}
-	if props.Parent == nil || props.Parent.URL != "/docs/latest/inertia" {
+	if props.Parent == nil || props.Parent.URL != "/docs/head/inertia" {
 		t.Fatalf("props parent = %+v, want inertia overview", props.Parent)
 	}
-	if props.Previous == nil || props.Previous.URL != "/docs/latest/inertia-vite" {
+	if props.Previous == nil || props.Previous.URL != "/docs/head/inertia-vite" {
 		t.Fatalf("props previous = %+v, want vite", props.Previous)
 	}
 	if !strings.Contains(props.HTML, "FromStruct") {
 		t.Fatal("expected props page to document FromStruct")
 	}
 
-	generators, ok := site.Find("latest", "inertia-generators")
+	generators, ok := site.Find(HeadVersion, "inertia-generators")
 	if !ok {
-		t.Fatal("expected latest/inertia-generators to exist")
+		t.Fatal("expected head/inertia-generators to exist")
 	}
-	if generators.Next == nil || generators.Next.URL != "/docs/latest/hypermedia" {
+	if generators.Next == nil || generators.Next.URL != "/docs/head/hypermedia" {
 		t.Fatalf("generators next = %+v, want hypermedia", generators.Next)
 	}
 }

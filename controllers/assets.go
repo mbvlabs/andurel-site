@@ -232,7 +232,7 @@ func createSitemap(baseURL string, site *docs.Site) (string, error) {
 	if site != nil {
 		for _, document := range site.Documents() {
 			priority := "0.8"
-			if document.Version != "latest" {
+			if document.Version != docs.LatestVersion {
 				priority = "0.6"
 			}
 			urls = append(urls, URL{

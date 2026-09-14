@@ -3,7 +3,7 @@ package docs
 import "testing"
 
 func TestFindLatestInstallation(t *testing.T) {
-	_, section, page, ok := Find("latest", "installation")
+	_, section, page, ok := Find(LatestVersion, "installation")
 	if !ok {
 		t.Fatal("expected latest/installation to exist")
 	}
@@ -16,7 +16,7 @@ func TestFindLatestInstallation(t *testing.T) {
 }
 
 func TestFindUnknownPage(t *testing.T) {
-	if _, _, _, ok := Find("latest", "missing"); ok {
+	if _, _, _, ok := Find(LatestVersion, "missing"); ok {
 		t.Fatal("expected missing page to be absent")
 	}
 }
@@ -27,12 +27,25 @@ func TestLatestURL(t *testing.T) {
 	}
 }
 
-func TestNavigationIncludesCurrentMasterSections(t *testing.T) {
+func TestNavigationOrder(t *testing.T) {
+	versions := Navigation()
+	want := []string{LatestVersion, LatestRelease, V152Release, HeadVersion}
+	if len(versions) != len(want) {
+		t.Fatalf("versions = %d, want %d", len(versions), len(want))
+	}
+	for i, name := range want {
+		if versions[i].Name != name {
+			t.Fatalf("versions[%d] = %q, want %q", i, versions[i].Name, name)
+		}
+	}
+}
+
+func TestNavigationIncludesLatestIntroduction(t *testing.T) {
 	versions := Navigation()
 	if len(versions) == 0 {
 		t.Fatal("expected at least one version")
 	}
-	if versions[0].Name != "latest" {
+	if versions[0].Name != LatestVersion {
 		t.Fatalf("first version = %q, want latest", versions[0].Name)
 	}
 
@@ -53,19 +66,35 @@ func TestNavigationIncludesCurrentMasterSections(t *testing.T) {
 }
 
 func TestVersionURL(t *testing.T) {
-	url, ok := VersionURL("1.5.2")
+	url, ok := VersionURL(V152Release)
 	if !ok {
 		t.Fatal("expected 1.5.2 to exist")
 	}
 	if url != "/docs/1.5.2/introduction" {
 		t.Fatalf("VersionURL(1.5.2) = %q, want /docs/1.5.2/introduction", url)
 	}
+
+	url, ok = VersionURL(LatestRelease)
+	if !ok {
+		t.Fatal("expected 1.5.5 to exist")
+	}
+	if url != "/docs/1.5.5/introduction" {
+		t.Fatalf("VersionURL(1.5.5) = %q, want /docs/1.5.5/introduction", url)
+	}
+
+	url, ok = VersionURL(HeadVersion)
+	if !ok {
+		t.Fatal("expected head to exist")
+	}
+	if url != "/docs/head/introduction" {
+		t.Fatalf("VersionURL(head) = %q, want /docs/head/introduction", url)
+	}
 }
 
 func TestFindNestedInertiaPage(t *testing.T) {
-	_, section, page, ok := Find("latest", "inertia-props")
+	_, section, page, ok := Find(HeadVersion, "inertia-props")
 	if !ok {
-		t.Fatal("expected latest/inertia-props to exist")
+		t.Fatal("expected head/inertia-props to exist")
 	}
 	if section.Title != "Framework Packages" {
 		t.Fatalf("section = %q, want Framework Packages", section.Title)
@@ -75,14 +104,31 @@ func TestFindNestedInertiaPage(t *testing.T) {
 	}
 }
 
+func TestLatestDoesNotIncludeHeadPages(t *testing.T) {
+	if _, _, _, ok := Find(LatestVersion, "inertia-props"); ok {
+		t.Fatal("expected latest to follow the stable v1 catalog")
+	}
+}
+
+func TestMovedFromLatest(t *testing.T) {
+	dest, ok := MovedFromLatest("inertia-props")
+	if !ok {
+		t.Fatal("expected v2-only latest URLs to move to head")
+	}
+	if dest != "/docs/head/inertia-props" {
+		t.Fatalf("redirect = %q, want /docs/head/inertia-props", dest)
+	}
+	if _, ok := MovedFromLatest("installation"); ok {
+		t.Fatal("expected shared latest pages to stay on latest")
+	}
+}
+
 func TestNavigationNestsInertiaChildren(t *testing.T) {
 	versions := Navigation()
-	if len(versions) == 0 {
-		t.Fatal("expected at least one version")
-	}
+	head := findNavVersion(t, versions, HeadVersion)
 
 	var inertia NavigationPage
-	for _, section := range versions[0].Sections {
+	for _, section := range head.Sections {
 		if section.Title != "Framework Packages" {
 			continue
 		}
@@ -93,10 +139,10 @@ func TestNavigationNestsInertiaChildren(t *testing.T) {
 		}
 	}
 	if inertia.Slug == "" {
-		t.Fatal("expected Framework Packages / Inertia in latest navigation")
+		t.Fatal("expected Framework Packages / Inertia in head navigation")
 	}
-	if inertia.URL != "/docs/latest/inertia" {
-		t.Fatalf("inertia URL = %q, want /docs/latest/inertia", inertia.URL)
+	if inertia.URL != "/docs/head/inertia" {
+		t.Fatalf("inertia URL = %q, want /docs/head/inertia", inertia.URL)
 	}
 
 	want := []string{
@@ -116,8 +162,19 @@ func TestNavigationNestsInertiaChildren(t *testing.T) {
 		if inertia.Children[i].Slug != slug {
 			t.Fatalf("children[%d].Slug = %q, want %q", i, inertia.Children[i].Slug, slug)
 		}
-		if inertia.Children[i].URL != "/docs/latest/"+slug {
+		if inertia.Children[i].URL != "/docs/head/"+slug {
 			t.Fatalf("children[%d].URL = %q", i, inertia.Children[i].URL)
 		}
 	}
+}
+
+func findNavVersion(t *testing.T, versions []NavigationVersion, name string) NavigationVersion {
+	t.Helper()
+	for _, version := range versions {
+		if version.Name == name {
+			return version
+		}
+	}
+	t.Fatalf("expected navigation version %q", name)
+	return NavigationVersion{}
 }

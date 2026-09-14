@@ -102,7 +102,7 @@ Partial filtering applies only when `PartialComponent` equals the rendered compo
 
 ## Application usage
 
-Use one `Page` call for GET screens, validation redisplay, and error pages. After a successful write, prefer `Redirect` or `Location` instead of rendering the next page from the mutating request. See [Shared Data and Redirects](/docs/latest/inertia-shared).
+Use one `Page` call for GET screens, validation redisplay, and error pages. After a successful write, prefer `Redirect` or `Location` instead of rendering the next page from the mutating request. See [Shared Data and Redirects](/docs/head/inertia-shared).
 
 Keep payload construction next to the controller or in a small resource mapper. Generated scaffolds use `inertia.FromStruct` with `ProductIndexProps` / `ProductItemProps`. Hand-written pages can use `inertia.Props` or `FromStruct`; both JSON-encode the same way.
 
@@ -114,4 +114,4 @@ return c.renderer.Page(
 ).Render()
 ```
 
-The first visit and later visits stay the same Go code. If a page needs SSR, add `.SSR()` to that builder only. See [SSR](/docs/latest/inertia-ssr).
+The first visit and later visits stay the same Go code. If a page needs SSR, add `.SSR()` to that builder only. See [SSR](/docs/head/inertia-ssr).

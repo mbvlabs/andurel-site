@@ -175,4 +175,4 @@ func productResources(products []models.Product) []ProductData {
 
 Put Always props that layouts need on every visit, defer secondary widgets, and keep the index query on the first response. If a page feels slow, inspect which resolvers run on full visits before adding more partial-reload machinery.
 
-Generated `--inertia` controllers already use `FromStruct` and TypeScript types. Hand-written pages should follow the same pattern so `generate` output and application code stay interchangeable. See [Generators](/docs/latest/inertia-generators).
+Generated `--inertia` controllers already use `FromStruct` and TypeScript types. Hand-written pages should follow the same pattern so `generate` output and application code stay interchangeable. See [Generators](/docs/head/inertia-generators).

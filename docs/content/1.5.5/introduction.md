@@ -14,8 +14,8 @@ Choose Andurel when you are building a full-stack Go application and value devel
 
 Andurel v1 supports Linux and macOS on amd64 and arm64. Windows is not currently supported.
 
-This is a previous v1 release. Prefer the [latest documentation](/docs/latest/introduction) unless you are maintaining an existing 1.5.2 application.
+This is the current stable release. It matches `go install github.com/mbvlabs/andurel@latest`. The [head documentation](/docs/head/introduction) covers the v2 development line on `master`.
 
 ## Next steps
 
-Continue to [Installation](/docs/1.5.2/installation) to install the CLI and create a project.
+Continue to [Installation](/docs/1.5.5/installation) to install the CLI and create a project.

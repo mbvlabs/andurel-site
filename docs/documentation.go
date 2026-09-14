@@ -90,18 +90,20 @@ func New() (*Site, error) {
 	var loadErr error
 
 	for _, version := range Catalog {
+		contentDir := version.ContentDir()
 		for _, section := range version.Sections {
 			WalkPages(section.Pages, func(parent *Page, page Page) {
 				if loadErr != nil {
 					return
 				}
-				name := fmt.Sprintf("content/%s/%s.md", version.Name, page.Slug)
+				name := fmt.Sprintf("content/%s/%s.md", contentDir, page.Slug)
 				expectedFiles[name] = true
 				source, err := content.ReadFile(name)
 				if err != nil {
 					loadErr = fmt.Errorf("documentation: read %s: %w", name, err)
 					return
 				}
+				source = rewriteVersionLinks(source, contentDir, version.Name)
 				document, err := render(markdown, version.Name, section.Title, page, source)
 				if err != nil {
 					loadErr = fmt.Errorf("documentation: %s: %w", name, err)
@@ -233,6 +235,23 @@ func (s *Site) Versions() []Version {
 func (s *Site) Find(version, slug string) (*Document, bool) {
 	document, ok := s.documents[version+"/"+slug]
 	return document, ok
+}
+
+func MovedFromLatest(slug string) (string, bool) {
+	if _, _, _, ok := Find(LatestVersion, slug); ok {
+		return "", false
+	}
+	if _, _, _, ok := Find(HeadVersion, slug); ok {
+		return PageURL(HeadVersion, slug), true
+	}
+	return "", false
+}
+
+func rewriteVersionLinks(source []byte, from, to string) []byte {
+	if from == to {
+		return source
+	}
+	return bytes.ReplaceAll(source, []byte("/docs/"+from+"/"), []byte("/docs/"+to+"/"))
 }
 
 func (s *Site) LatestURL() string {

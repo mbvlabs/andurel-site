@@ -133,4 +133,4 @@ func NewProducts(products models.Products, renderer *inertia.Renderer) Products 
 
 Keep renderer construction in `cmd/app`. Controllers should not build a second renderer per request. If a test needs different shared props, construct a dedicated renderer or pass page props that replace the shared keys.
 
-See [Pages and Visits](/docs/latest/inertia-pages) for `Page` and [Shared Data and Redirects](/docs/latest/inertia-shared) for providers, flash, and redirects.
+See [Pages and Visits](/docs/head/inertia-pages) for `Page` and [Shared Data and Redirects](/docs/head/inertia-shared) for providers, flash, and redirects.

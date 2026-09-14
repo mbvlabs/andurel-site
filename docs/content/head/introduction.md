@@ -10,7 +10,7 @@ The framework still favors one-time generation: a scaffold creates models, facto
 
 ## Development status
 
-The `latest` documentation describes current `master`, not the stable v1 release. APIs and generated layouts may change before `v2.0.0`. Use the [1.5.2 documentation](/docs/1.5.2/introduction) for an existing v1 application.
+The `head` documentation describes current `master`, not the stable v1 release. APIs and generated layouts may change before `v2.0.0`. Use the [latest documentation](/docs/latest/introduction) for the current v1 release.
 
 There is no automated upgrade path from v1 to v2. Create new v2 projects with the v2 CLI and migrate existing applications deliberately.
 
@@ -18,4 +18,4 @@ There is no automated upgrade path from v1 to v2. Create new v2 projects with th
 
 The v2 branch requires Go 1.27 and targets Linux and macOS on amd64 and arm64. PostgreSQL is the supported database.
 
-Continue to [Installation](/docs/latest/installation) to install the development CLI and create a project.
+Continue to [Installation](/docs/head/installation) to install the development CLI and create a project.

@@ -30,20 +30,7 @@ func VersionPath(version string) string {
 }
 
 func LatestURL() string {
-	if len(Catalog) == 0 {
-		return docsPrefix
-	}
-
-	latest := Catalog[0]
-	for _, section := range latest.Sections {
-		for _, page := range section.Pages {
-			if page.Slug == "introduction" {
-				return PageURL(latest.Name, page.Slug)
-			}
-		}
-	}
-
-	url, ok := VersionURL(latest.Name)
+	url, ok := VersionURL(LatestVersion)
 	if ok {
 		return url
 	}

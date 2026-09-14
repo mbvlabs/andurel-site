@@ -39,7 +39,7 @@ func TestInertiaPageSEODocs(t *testing.T) {
 			URL:       "/docs/latest/introduction",
 			Props: map[string]any{
 				"title":          "Introduction",
-				"description":    "Meet Andurel v2.",
+				"description":    "Meet Andurel.",
 				"currentVersion": "latest",
 				"currentSection": "Getting Started",
 			},
@@ -48,7 +48,7 @@ func TestInertiaPageSEODocs(t *testing.T) {
 	if seo.Title != "Introduction · Andurel Docs" {
 		t.Fatalf("title = %q", seo.Title)
 	}
-	if seo.Description != "Meet Andurel v2." {
+	if seo.Description != "Meet Andurel." {
 		t.Fatalf("description = %q", seo.Description)
 	}
 	if seo.Type != "article" {

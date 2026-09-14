@@ -71,8 +71,15 @@ func (d Documentations) Version(etx *echo.Context) error {
 }
 
 func (d Documentations) Show(etx *echo.Context) error {
-	document, ok := d.site.Find(etx.Param("version"), etx.Param("slug"))
+	version := etx.Param("version")
+	slug := etx.Param("slug")
+	document, ok := d.site.Find(version, slug)
 	if !ok {
+		if version == docs.LatestVersion {
+			if dest, moved := docs.MovedFromLatest(slug); moved {
+				return etx.Redirect(http.StatusMovedPermanently, dest)
+			}
+		}
 		return d.notFound(etx)
 	}
 

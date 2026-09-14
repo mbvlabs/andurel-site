@@ -44,7 +44,7 @@ if err := c.products.Archive(etx.Request().Context(), signals.ID); err != nil {
 return hypermedia.PatchComponent(etx, views.ProductRow(signals.ID))
 ```
 
-Patches can replace, remove, append, prepend, insert, or update named fragments. Signals, custom events, URL changes, scripts, and long-lived broadcasters form the server-to-browser protocol. The application owns fragment identifiers and state transitions. See [Hypermedia](/docs/latest/hypermedia).
+Patches can replace, remove, append, prepend, insert, or update named fragments. Signals, custom events, URL changes, scripts, and long-lived broadcasters form the server-to-browser protocol. The application owns fragment identifiers and state transitions. See [Hypermedia](/docs/head/hypermedia).
 
 ## Working with Inertia
 
@@ -58,13 +58,13 @@ return c.renderer.Page(etx, "Products/Index", inertia.Props{
 
 The first visit renders application-owned `views/root.templ`, embeds the page object, and loads Vite. Later visits return page JSON and the official adapter swaps the component. Go retains authorization, validation, queries, and payload construction; Vue, React, or Svelte owns page rendering and local interaction.
 
-Define page payload structs with stable JSON tags and matching TypeScript declarations. Do not serialize database models or sqlc rows directly. Partial reloads and prop policies reduce work but do not remove the need for a deliberate browser API. See [Inertia](/docs/latest/inertia) and [Props](/docs/latest/inertia-props).
+Define page payload structs with stable JSON tags and matching TypeScript declarations. Do not serialize database models or sqlc rows directly. Partial reloads and prop policies reduce work but do not remove the need for a deliberate browser API. See [Inertia](/docs/head/inertia) and [Props](/docs/head/inertia-props).
 
 ## Forms and validation
 
 Templ commonly re-renders the form or a named fragment with typed submitted values and field errors, using a suitable status such as 422.
 
-Inertia normally uses redirect-after-write. Pass mapped errors with `Page(...).ValidationErrors(...)`, respect named error bags, preserve flash through redirects, and let the client adapter expose errors to the form. See [Shared Data and Redirects](/docs/latest/inertia-shared).
+Inertia normally uses redirect-after-write. Pass mapped errors with `Page(...).ValidationErrors(...)`, respect named error bags, preserve flash through redirects, and let the client adapter expose errors to the form. See [Shared Data and Redirects](/docs/head/inertia-shared).
 
 Domain validation should be shared. Only its transport and presentation differ.
 
@@ -93,7 +93,7 @@ andurel generate view
 
 Inertia additionally runs Vite during development and embeds production output in the Go binary. The package manager recorded in `andurel.lock` controls dependency installation; it does not select the Node runtime used by `cmd/ssr`.
 
-SSR is per page: call `.SSR()` on the page builder. In development the renderer posts to Vite; otherwise `cmd/app` posts to `INERTIA_SSR_URL` and `cmd/ssr` owns Node. Client rendering is the fallback unless fail-fast is enabled. See [SSR](/docs/latest/inertia-ssr).
+SSR is per page: call `.SSR()` on the page builder. In development the renderer posts to Vite; otherwise `cmd/app` posts to `INERTIA_SSR_URL` and `cmd/ssr` owns Node. Client rendering is the fallback unless fail-fast is enabled. See [SSR](/docs/head/inertia-ssr).
 
 ## Migration cost
 

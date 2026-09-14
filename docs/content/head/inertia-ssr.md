@@ -64,7 +64,7 @@ When SSR fails, the renderer logs `inertia SSR fallback` and serves the client-m
 
 Generated scaffolds default `INERTIA_SSR_FAIL_FAST` to true. Set it false in production if you prefer availability over a hard error when Node is down.
 
-Transport failures are `SSRTransportError` with kind `transport`, `status`, `encode`, `decode`, or `response`. Oversized bodies return `ErrResponseTooLarge`. Protocol-level wrapping uses `inertia.Error` with kind `ssr`. See [Diagnostics](/docs/latest/inertia-diagnostics).
+Transport failures are `SSRTransportError` with kind `transport`, `status`, `encode`, `decode`, or `response`. Oversized bodies return `ErrResponseTooLarge`. Protocol-level wrapping uses `inertia.Error` with kind `ssr`. See [Diagnostics](/docs/head/inertia-diagnostics).
 
 Timeout and size bounds are independent: startup wait, per-request timeout, and `INERTIA_SSR_MAX_RESPONSE_BYTES`.
 

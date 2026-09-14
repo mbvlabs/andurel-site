@@ -72,13 +72,22 @@ func TestCreateSitemapIncludesPublicPages(t *testing.T) {
 	}
 
 	latestIntro := "https://andurel.com/docs/latest/introduction"
-	if _, ok := locs[latestIntro]; !ok {
+	if entry, ok := locs[latestIntro]; !ok {
 		t.Fatal("expected latest introduction page in sitemap")
+	} else if entry.Priority != "0.8" {
+		t.Fatalf("latest page priority = %q, want 0.8", entry.Priority)
 	}
 
-	nested := "https://andurel.com/docs/latest/inertia-props"
+	nested := "https://andurel.com/docs/head/inertia-props"
 	if _, ok := locs[nested]; !ok {
 		t.Fatal("expected nested inertia docs page in sitemap")
+	}
+
+	pinned := "https://andurel.com/docs/1.5.5/introduction"
+	if entry, ok := locs[pinned]; !ok {
+		t.Fatal("expected 1.5.5 introduction page in sitemap")
+	} else if entry.Priority != "0.6" {
+		t.Fatalf("1.5.5 page priority = %q, want 0.6", entry.Priority)
 	}
 
 	legacy := "https://andurel.com/docs/1.5.2/introduction"

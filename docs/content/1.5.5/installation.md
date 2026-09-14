@@ -12,14 +12,14 @@ You need:
 
 ## Install Andurel
 
-Install the 1.5.2 CLI with Go:
+Install the latest stable CLI with Go:
 
 ```bash
-go install github.com/mbvlabs/andurel@v1.5.2
+go install github.com/mbvlabs/andurel@latest
 andurel --version
 ```
 
-`go install github.com/mbvlabs/andurel@latest` installs the current stable release, not 1.5.2. See the [latest installation guide](/docs/latest/installation) for that version.
+This currently installs v1.5.5. For reproducible automation, install `@v1.5.5` instead of `latest`.
 
 ## Create an application
 
@@ -47,4 +47,4 @@ andurel new orbit --inertia react/pnpm
 andurel new orbit --inertia svelte
 ```
 
-See [Frontend Options](/docs/1.5.2/frontend-options) for the available adapters and JavaScript runtimes.
+See [Frontend Options](/docs/1.5.5/frontend-options) for the available adapters and JavaScript runtimes.

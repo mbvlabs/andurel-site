@@ -10,14 +10,14 @@ Read this page for the contract. Use the child pages when you need to implement 
 
 | Topic | Use it when |
 | --- | --- |
-| [Renderer](/docs/latest/inertia-renderer) | Constructing the renderer, middleware, shared providers, and flash reflash |
-| [Pages and Visits](/docs/latest/inertia-pages) | Calling `Page`, understanding initial HTML vs JSON visits, and reading protocol headers |
-| [Root Document and Vite](/docs/latest/inertia-vite) | Editing `views/root.templ`, development tags, production manifests, and asset versions |
-| [Props](/docs/latest/inertia-props) | Building JSON payloads, lazy resolvers, and v3 evaluation policies |
-| [Shared Data and Redirects](/docs/latest/inertia-shared) | Sharing actor data, validation errors, flash, and redirect-after-write |
-| [SSR](/docs/latest/inertia-ssr) | Opting a page into SSR and running the separate Node runtime |
-| [Diagnostics](/docs/latest/inertia-diagnostics) | Classifying protocol, prop, root, and SSR failures |
-| [Generators](/docs/latest/inertia-generators) | Scaffolding an Inertia app and generating pages, types, and TypeScript routes |
+| [Renderer](/docs/head/inertia-renderer) | Constructing the renderer, middleware, shared providers, and flash reflash |
+| [Pages and Visits](/docs/head/inertia-pages) | Calling `Page`, understanding initial HTML vs JSON visits, and reading protocol headers |
+| [Root Document and Vite](/docs/head/inertia-vite) | Editing `views/root.templ`, development tags, production manifests, and asset versions |
+| [Props](/docs/head/inertia-props) | Building JSON payloads, lazy resolvers, and v3 evaluation policies |
+| [Shared Data and Redirects](/docs/head/inertia-shared) | Sharing actor data, validation errors, flash, and redirect-after-write |
+| [SSR](/docs/head/inertia-ssr) | Opting a page into SSR and running the separate Node runtime |
+| [Diagnostics](/docs/head/inertia-diagnostics) | Classifying protocol, prop, root, and SSR failures |
+| [Generators](/docs/head/inertia-generators) | Scaffolding an Inertia app and generating pages, types, and TypeScript routes |
 
 ## Application shape
 
@@ -41,4 +41,4 @@ After writes, `Renderer.Redirect` issues a 3xx response. Middleware upgrades uns
 
 SSR is per-response. Call `.SSR()` on a page builder when that document should be server-rendered. In development the renderer posts to Vite; in other environments `cmd/app` posts to `INERTIA_SSR_URL`. Failures fall back to client rendering unless fail-fast is enabled.
 
-For unexpected behavior, inspect `X-Inertia-*` headers, the exact component name, selected nested paths, `Vary`, asset version, and redirect status. See [Diagnostics](/docs/latest/inertia-diagnostics).
+For unexpected behavior, inspect `X-Inertia-*` headers, the exact component name, selected nested paths, `Vary`, asset version, and redirect status. See [Diagnostics](/docs/head/inertia-diagnostics).

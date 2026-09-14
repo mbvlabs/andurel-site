@@ -6,13 +6,13 @@ Andurel v2 is a project generator plus seven independently versioned Go modules.
 
 | Module | Responsibility | Deep dive |
 | --- | --- | --- |
-| `pkg/storage` | PostgreSQL, Bun/sqlc interop, transactions, migrations, test databases, and River clients | [Storage](/docs/latest/storage) |
-| `pkg/inertia` | Echo-native Inertia v3 protocol, Vite assets, props, redirects, flash, and SSR | [Inertia](/docs/latest/inertia) |
-| `pkg/hypermedia` | Templ rendering and Datastar/SSE response helpers | [Hypermedia](/docs/latest/hypermedia) |
-| `pkg/routing` | Typed URL construction shared by Go and generated TypeScript | [Routing Package](/docs/latest/routing-package) |
-| `pkg/server` | Bounded HTTP server construction and graceful shutdown | [Server](/docs/latest/server-package) |
-| `pkg/email` | Transport-neutral email payloads, validation, retry classification, and Mailpit | [Email Package](/docs/latest/email-package) |
-| `pkg/validation` | Structured field errors and composable validation rules | [Validation](/docs/latest/validation) |
+| `pkg/storage` | PostgreSQL, Bun/sqlc interop, transactions, migrations, test databases, and River clients | [Storage](/docs/head/storage) |
+| `pkg/inertia` | Echo-native Inertia v3 protocol, Vite assets, props, redirects, flash, and SSR | [Inertia](/docs/head/inertia) |
+| `pkg/hypermedia` | Templ rendering and Datastar/SSE response helpers | [Hypermedia](/docs/head/hypermedia) |
+| `pkg/routing` | Typed URL construction shared by Go and generated TypeScript | [Routing Package](/docs/head/routing-package) |
+| `pkg/server` | Bounded HTTP server construction and graceful shutdown | [Server](/docs/head/server-package) |
+| `pkg/email` | Transport-neutral email payloads, validation, retry classification, and Mailpit | [Email Package](/docs/head/email-package) |
+| `pkg/validation` | Structured field errors and composable validation rules | [Validation](/docs/head/validation) |
 
 The packages expose ordinary Go constructors rather than an Andurel service locator. Fx belongs to the generated application and connects constructors and process lifecycles.
 
@@ -35,7 +35,7 @@ The queue process has a separate graph. It constructs the same storage connectio
 
 Package configuration types contain operational policy and validation. They do not choose environment-variable names. For example, `storage.DefaultConfig()` supplies pool defaults, while generated `config.NewDatabase()` maps `DB_*` values onto the type and validates the result.
 
-This means packages work without Fx or environment variables, applications can adopt another configuration source without forking the framework, and a package update cannot silently introduce a new environment contract. See [Configuration](/docs/latest/configuration) for the generated mappings.
+This means packages work without Fx or environment variables, applications can adopt another configuration source without forking the framework, and a package update cannot silently introduce a new environment contract. See [Configuration](/docs/head/configuration) for the generated mappings.
 
 ## Versioning and upgrades
 

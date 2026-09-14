@@ -46,4 +46,4 @@ andurel generate scaffold Product --dry-run --diff --json
 andurel extension add docker --dry-run --diff --json
 ```
 
-The v2 line does not automate upgrading a v1 application. See [Moving to v2](/docs/latest/v2-migration).
+The v2 line does not automate upgrading a v1 application. See [Moving to v2](/docs/head/v2-migration).

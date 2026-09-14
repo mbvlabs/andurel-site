@@ -34,7 +34,7 @@ After scaffolding, install JavaScript dependencies with the recorded package man
 
 Generated `newInertia` calls `NewRenderer` with `views.Root`, embedded `assets.Files`, project name, environment, protocol debug, `appVersion` as a shared prop, and fail-fast from config. The router registers `renderer.Middleware()`, copies flashes with `inertia.ContextWithFlash`, and sets `SetReflashHandler`.
 
-You change application behavior by editing those files, not by forking the package. Add `WithSharedProvider` next to `newInertia` for the current account. Opt individual pages into SSR with `.SSR()`. See [Renderer](/docs/latest/inertia-renderer) and [SSR](/docs/latest/inertia-ssr).
+You change application behavior by editing those files, not by forking the package. Add `WithSharedProvider` next to `newInertia` for the current account. Opt individual pages into SSR with `.SSR()`. See [Renderer](/docs/head/inertia-renderer) and [SSR](/docs/head/inertia-ssr).
 
 ## Generate Inertia resources
 
@@ -129,4 +129,4 @@ Edit page components, layouts, and CSS freely. Re-running a generator will not r
 5. Add `.SSR()` only on pages that should hit Vite or `cmd/ssr`.
 6. Run `andurel doctor` before committing when `routes.ts` or generated views changed.
 
-See [Frontend Options](/docs/latest/frontend-options) for choosing Templ versus Inertia, and [Code Generation](/docs/latest/code-generation) for non-Inertia generators.
+See [Frontend Options](/docs/head/frontend-options) for choosing Templ versus Inertia, and [Code Generation](/docs/head/code-generation) for non-Inertia generators.
