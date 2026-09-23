@@ -56,7 +56,7 @@ defer runtime.Stop(shutdownCtx)
 
 `Stop` POSTs `/shutdown` and kills the process when the context ends. `Errors()` reports unexpected child exits so a process manager can restart.
 
-`andurel run` supervises `cmd/ssr` in development when SSR is used. In production, run `cmd/ssr` (or an equivalent Node host serving the same HTTP contract) next to `cmd/app`. The JavaScript package manager in `andurel.lock` does not choose this Node binary.
+`andurel run` supervises `cmd/ssr` in development when SSR is used. In production, run `cmd/ssr` (or an equivalent Node host serving the same HTTP contract) next to `cmd/app`. The JavaScript package manager in `andurel.toml` does not choose this Node binary.
 
 ## Failures and fail-fast
 

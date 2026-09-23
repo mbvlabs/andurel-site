@@ -2,17 +2,17 @@
 
 Andurel generates an Inertia application you can edit. Framework behavior stays in `pkg/inertia`; routes, controllers, payloads, and page components are yours after creation.
 
-Resource generation follows the UI recorded in `andurel.lock`. In an Inertia project, scaffolds and controllers emit pages for that adapter. Pass `--api` for JSON handlers instead of UI pages.
+Resource generation follows the UI recorded in `andurel.toml`. In an Inertia project, scaffolds and controllers emit pages for that adapter. Pass `--api` for JSON handlers instead of UI pages.
 
 ## Create an Inertia application
 
 ```bash
-andurel new orbit                 # default: react/pnpm
+andurel new orbit # default: react/pnpm
 andurel new orbit --ui vue/bun
 andurel new orbit --ui svelte/npm
 ```
 
-Adapters are `vue`, `react`, and `svelte`. Append `/npm`, `/pnpm`, `/bun`, or `/yarn` for the JavaScript package manager. That choice is stored in `andurel.lock` and used to install and build frontend assets. It does not select the Node binary for `cmd/ssr`.
+Adapters are `vue`, `react`, and `svelte`. Append `/npm`, `/pnpm`, or `/bun` for the JavaScript package manager. That choice is stored in `andurel.toml` and used to install and build frontend assets. It does not select the Node binary for `cmd/ssr`.
 
 The scaffold writes, among other things:
 
@@ -45,7 +45,7 @@ andurel generate controller Product index show
 andurel generate controller Dashboard overview
 ```
 
-Generation reads the adapter from `andurel.lock`. It cannot combine UI page generation with `--api`.
+Generation reads the adapter from `andurel.toml`. It cannot combine UI page generation with `--api`.
 
 A generated Inertia resource includes:
 
@@ -62,11 +62,11 @@ Index example:
 
 ```go
 return c.renderer.Page(
-    etx,
-    "Product/Index",
-    inertia.FromStruct(ProductIndexProps{
-        Items: newProductDataList(list.Products),
-    }),
+ etx,
+ "Product/Index",
+ inertia.FromStruct(ProductIndexProps{
+ Items: newProductDataList(list.Products),
+ }),
 ).Render()
 ```
 
@@ -77,11 +77,11 @@ import type { ProductData, ProductIndexProps } from '@/types/product'
 import { routes } from '@/routes'
 
 export default function Index({ items }: ProductIndexProps) {
-  return <Link href={routes.productShow(routeID(item))}>View</Link>
+ return <Link href={routes.productShow(routeID(item))}>View</Link>
 }
 ```
 
-Create and edit pages use `useForm` (or the Vue/Svelte equivalent) and POST/PUT JSON to the generated route helpers. Field errors belong in `props.errors`; generated auth shows that pattern with `ValidationErrors`. Resource create currently redirects with flash on failure rather than redisplaying field errors—add `ValidationErrors` yourself when the form needs them.
+Create and edit pages use `useForm` (or the Vue/Svelte equivalent) and POST/PUT JSON to the generated route helpers. Field errors belong in `props.errors`; generated auth shows that pattern with `ValidationErrors`. Resource create currently redirects with flash on failure rather than redisplaying field errors, add `ValidationErrors` yourself when the form needs them.
 
 Custom actions (`generate controller Dashboard overview`) add an empty controller method, a page component, and a GET route. Fill in props the same way as a hand-written page.
 
@@ -95,10 +95,10 @@ This reads `router/routes/*.go` and writes `resources/js/routes.ts`. Only routes
 
 ```go
 var ProductShow = routing.NewRouteWithUUIDID(
-    "/:id",
-    "show",
-    "/products",
-    routing.InertiaRoute(),
+ "/:id",
+ "show",
+ "/products",
+ routing.InertiaRoute(),
 )
 ```
 

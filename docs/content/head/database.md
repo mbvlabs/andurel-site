@@ -20,7 +20,7 @@ lifecycle.Append(fx.Hook{
 
 ## PostgreSQL configuration
 
-Start from `storage.DefaultConfig()` and replace application identity and credentials. `Config.Validate` requires a PostgreSQL kind, host, port, name, user, and supported SSL mode.
+Start from `storage.DefaultConfig()` and replace application identity and credentials. Application `config.NewDatabase` maps environment variables into this type. `Config.Validate` requires a PostgreSQL kind, host, port, name, user, and supported SSL mode.
 
 ```go
 cfg := storage.DefaultConfig()
@@ -32,21 +32,27 @@ cfg.ApplicationName = "orbit-web"
 db, err := storage.NewPostgres(ctx, cfg)
 ```
 
-Programmatic options override config fields. `WithMaxOpenConnections` maps to pgxpool `MaxConns`. Prefer max open connections and `ConnectionMaxIdleTime` over idle-connection knobs that are not applied to the pgx pool.
+Programmatic options override config fields. `WithMaxOpenConnections` maps to pgxpool `MaxConns`. Prefer max open connections and `ConnectionMaxIdleTime` over idle-connection knobs that are not applied to the pgx pool. See [Configuration](/docs/head/configuration) for the full `DB_*` table.
 
 ## Models and queries
 
-Application-owned models depend on `storage.Connection` and call narsilc-generated clients. See [Models](/docs/head/models) and [Queries](/docs/head/queries).
+Application-owned models depend on `storage.Connection`, wrap a narsilc client, and expose `WithTx` for transactional work:
 
 ```go
 type Products struct {
-    db storage.Connection
+    queries *queries.Queries
 }
 
 func NewProducts(db storage.Connection) Products {
-    return Products{db: db}
+    return Products{queries: queries.New(db)}
+}
+
+func (p Products) WithTx(tx storage.Transaction) Products {
+    return Products{queries: queries.New(tx)}
 }
 ```
+
+See [Models](/docs/head/models) and [Queries](/docs/head/queries).
 
 ## Transactions
 
@@ -55,16 +61,18 @@ func NewProducts(db storage.Connection) Products {
 ```go
 err := storage.RunInTransaction(ctx, connection,
     func(ctx context.Context, tx storage.Transaction) error {
-        q := queries.New(tx)
-        if _, err := q.InsertProduct(ctx, params); err != nil {
+        products := models.NewProducts(connection).WithTx(tx)
+        product, err := products.Create(ctx, data)
+        if err != nil {
             return err
         }
-        return q.RecordProductCreated(ctx, productID)
+        _, err = queue.InsertTx(ctx, tx, jobs.ProductCreatedArgs{ID: product.ID}, nil)
+        return err
     },
 )
 ```
 
-Calling a model method that uses the original connection from inside the callback escapes the transaction. Pass `tx` (or a model constructed with it) into participating operations instead.
+Calling a model method that uses the original connection from inside the callback escapes the transaction. Pass `tx` (or a model constructed with `WithTx`) into participating operations instead.
 
 ## Migrations and test databases
 
@@ -74,4 +82,6 @@ Calling a model method that uses the original connection from inside the callbac
 
 ## River insertion and processing
 
-`QueueInsert` belongs in the web process. `QueueProcessor` owns processing and belongs in `cmd/queue`. River uses `riverpgxv5` on the same pgx pool. See [Queues](/docs/head/queues).
+`storage.NewQueueInsert` builds an insert-only River client on the shared pgx pool (`riverpgxv5`). Publish it as `storage.InsertQueue` in the web process. `storage.NewQueueProcessor` owns processing and belongs in `cmd/queue`.
+
+Use `InsertTx` / `InsertManyTx` when the job must share a PostgreSQL transaction with domain writes. See [Queues](/docs/head/queues).

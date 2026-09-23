@@ -54,7 +54,7 @@ When `WithEnvironment` is not `"production"`, the renderer emits Vite developmen
 - the entry module, for example `{viteDevURL}/resources/js/app.tsx`
 - React Refresh preamble when the entry point ends in `.tsx`
 
-`andurel run` starts Vite beside the Go process. The JavaScript package manager in `andurel.lock` installs dependencies; it does not select the SSR Node binary.
+`andurel run` starts Vite beside the Go process. The JavaScript package manager in `andurel.toml` installs dependencies; it does not select the SSR Node binary.
 
 If development tags 404, the Vite origin or entry point does not match `vite.config`. Keep `INERTIA_VITE_DEV_URL` and `INERTIA_ENTRY_POINT` aligned with the Vite root and `build.outDir`.
 

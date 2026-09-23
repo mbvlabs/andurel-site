@@ -1,6 +1,6 @@
 # Introduction
 
-Andurel is a Rails-like web framework for Go. These **head** docs document Andurel **v2.0.0-alpha** — the current pre-release line (same commit as `master` today). APIs may still change before a stable `v2.0.0`.
+Andurel is a Rails-like web framework for Go. These **head** docs document Andurel **v2.0.0-alpha**, the current pre-release line (same commit as `master` today). APIs may still change before a stable `v2.0.0`.
 
 ## What v2 emphasizes
 

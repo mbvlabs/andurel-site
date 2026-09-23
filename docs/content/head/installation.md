@@ -23,7 +23,7 @@ andurel --version
 
 While `v2.0.0-alpha` is the current `/v2` tag, `github.com/mbvlabs/andurel/v2@latest` resolves to the same line. Pin `@v2.0.0-alpha` when you want the exact release these docs describe.
 
-Nightlies that track unreleased `master` ship as **prebuilt binaries** on the GitHub `nightly` release — do not use `go install …@master` for nightly metadata. v1 installs stay on `github.com/mbvlabs/andurel@v1.x.y`.
+Nightlies that track unreleased `master` ship as **prebuilt binaries** on the GitHub `nightly` release, do not use `go install …@master` for nightly metadata. v1 installs stay on `github.com/mbvlabs/andurel@v1.x.y`.
 
 ## Create an application
 
@@ -50,4 +50,4 @@ andurel new orbit --ui svelte/npm
 andurel new orbit --ui templ/datastar
 ```
 
-Supported Inertia adapters are Vue, React, and Svelte. Supported package managers are npm, pnpm, bun, and yarn. The choice is recorded in `andurel.lock` and drives installs, builds, and later generators.
+Supported Inertia adapters are Vue, React, and Svelte. Supported package managers are **npm**, **pnpm**, and **bun** (not yarn). The choice is recorded in `andurel.toml` and drives installs, builds, and later generators.

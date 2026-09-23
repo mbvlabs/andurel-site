@@ -11,8 +11,9 @@ cmd/ssr/                  Node SSR process owner (Inertia)
 cmd/seeds/                seed command entry point
 config/                   environment loading and typed providers
 controllers/              HTTP handlers and route registration
+router/cookies/           kiks jar, session payload, cookie module
+router/middleware/        auth and related Echo middleware
 router/routes/            typed route declarations
-router/appctx/            typed request metadata helpers
 views/                    Templ components and Inertia root document
 resources/js/             Inertia pages, layouts, Vite entry (when enabled)
 models/                   entities, model APIs, and Fx module
@@ -27,16 +28,16 @@ migrations/               embedded Goose SQL migrations
 seeds/                    named seed sets and registry
 telemetry/                application observability wiring
 assets/                   embedded compiled assets
-andurel.toml              tool and project metadata
-andurel.lock              locked scaffold, tools, and UI choices
+andurel.toml              project manifest (UI, database, tool pins)
+andurel.lock              tool download digests
 ```
 
 ## Reusable framework packages
 
-Generated applications import `github.com/mbvlabs/andurel/pkg/*` modules for routing, server, storage, validation, hypermedia, Inertia, email, and telemetry behavior. Their versions are pinned in the application's `go.mod` and do not have to match the CLI version.
+Generated applications import `github.com/mbvlabs/andurel/pkg/*` modules for routing, server, storage, validation, hypermedia, Inertia, email, kiks, and telemetry behavior. Their versions are pinned in the application's `go.mod` and do not have to match the CLI version.
 
 Unlike v1, these implementations are not copied into an application-owned `internal/` tree. Configuration, middleware policy, controllers, model behavior, and presentation remain application-owned.
 
 ## Project metadata
 
-`andurel.toml` and `andurel.lock` record the framework version, tools, extensions, database conventions, frontend adapter, JavaScript package manager, and the separate Inertia SSR runtime. Commit the lockfile with the project. `go.mod` remains the source of truth for framework package versions; use `andurel packages update` to bump them deliberately.
+`andurel.toml` records scaffold choices (frontend adapter, package manager, SSR runtime, database null strategy) and pinned tool versions. `andurel.lock` stores per-platform SHA-256 digests for those tools. Commit both with the project. `go.mod` remains the source of truth for framework package versions; use `andurel packages update` to bump them deliberately. See [Project Lock](/docs/head/project-lock).

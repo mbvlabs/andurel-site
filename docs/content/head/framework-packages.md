@@ -41,7 +41,7 @@ This means packages work without Fx or environment variables, applications can a
 
 ## Versioning and upgrades
 
-Each package has its own module, semantic version, and changelog. Versions may differ from one another and from the CLI release. `go.mod` is the source of truth for code dependencies; `andurel.toml` / `andurel.lock` record the framework version, scaffold choices, extensions, and tools used to maintain the project.
+Each package has its own module, semantic version, and changelog. Versions may differ from one another and from the CLI release. `go.mod` is the source of truth for code dependencies; `andurel.toml` / `andurel.lock` record scaffold choices and pinned tools used to maintain the project.
 
 ```bash
 andurel packages list

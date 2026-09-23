@@ -50,36 +50,38 @@ Inertia can also redirect-after-write and rely on flash for non-field messages. 
 
 ## Flash
 
-Flash is a top-level page field, not a prop. The renderer already installs a provider that reads `inertia.FlashFromContext`. Generated request metadata copies session flashes into that context:
+Flash is a top-level page field, not a prop. The renderer already installs a provider that reads `inertia.FlashFromContext`. Generated apps usually add a provider that reads kiks flashes so the page field stays in sync with the session bag:
 
 ```go
-ctx = appctx.WithFlashes(c.Request().Context(), flashes)
-ctx = inertia.ContextWithFlash(ctx, flashes)
+inertia.WithFlashProvider(func(etx *echo.Context) any {
+    return kiks.Flashes(etx.Request().Context())
+}),
+```
+
+You can also copy messages onto the request for a single response:
+
+```go
+ctx := inertia.ContextWithFlash(
+    etx.Request().Context(),
+    kiks.Flashes(etx.Request().Context()),
+)
+etx.SetRequest(etx.Request().WithContext(ctx))
 ```
 
 `PageBuilder.Flash` overrides providers for one response. Extra `WithFlashProvider` callbacks run in order until one returns non-nil.
 
-Generated `resources/js` trees read `page.flash` for toasts. The site adapter expects an array of `{Type, Message}` objects. Your page can use a different shape as long as the client and `ContextWithFlash` agree.
+Generated `resources/js` trees read `page.flash` for toasts. The site adapter expects an array of `{type, message}` (and related) objects from `kiks.FlashMessage`. Your page can use a different shape as long as the client and the flash provider agree.
 
-Redirects would otherwise consume flashes before the next GET. `SetReflashHandler` runs after an Inertia handler returns 3xx and before the response commits, so generated session code can write the same messages back:
+kiks middleware already persists the flash cookie on HTTP redirects (3xx), status 409, and `X-Andurel-Client-Redirect` responses. If you keep flashes only in `inertia.ContextWithFlash` without kiks, configure `SetReflashHandler` / `WithReflash` so redirect responses do not drop them. See [Cookies & Sessions](/docs/head/cookies-sessions).
 
-```go
-renderer.SetReflashHandler(func(etx *echo.Context) error {
-    flashes := appctx.Flashes(etx.Request().Context())
-    return cookieSession.Reflash(etx, flashes)
-})
-```
-
-Without reflash, a `Redirect` after `AddFlash` shows an empty flash on the following page.
+Without a flash source on the next GET, a `Redirect` after `AddFlash` shows an empty flash on the following page.
 
 ## Redirects
 
 After a successful write, do not render the next Inertia page from the POST. Redirect, then let the GET render.
 
 ```go
-if err := cookies.AddFlash(etx, cookies.FlashSuccess, "Product created"); err != nil {
-    return err
-}
+kiks.AddFlash(etx.Request().Context(), kiks.FlashSuccess, "Product created")
 return c.renderer.Redirect(etx, routes.ProductShow.URL(product.ID), http.StatusSeeOther)
 ```
 

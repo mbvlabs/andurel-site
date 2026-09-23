@@ -15,9 +15,10 @@ Keep production v1 applications on the `1-5-stable` line until you can create a 
 - Model APIs are constructed with `storage.Connection` and injected through `models.Module`.
 - Migrations and seeds live in root `migrations/` and `seeds/` packages.
 - Queue insertion remains available to the web process, while processing runs from `cmd/queue`.
-- Inertia v3 is the default UI (`--ui react/pnpm`); Templ/Datastar is `--ui templ/datastar`. Generators follow `andurel.lock` — there is no `--inertia` flag. Gonertia integrations require manual replacement; applications own `views/root.templ`.
-- The lock records the JavaScript package manager separately from the Inertia SSR runtime (`cmd/ssr`).
-- `andurel.toml` / `andurel.lock` pin tools and scaffold choices; use `andurel packages list` / `andurel packages update` for `pkg/*` upgrades in `go.mod`.
+- Inertia v3 is the default UI (`--ui react/pnpm`); Templ/Datastar is `--ui templ/datastar`. Generators follow `andurel.toml` (`project.inertia`); there is no `--inertia` flag. Gonertia integrations require manual replacement; applications own `views/root.templ`.
+- `andurel.toml` records the JavaScript package manager separately from the Inertia SSR runtime (`cmd/ssr`). `andurel.lock` stores tool download digests.
+- Use `andurel packages list` / `andurel packages update` for `pkg/*` upgrades in `go.mod`. Sessions move to **kiks** (`router/cookies`); do not copy v1 session helpers forward.
+
 
 ## Migrate by behavior
 

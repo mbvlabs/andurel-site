@@ -10,17 +10,18 @@ andurel build --version v2.0.0-dev
 
 The command runs narsilc when query files exist, compiles email templates, generates Templ code, minifies Tailwind CSS, installs frontend dependencies and builds Vite assets for Inertia projects, downloads Go dependencies, and compiles the application release.
 
-The JavaScript package manager comes from `andurel.lock`. It is independent from the Node runtime used by `cmd/ssr`.
+The JavaScript package manager comes from `andurel.toml`. It is independent from the Node runtime used by `cmd/ssr`.
 
-## Deploy both process types
+## Deploy process types
 
-`andurel build` produces the web application from `cmd/app`. Build the queue entry point separately when the application processes jobs:
+`andurel build` produces the web application from `cmd/app`. Build the queue and SSR entry points separately when the application uses them:
 
 ```bash
 CGO_ENABLED=0 GOOS=linux go build -o orbit-queue ./cmd/queue
+CGO_ENABLED=0 GOOS=linux go build -o orbit-ssr ./cmd/ssr
 ```
 
-Deploy the two binaries as separate process types. They may share a database and telemetry backend, but each owns its Fx lifecycle and shutdown.
+Deploy these as separate process types. They may share a database and telemetry backend, but each owns its Fx lifecycle and shutdown. `cmd/ssr` still needs a Node runtime for the SSR bundle even when the Go wrapper owns process lifecycle.
 
 Apply root `migrations/` as a deliberate release step before traffic reaches code that needs the new schema. Back up important data before destructive changes.
 

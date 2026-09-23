@@ -1,24 +1,69 @@
 # Controllers
 
-Controllers are the HTTP boundary. They receive Echo contexts, parse and validate input, coordinate injected models or services, and choose an HTML, Inertia, JSON, redirect, or error response.
+Controllers are the HTTP boundary. They receive Echo contexts, parse and validate input, coordinate injected models or services, and choose an Inertia, Templ, JSON, redirect, or error response.
 
 ## Explicit dependencies
 
-Model APIs are values such as `models.Products`, not package globals. Fx supplies them to the controller constructor:
+Model APIs are values such as `models.Products`, not package globals. Fx supplies them (and the Inertia renderer when needed) to the controller constructor:
 
 ```go
 type Products struct {
     products models.Products
+    renderer *inertia.Renderer
 }
 
-func NewProducts(products models.Products) Products {
-    return Products{products: products}
+func NewProducts(products models.Products, renderer *inertia.Renderer) Products {
+    return Products{products: products, renderer: renderer}
 }
 ```
 
-Use `etx.Request().Context()` when calling models and services so cancellation crosses the HTTP boundary.
+Use `etx.Request().Context()` when calling models and services so cancellation crosses the HTTP boundary. Do not stash collaborators on Echo context keys.
 
-## Render a Templ page
+## Inertia (default UI)
+
+Generated Inertia apps inject `*inertia.Renderer`. One `Page` call covers the first HTML document and later JSON visits:
+
+```go
+func (p Products) Index(etx *echo.Context) error {
+    products, err := p.products.All(etx.Request().Context())
+    if err != nil {
+        return err
+    }
+
+    return p.renderer.Page(
+        etx,
+        "Products/Index",
+        inertia.FromStruct(ProductIndexProps{Items: toProductData(products)}),
+    ).Render()
+}
+```
+
+Validation failures stay on the same visit with protected errors:
+
+```go
+if validationErrors, ok := validation.As(err); ok {
+    return p.renderer.Page(etx, "Products/Edit", props).
+        ValidationErrors(validationErrors.ToMap()).
+        Render()
+}
+```
+
+Redirect helpers:
+
+| Method | Use |
+| --- | --- |
+| `Redirect(etx, location, status)` | Ordinary Inertia-aware redirect (POST upgrades 302 to 303) |
+| `Location(etx, location)` | Hard visit / full document load (login success often uses this) |
+
+```go
+return p.renderer.Redirect(etx, routes.ProductIndex.URL(), http.StatusSeeOther)
+```
+
+Map domain rows to payload structs before `Page`. Do not pass `models.Product` or narsilc types into props. See [Props](/docs/head/inertia-props) and [Shared Data and Redirects](/docs/head/inertia-shared).
+
+## Templ and JSON
+
+Templ controllers skip the renderer and call hypermedia helpers:
 
 ```go
 func (p Products) Index(etx *echo.Context) error {
@@ -30,7 +75,17 @@ func (p Products) Index(etx *echo.Context) error {
 }
 ```
 
-For Inertia, inject `*inertia.Renderer` and call its page, redirect, or location helpers. See [Inertia](/docs/head/inertia). For JSON controllers, return Echo JSON responses and keep application types at the boundary.
+API / `--api` controllers return Echo JSON and keep application DTOs at the boundary:
+
+```go
+return etx.JSON(http.StatusOK, ProductIndexProps{Items: items})
+```
+
+| Response | Typical call | Contract |
+| --- | --- | --- |
+| Inertia | `renderer.Page(...).Render()` | Page name + JSON props / redirects |
+| Templ | `hypermedia.RenderPage` / fragments | Typed Templ components |
+| JSON | `etx.JSON` | Application DTOs only |
 
 ## Generate controllers
 
@@ -41,4 +96,4 @@ andurel generate controller Dashboard overview
 andurel generate controller v1/User --api
 ```
 
-Use `--model-name` when a controller is backed by a differently named model, or `--api` for JSON handlers. Otherwise generation follows the UI recorded in `andurel.lock` (Inertia pages or Templ).
+Use `--model-name` when a controller is backed by a differently named model, or `--api` for JSON handlers. Otherwise generation follows the UI recorded in `andurel.toml` (Inertia pages by default, or Templ).

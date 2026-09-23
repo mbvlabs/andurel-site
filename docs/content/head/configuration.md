@@ -93,7 +93,7 @@ Edit `NewQueueWorker` for named queues or per-queue concurrency. Validation cove
 
 ## Email and telemetry
 
-`DEFAULT_SENDER_SIGNATURE` defaults to `noreply@DOMAIN`. `EMAIL_PROVIDER` selects an installed transport. Development defaults to `mailpit`, with `MAILPIT_HOST=0.0.0.0` and `MAILPIT_PORT=1025`. Production requires an installed provider such as the `aws-ses` extension and its own credential configuration.
+`DEFAULT_SENDER_SIGNATURE` defaults to `noreply@DOMAIN`. `EMAIL_PROVIDER` selects an installed transport. Development defaults to `mailpit`, with `MAILPIT_HOST=0.0.0.0` and `MAILPIT_PORT=1025`. Production requires a transport wired in the composition root that implements the generated sender interfaces.
 
 | Telemetry variable | Default |
 | --- | --- |

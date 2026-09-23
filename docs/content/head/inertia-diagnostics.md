@@ -27,10 +27,10 @@ Unwrap with `errors.As`. Handler logs should print `Kind`, `Operation`, `Compone
 
 Typical sources:
 
-- **protocol** — invalid merge intent, version provider failure
-- **props** — protected `errors` key, dotted-path conflict, resolver error, unsupported scroll metadata, JSON encode failure
-- **root** — `WithRoot` returned nil, Templ render error
-- **ssr** — missing SSR client, empty body, missing `data-server-rendered` / `data-page` markers, or a wrapped transport error when fail-fast is on
+- **protocol**, invalid merge intent, version provider failure
+- **props**, protected `errors` key, dotted-path conflict, resolver error, unsupported scroll metadata, JSON encode failure
+- **root**, `WithRoot` returned nil, Templ render error
+- **ssr**, missing SSR client, empty body, missing `data-server-rendered` / `data-page` markers, or a wrapped transport error when fail-fast is on
 
 SSR HTTP problems also surface as `SSRTransportError` (`transport`, `status`, `encode`, `decode`, `response`) and `ErrResponseTooLarge`.
 
@@ -38,7 +38,7 @@ SSR HTTP problems also surface as `SSRTransportError` (`transport`, `status`, `e
 
 When a visit misbehaves, compare the request you think you sent with the request the middleware parsed:
 
-1. `X-Inertia` — missing means an initial document, not JSON.
+1. `X-Inertia`, missing means an initial document, not JSON.
 2. Exact `component` string versus the file under `resources/js/Pages`.
 3. `X-Inertia-Partial-Component` versus the rendered component. Filters are ignored on mismatch.
 4. Nested `only` / `except` paths after dotted unpacking.

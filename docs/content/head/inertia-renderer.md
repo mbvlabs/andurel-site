@@ -61,12 +61,20 @@ renderer, err := inertia.NewRenderer(
 
 Shared props are copied at construction. Later mutation of the caller's map does not change the renderer. Providers run on every page response; they must be deterministic and cheap enough for full and partial visits.
 
-`SetReflashHandler` is the runtime equivalent of `WithReflash`. Generated routers call it while assembling middleware so session code can stay in the application:
+`SetReflashHandler` is the runtime equivalent of `WithReflash`. Use it when flash data lives outside kiks (for example only in `inertia.ContextWithFlash`) and must survive Inertia redirects. When flashes live in the kiks bag, jar middleware already persists them on 3xx and 409 responses; prefer `WithFlashProvider` that returns `kiks.Flashes`:
+
+```go
+inertia.WithFlashProvider(func(etx *echo.Context) any {
+    return kiks.Flashes(etx.Request().Context())
+}),
+```
+
+If you still need a custom reflash callback:
 
 ```go
 if err := renderer.SetReflashHandler(func(etx *echo.Context) error {
-    flashes := appctx.Flashes(etx.Request().Context())
-    return cookieSession.Reflash(etx, flashes)
+    // Re-stage flashes for the next request when your store is not kiks.
+    return nil
 }); err != nil {
     return nil, err
 }
