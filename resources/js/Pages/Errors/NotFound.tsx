@@ -1,4 +1,5 @@
 import Layout from '@/Layouts/Layout'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function NotFound() {
   return (
@@ -7,11 +8,15 @@ export default function NotFound() {
       description="The page you are looking for could not be found."
       robots="noindex, nofollow"
     >
-      <section className="w-full max-w-md border border-[#2f3a37] bg-[#101414]/90 p-6 text-center shadow-sm shadow-black/40">
-        <p className="text-sm font-medium uppercase tracking-wide text-[#8df7a4]">404</p>
-        <h1 className="mt-2 text-2xl font-semibold text-[#f2ead8]">Not found</h1>
-        <p className="mt-3 text-sm leading-6 text-[#8f8a7d]">The page you are looking for could not be found.</p>
-      </section>
+      <Card className="mx-auto w-full max-w-md border-border bg-card/90 text-center">
+        <CardHeader>
+          <p className="text-sm font-medium uppercase tracking-wide text-accent">404</p>
+          <CardTitle className="text-2xl font-semibold">Not found</CardTitle>
+          <CardDescription className="text-sm leading-6">
+            The page you are looking for could not be found.
+          </CardDescription>
+        </CardHeader>
+      </Card>
     </Layout>
   )
 }

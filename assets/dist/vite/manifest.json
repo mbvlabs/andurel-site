@@ -1,4 +1,20 @@
 {
+  "node_modules/.pnpm/@fontsource+architects-daughter@5.3.0/node_modules/@fontsource/architects-daughter/files/architects-daughter-latin-400-normal.woff": {
+    "file": "architects-daughter-latin-400-normal-Ze4cbGW2.woff",
+    "src": "node_modules/.pnpm/@fontsource+architects-daughter@5.3.0/node_modules/@fontsource/architects-daughter/files/architects-daughter-latin-400-normal.woff"
+  },
+  "node_modules/.pnpm/@fontsource+architects-daughter@5.3.0/node_modules/@fontsource/architects-daughter/files/architects-daughter-latin-400-normal.woff2": {
+    "file": "architects-daughter-latin-400-normal-DOGE_9Aw.woff2",
+    "src": "node_modules/.pnpm/@fontsource+architects-daughter@5.3.0/node_modules/@fontsource/architects-daughter/files/architects-daughter-latin-400-normal.woff2"
+  },
+  "node_modules/.pnpm/@fontsource+architects-daughter@5.3.0/node_modules/@fontsource/architects-daughter/files/architects-daughter-latin-ext-400-normal.woff": {
+    "file": "architects-daughter-latin-ext-400-normal-FqHtA13I.woff",
+    "src": "node_modules/.pnpm/@fontsource+architects-daughter@5.3.0/node_modules/@fontsource/architects-daughter/files/architects-daughter-latin-ext-400-normal.woff"
+  },
+  "node_modules/.pnpm/@fontsource+architects-daughter@5.3.0/node_modules/@fontsource/architects-daughter/files/architects-daughter-latin-ext-400-normal.woff2": {
+    "file": "architects-daughter-latin-ext-400-normal-BsHeVfRr.woff2",
+    "src": "node_modules/.pnpm/@fontsource+architects-daughter@5.3.0/node_modules/@fontsource/architects-daughter/files/architects-daughter-latin-ext-400-normal.woff2"
+  },
   "node_modules/.pnpm/@fontsource-variable+jetbrains-mono@5.3.0/node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-wght-normal.woff2": {
     "file": "jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2",
     "src": "node_modules/.pnpm/@fontsource-variable+jetbrains-mono@5.3.0/node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-wght-normal.woff2"
@@ -52,12 +68,12 @@
     "src": "node_modules/.pnpm/@fontsource-variable+noto-sans@5.3.0/node_modules/@fontsource-variable/noto-sans/files/noto-sans-vietnamese-wght-normal.woff2"
   },
   "resources/js/app.tsx": {
-    "file": "app-DfR4hlL8.js",
+    "file": "app-D9DjfSrM.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
     "css": [
-      "app-GYQwYuvv.css"
+      "app-Bx0gcGRU.css"
     ],
     "assets": [
       "jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2",
@@ -72,7 +88,11 @@
       "noto-sans-greek-wght-normal-Ymb6dZNd.woff2",
       "noto-sans-vietnamese-wght-normal-DLTJy58D.woff2",
       "noto-sans-latin-ext-wght-normal-W1qJv59z.woff2",
-      "noto-sans-latin-wght-normal-BYSzYMf3.woff2"
+      "noto-sans-latin-wght-normal-BYSzYMf3.woff2",
+      "architects-daughter-latin-ext-400-normal-BsHeVfRr.woff2",
+      "architects-daughter-latin-ext-400-normal-FqHtA13I.woff",
+      "architects-daughter-latin-400-normal-DOGE_9Aw.woff2",
+      "architects-daughter-latin-400-normal-Ze4cbGW2.woff"
     ]
   }
 }

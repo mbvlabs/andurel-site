@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { router } from '@inertiajs/react'
+import { toast } from 'sonner'
+
+import { Toaster } from '@/components/ui/sonner'
 
 type FlashMessage = {
   Type: string
@@ -24,26 +27,27 @@ export function pageFlashes(value: unknown): FlashMessage[] | undefined {
   return value.filter(isFlashMessage)
 }
 
-export function FlashToasts({ initialFlashes }: { initialFlashes?: FlashMessage[] }) {
-  const [toasts, setToasts] = useState<Array<FlashMessage & { id: number }>>([])
+function pushFlashes(flashes?: FlashMessage[]) {
+  if (!flashes || flashes.length === 0) {
+    return
+  }
 
-  useEffect(() => {
-    let nextId = 0
-
-    function pushFlashes(flashes?: FlashMessage[]) {
-      if (!flashes || flashes.length === 0) {
-        return
-      }
-
-      for (const flash of flashes) {
-        const id = nextId++
-        setToasts((current) => [...current, { ...flash, id }])
-        window.setTimeout(() => {
-          setToasts((current) => current.filter((toast) => toast.id !== id))
-        }, 5000)
-      }
+  for (const flash of flashes) {
+    const type = flash.Type.toLowerCase()
+    if (type === 'success') {
+      toast.success(flash.Message)
+    } else if (type === 'error') {
+      toast.error(flash.Message)
+    } else if (type === 'warning') {
+      toast.warning(flash.Message)
+    } else {
+      toast(flash.Message)
     }
+  }
+}
 
+export function FlashToasts({ initialFlashes }: { initialFlashes?: FlashMessage[] }) {
+  useEffect(() => {
     pushFlashes(initialFlashes)
 
     const removeListener = router.on('success', (event) => {
@@ -55,29 +59,5 @@ export function FlashToasts({ initialFlashes }: { initialFlashes?: FlashMessage[
     }
   }, [initialFlashes])
 
-  if (toasts.length === 0) {
-    return null
-  }
-
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {toasts.map((toast) => {
-        const colorClass =
-          toast.Type === 'success'
-            ? 'border-[#8df7a4] text-[#8df7a4]'
-            : toast.Type === 'error'
-              ? 'border-[#ff875f] text-[#ff875f]'
-              : 'border-[#ff6b1a] text-[#e4dfd2]'
-
-        return (
-          <div
-            key={toast.id}
-            className={`${colorClass} mb-2 border bg-[#101414] px-4 py-3 shadow-lg shadow-black/40 transition-opacity duration-300`}
-          >
-            {toast.Message}
-          </div>
-        )
-      })}
-    </div>
-  )
+  return <Toaster position="bottom-right" richColors closeButton />
 }

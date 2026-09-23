@@ -14,6 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { Kbd } from '@/components/ui/kbd'
 import type { DocPage, DocVersion } from '@/types/docs'
 
 type DocsSearchProps = {
@@ -84,9 +85,7 @@ export default function DocsSearch({
       >
         <SearchIcon />
         <span className="flex-1 truncate text-left">Search documentation...</span>
-        <kbd className="pointer-events-none hidden h-5 items-center gap-1 border border-border bg-muted px-1.5 font-mono text-[0.65rem] text-muted-foreground lg:inline-flex">
-          ⌘K
-        </kbd>
+        <Kbd className="pointer-events-none hidden border border-border lg:inline-flex">⌘K</Kbd>
       </Button>
       <CommandDialog
         open={open}

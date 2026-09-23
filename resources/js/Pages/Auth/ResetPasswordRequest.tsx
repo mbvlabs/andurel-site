@@ -1,6 +1,10 @@
 import { Link, useForm } from '@inertiajs/react'
 
 import Layout from '@/Layouts/Layout'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 import { routes } from '@/routes'
 
 type ResetPasswordRequestProps = {
@@ -21,23 +25,41 @@ export default function ResetPasswordRequest({ errors = {} }: ResetPasswordReque
       description="Request a password reset for your Andurel account."
       robots="noindex, nofollow"
     >
-      <section className="w-full max-w-md border border-[#2f3a37] bg-[#101414]/90 shadow-sm shadow-black/40">
-        <div className="p-6 pb-0">
-          <h1 className="text-xl font-semibold text-[#f2ead8]">Reset Password</h1>
-          <p className="mt-1 text-sm text-[#8f8a7d]">Enter your email address and we'll send you a code to reset your password.</p>
-        </div>
-        <div className="p-6">
-          <form onSubmit={(event) => submit(event.nativeEvent as SubmitEvent)} className="space-y-5">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-[#c7c0ad]" htmlFor="email">Email</label>
-              <input id="email" type="email" value={form.data.email} onChange={(event) => form.setData('email', event.target.value)} className="flex h-9 w-full border border-[#2f3a37] bg-[#090c0d] px-3 py-1 text-sm text-[#e4dfd2] shadow-inner shadow-black/35 focus:border-[#8df7a4] focus:outline-none focus:ring-2 focus:ring-[#8df7a4]/20" required />
-              {errors.email && <p className="text-sm font-medium text-[#ff875f]">{errors.email}</p>}
-            </div>
-            <button type="submit" disabled={form.processing} className="inline-flex w-full items-center justify-center bg-[#ff6b1a] px-4 py-2 text-sm font-medium text-[#130f0b] shadow-sm shadow-black/40 hover:bg-[#ff8748] disabled:opacity-60">{form.processing ? 'Loading' : 'Send Reset Code'}</button>
+      <Card className="mx-auto w-full max-w-md border-border bg-card/90">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">Reset Password</CardTitle>
+          <CardDescription>
+            Enter your email address and we&apos;ll send you a code to reset your password.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={(event) => submit(event.nativeEvent as SubmitEvent)}>
+            <FieldGroup>
+              <Field data-invalid={errors.email ? true : undefined}>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <Input
+                  id="email"
+                  type="email"
+                  value={form.data.email}
+                  onChange={(event) => form.setData('email', event.target.value)}
+                  aria-invalid={errors.email ? true : undefined}
+                  required
+                />
+                <FieldError>{errors.email}</FieldError>
+              </Field>
+              <Button type="submit" className="w-full" size="lg" disabled={form.processing}>
+                {form.processing ? 'Loading' : 'Send Reset Code'}
+              </Button>
+            </FieldGroup>
           </form>
-          <p className="mt-6 text-center text-sm text-[#8f8a7d]">Remember your password? <Link className="text-[#d7d0bf] hover:text-[#f2ead8] hover:underline" href={routes.sessionNew()}>Login</Link></p>
-        </div>
-      </section>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Remember your password?{' '}
+            <Link className="text-foreground/80 hover:text-foreground hover:underline" href={routes.sessionNew()}>
+              Login
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </Layout>
   )
 }
