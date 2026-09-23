@@ -1,4 +1,4 @@
-# Server
+# HTTP Server
 
 `github.com/mbvlabs/andurel/pkg/server` is a small wrapper around `net/http.Server`. It supplies bounded defaults, request base contexts, coordinated shutdown components, and consistent start errors. Routing, middleware, TLS termination, health policy, and process supervision remain application concerns.
 

@@ -6,14 +6,15 @@ Andurel v2 is a project generator plus independently versioned Go modules under 
 
 | Module | Responsibility | Deep dive |
 | --- | --- | --- |
-| `pkg/storage` | PostgreSQL via pgx, narsilc-friendly `Connection`, transactions, migrations, test databases, and River clients | [Storage](/docs/head/storage) |
+| `pkg/storage` | PostgreSQL via pgx, narsilc-friendly `Connection`, transactions, migrations, test databases, and River clients | [Getting Started](/docs/head/database) |
 | `pkg/inertia` | Echo-native Inertia v3 protocol, Vite assets, props, redirects, flash, and SSR | [Inertia](/docs/head/inertia) |
-| `pkg/hypermedia` | Templ rendering and Datastar/SSE response helpers | [Hypermedia](/docs/head/hypermedia) |
-| `pkg/routing` | Typed URL construction shared by Go and generated TypeScript | [Routing Package](/docs/head/routing-package) |
-| `pkg/server` | Bounded HTTP server construction and graceful shutdown | [Server](/docs/head/server-package) |
-| `pkg/email` | Transport-neutral email payloads, validation, retry classification, and Mailpit | [Email Package](/docs/head/email-package) |
+| `pkg/hypermedia` | Templ rendering and Datastar/SSE response helpers | [Templ & Datastar](/docs/head/hypermedia) |
+| `pkg/routing` | Typed URL construction shared by Go and generated TypeScript | [Routing](/docs/head/routing) |
+| `pkg/server` | Bounded HTTP server construction and graceful shutdown | [HTTP Server](/docs/head/http-server) |
+| `pkg/email` | Transport-neutral email payloads, validation, retry classification, and Mailpit | [Email](/docs/head/email) |
 | `pkg/validation` | Structured field errors and composable validation rules | [Validation](/docs/head/validation) |
 | `pkg/telemetry` | OpenTelemetry helpers for application processes | [Telemetry](/docs/head/telemetry) |
+| `pkg/kiks` | Cookie jars, bagged sessions, and flash middleware | [Cookies & Sessions](/docs/head/cookies-sessions) |
 
 The packages expose ordinary Go constructors rather than an Andurel service locator. Fx belongs to the generated application and connects constructors and process lifecycles.
 

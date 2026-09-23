@@ -12,7 +12,7 @@ The framework still favors one-time generation: a scaffold creates models, facto
 
 The `head` documentation URL slug stays `head`, but the product line named here is **v2.0.0-alpha**. Use the [latest documentation](/docs/latest/introduction) for the last v1 release line.
 
-There is no automated upgrade path from v1 to v2. Create new v2 projects with the v2 CLI and migrate existing applications deliberately. See [Moving to v2](/docs/head/v2-migration).
+There is no automated upgrade path from v1 to v2. Create new v2 projects with the v2 CLI and migrate existing applications deliberately. See [Upgrade Guide](/docs/head/upgrade).
 
 ## Platform and requirements
 

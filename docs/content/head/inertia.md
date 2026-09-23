@@ -12,10 +12,11 @@ Read this page for the contract. Use the child pages when you need to implement 
 | --- | --- |
 | [Renderer](/docs/head/inertia-renderer) | Constructing the renderer, middleware, shared providers, and flash reflash |
 | [Pages and Visits](/docs/head/inertia-pages) | Calling `Page`, understanding initial HTML vs JSON visits, and reading protocol headers |
-| [Root Document and Vite](/docs/head/inertia-vite) | Editing `views/root.templ`, development tags, production manifests, and asset versions |
 | [Props](/docs/head/inertia-props) | Building JSON payloads, lazy resolvers, and v3 evaluation policies |
 | [Shared Data and Redirects](/docs/head/inertia-shared) | Sharing actor data, validation errors, flash, and redirect-after-write |
+| [Root Document and Vite](/docs/head/inertia-vite) | Editing `views/root.templ`, development tags, production manifests, and asset versions |
 | [SSR](/docs/head/inertia-ssr) | Opting a page into SSR and running the separate Node runtime |
+| [TypeScript Sync](/docs/head/inertia-typescript-sync) | Generating TypeScript route helpers and payload types with `andurel sync` |
 | [Diagnostics](/docs/head/inertia-diagnostics) | Classifying protocol, prop, root, and SSR failures |
 | [Generators](/docs/head/inertia-generators) | Scaffolding an Inertia app and generating pages, types, and TypeScript routes |
 

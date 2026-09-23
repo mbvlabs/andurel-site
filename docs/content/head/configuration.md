@@ -52,7 +52,7 @@ Behind a proxy, a normal split is `DOMAIN=app.example.com`, `PROTOCOL=https`, `H
 | `DB_CONNECTION_MAX_IDLE_TIME` | `30m` | Idle connection lifetime |
 | `DB_OPEN_TELEMETRY` | `true` | pgx instrumentation |
 
-Budget connections across all web and queue replicas, leaving room for migrations and administration. See [Storage](/docs/head/storage).
+Budget connections across all web and queue replicas, leaving room for migrations and administration. See [Getting Started](/docs/head/database).
 
 ## Sessions and authentication
 

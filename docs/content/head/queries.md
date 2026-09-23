@@ -1,4 +1,4 @@
-# SQL Queries
+# Queries
 
 Andurel v2 persists through **narsilc**: you write annotated SQL under `models/queries/`, and the tool generates Go that fills application-owned result structs.
 

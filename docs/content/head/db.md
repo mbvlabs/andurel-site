@@ -1,4 +1,4 @@
-# Database Commands
+# db
 
 Andurel wraps PostgreSQL lifecycle, embedded Goose migrations, and named seed operations under `andurel db`.
 

@@ -1,4 +1,4 @@
-# Code Generation
+# generate
 
 Andurel generates application-owned code that you can edit after creation. Framework behavior is imported from versioned packages; project policy and domain code remain local.
 

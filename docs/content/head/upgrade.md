@@ -1,4 +1,4 @@
-# Moving to v2
+# Upgrade Guide
 
 Andurel v2 does not provide an automated upgrade path from v1. The `upgrade` command is not a v1-to-v2 migration tool.
 

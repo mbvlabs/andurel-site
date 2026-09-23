@@ -1,4 +1,4 @@
-# Frontend Options
+# Frontend
 
 Andurel supports client-owned pages with Inertia and Vue, React, or Svelte (the default), or server-owned HTML with Templ and Datastar. Both use the same Echo router, models, services, sessions, validation, and PostgreSQL infrastructure. The choice is where rendering and interaction state live.
 
@@ -46,7 +46,7 @@ if err := c.products.Archive(etx.Request().Context(), signals.ID); err != nil {
 return hypermedia.PatchComponent(etx, views.ProductRow(signals.ID))
 ```
 
-Patches can replace, remove, append, prepend, insert, or update named fragments. Signals, custom events, URL changes, scripts, and long-lived broadcasters form the server-to-browser protocol. The application owns fragment identifiers and state transitions. See [Hypermedia](/docs/head/hypermedia).
+Patches can replace, remove, append, prepend, insert, or update named fragments. Signals, custom events, URL changes, scripts, and long-lived broadcasters form the server-to-browser protocol. The application owns fragment identifiers and state transitions. See [Templ & Datastar](/docs/head/hypermedia).
 
 ## Working with Inertia
 

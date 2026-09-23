@@ -1,4 +1,4 @@
-# Build and Deploy
+# Deployment
 
 Andurel v2 builds generated database code, email styles, Templ components, CSS, optional Inertia assets, and the Go web application.
 

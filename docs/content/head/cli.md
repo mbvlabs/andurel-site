@@ -1,4 +1,4 @@
-# CLI Overview
+# Overview
 
 The `andurel` command creates projects, generates application code, manages databases and tools, compiles email and frontend assets, builds releases, and exposes structured discovery.
 
@@ -48,4 +48,4 @@ andurel generate scaffold Product --dry-run --diff --json
 andurel extension add docker --dry-run --diff --json
 ```
 
-The v2 line does not automate upgrading a v1 application. See [Moving to v2](/docs/head/v2-migration).
+The v2 line does not automate upgrading a v1 application. See [Upgrade Guide](/docs/head/upgrade).

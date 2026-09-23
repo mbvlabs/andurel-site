@@ -1,4 +1,4 @@
-# Hypermedia
+# Templ & Datastar
 
 `github.com/mbvlabs/andurel/pkg/hypermedia` joins compiled Templ components to Echo responses and provides Datastar-compatible server-sent events. It does not prescribe component structure or store UI state; the application owns its HTML, fragment keys, signals, and event flow.
 

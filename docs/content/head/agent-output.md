@@ -1,4 +1,4 @@
-# Agent Workflows
+# Agent Output
 
 Andurel's CLI exposes structured discovery and mutation reports for agents and automation.
 

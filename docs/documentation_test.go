@@ -68,8 +68,8 @@ func TestSiteLoadsCatalogContent(t *testing.T) {
 	if !ok {
 		t.Fatal("expected head/installation to exist")
 	}
-	if !strings.Contains(head.HTML, "@master") {
-		t.Fatal("expected head installation to document the master CLI")
+	if !strings.Contains(head.HTML, "v2.0.0-alpha") {
+		t.Fatal("expected head installation to document the v2.0.0-alpha CLI")
 	}
 
 	if _, ok := site.Find(LatestVersion, "missing"); ok {
@@ -101,8 +101,8 @@ func TestNestedInertiaPagesLoadInReadingOrder(t *testing.T) {
 	if props.Parent == nil || props.Parent.URL != "/docs/head/inertia" {
 		t.Fatalf("props parent = %+v, want inertia overview", props.Parent)
 	}
-	if props.Previous == nil || props.Previous.URL != "/docs/head/inertia-vite" {
-		t.Fatalf("props previous = %+v, want vite", props.Previous)
+	if props.Previous == nil || props.Previous.URL != "/docs/head/inertia-pages" {
+		t.Fatalf("props previous = %+v, want pages", props.Previous)
 	}
 	if !strings.Contains(props.HTML, "FromStruct") {
 		t.Fatal("expected props page to document FromStruct")

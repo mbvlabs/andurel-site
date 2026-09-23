@@ -86,8 +86,8 @@ func TestVersionURL(t *testing.T) {
 	if !ok {
 		t.Fatal("expected head to exist")
 	}
-	if url != "/docs/head/introduction" {
-		t.Fatalf("VersionURL(head) = %q, want /docs/head/introduction", url)
+	if url != "/docs/head/whats-new" {
+		t.Fatalf("VersionURL(head) = %q, want /docs/head/whats-new", url)
 	}
 }
 
@@ -96,8 +96,8 @@ func TestFindNestedInertiaPage(t *testing.T) {
 	if !ok {
 		t.Fatal("expected head/inertia-props to exist")
 	}
-	if section.Title != "Framework Packages" {
-		t.Fatalf("section = %q, want Framework Packages", section.Title)
+	if section.Title != "Inertia" {
+		t.Fatalf("section = %q, want Inertia", section.Title)
 	}
 	if page.Title != "Props" {
 		t.Fatalf("title = %q, want Props", page.Title)
@@ -129,7 +129,7 @@ func TestNavigationNestsInertiaChildren(t *testing.T) {
 
 	var inertia NavigationPage
 	for _, section := range head.Sections {
-		if section.Title != "Framework Packages" {
+		if section.Title != "Inertia" {
 			continue
 		}
 		for _, page := range section.Pages {
@@ -139,7 +139,7 @@ func TestNavigationNestsInertiaChildren(t *testing.T) {
 		}
 	}
 	if inertia.Slug == "" {
-		t.Fatal("expected Framework Packages / Inertia in head navigation")
+		t.Fatal("expected Inertia / Inertia in head navigation")
 	}
 	if inertia.URL != "/docs/head/inertia" {
 		t.Fatalf("inertia URL = %q, want /docs/head/inertia", inertia.URL)
@@ -148,10 +148,11 @@ func TestNavigationNestsInertiaChildren(t *testing.T) {
 	want := []string{
 		"inertia-renderer",
 		"inertia-pages",
-		"inertia-vite",
 		"inertia-props",
 		"inertia-shared",
+		"inertia-vite",
 		"inertia-ssr",
+		"inertia-typescript-sync",
 		"inertia-diagnostics",
 		"inertia-generators",
 	}

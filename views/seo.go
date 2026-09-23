@@ -14,7 +14,7 @@ const (
 	siteDescription = "Andurel is the web development framework for Go. Everything you and your agents need to build robust, performant applications."
 	twitterSite     = "@mbvlabs"
 	twitterCreator  = "@mbvisti"
-	defaultOgImage  = "https://media.andurel.com/brand/andurel-og-square.png"
+	defaultOgImage  = "https://media.andurel.com/brand/andurel-og.png"
 	defaultOgAlt    = "Andurel wordmark"
 	themeColor      = "#090b0d"
 	githubURL       = "https://github.com/mbvlabs/andurel"
