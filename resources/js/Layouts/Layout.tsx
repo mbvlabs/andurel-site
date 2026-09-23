@@ -40,7 +40,7 @@ export default function Layout({
       <SeoHead title={title} description={description} robots={robots} jsonLd={jsonLd} />
       <AsciiSky />
       <header className="relative">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-3">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <a className="inline-flex items-center gap-3 text-sm font-semibold text-[#f2ead8]" href={routes.homePage()}>
             <span className="grid size-8 grid-cols-2 gap-1 border border-[#52605c] bg-[#101414] p-1 shadow-sm shadow-black/40">
               <span className="border border-[#8df7a4]" />
@@ -58,7 +58,7 @@ export default function Layout({
       </header>
       <div className="relative flex flex-1 flex-col py-6">{children}</div>
       <footer className="relative border-t border-[#2f3a37] py-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 sm:px-6">
           <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex w-full max-w-sm flex-col gap-3">
               <p className="font-mono text-xs uppercase tracking-widest text-[#8f8a7d]">Pad Andurel</p>
@@ -74,7 +74,7 @@ export default function Layout({
                   })
                 }}
               >
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <Input
                     id="footer-first-name"
                     name="firstName"
@@ -112,13 +112,13 @@ export default function Layout({
             </div>
             <div className="flex flex-col gap-3">
               <p className="font-mono text-xs uppercase tracking-widest text-[#8f8a7d]">Range nominal</p>
-              <nav className="grid grid-cols-2 gap-x-8 gap-y-2 font-mono text-xs text-[#8f8a7d]">
+              <nav className="grid grid-cols-1 gap-x-8 gap-y-2 font-mono text-xs text-[#8f8a7d] sm:grid-cols-2">
                 {socials.map((social) => (
                   <a
                     key={social.href}
                     href={social.href}
                     target="_blank"
-                    className="transition hover:text-[#f2ead8]"
+                    className="break-all transition hover:text-[#f2ead8]"
                   >
                     {social.label}
                   </a>

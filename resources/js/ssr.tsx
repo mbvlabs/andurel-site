@@ -2,6 +2,8 @@ import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
 import createServer from '@inertiajs/react/server'
 import ReactDOMServer from 'react-dom/server'
 
+import { AppTree } from '@/app-tree'
+
 type PageModule = {
   default: ResolvedComponent
 }
@@ -19,7 +21,7 @@ createServer(page =>
       const pages = import.meta.glob<PageModule>('./Pages/**/*.tsx', { eager: true })
       return pages[`./Pages/${name}.tsx`].default
     },
-    setup: ({ App, props }) => <App {...props} />,
+    setup: ({ App, props }) => <AppTree App={App} props={props} />,
   }),
   serverOptions,
 )

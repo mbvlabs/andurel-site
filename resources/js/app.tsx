@@ -3,7 +3,7 @@ import '@/css/base.css'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
 
-import { FlashToasts, pageFlashes } from '@/components/flash-toasts'
+import { AppTree } from '@/app-tree'
 
 type PageProps = {
   [key: string]: unknown
@@ -11,27 +11,6 @@ type PageProps = {
 
 type PageModule = {
   default: ResolvedComponent
-}
-
-type InertiaSetupProps = {
-  initialPage?: {
-    flash?: unknown
-  }
-}
-
-function AppTree({
-  App,
-  props,
-}: {
-  App: ResolvedComponent
-  props: InertiaSetupProps
-}) {
-  return (
-    <>
-      <App {...props} />
-      <FlashToasts initialFlashes={pageFlashes(props.initialPage?.flash)} />
-    </>
-  )
 }
 
 createInertiaApp<PageProps>({

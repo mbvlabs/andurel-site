@@ -30,7 +30,7 @@ const INSTALL_COMMAND = 'go install github.com/mbvlabs/andurel@latest'
 
 const telemetry = [
   { label: 'Vehicle', value: 'Andurel v2' },
-  { label: 'Propulsion', value: 'Go 1.26' },
+  { label: 'Propulsion', value: 'Go 1.27' },
   { label: 'Payload', value: 'Inertia v3' },
   { label: 'Adapters', value: 'React / Vue / Svelte' },
   { label: 'Safety', value: 'Nominal' },
@@ -53,7 +53,8 @@ const hangarBays = [
     bay: '03',
     name: 'Propellant',
     status: 'GO',
-    detail: 'PostgreSQL with Bun for ordinary persistence and sqlc for the queries that matter.',
+    detail:
+      'PostgreSQL with narsilc-generated queries into application-owned model structs. Typed SQL you keep.',
   },
   {
     bay: '04',
@@ -65,7 +66,8 @@ const hangarBays = [
     bay: '05',
     name: 'Range ops',
     status: 'GO',
-    detail: 'River jobs, email, and queues on the same stack that serves the request path.',
+    detail:
+      'River jobs and queues on the same stack that serves the request path. Email authored in Templ and Tailwind, compiled to inline styles for every client.',
   },
   {
     bay: '06',
@@ -85,7 +87,7 @@ const countdown = [
   {
     mark: 'T-2',
     title: 'Stand up a vehicle',
-    command: 'andurel new orbit --inertia react',
+    command: 'andurel new orbit',
     href: routes.documentationShow('latest', 'installation'),
   },
   {
@@ -97,10 +99,11 @@ const countdown = [
 ]
 
 const manifest = [
-  { system: 'Language', article: 'Go 1.26+', note: 'Required' },
+  { system: 'Language', article: 'Go 1.27+', note: 'Required' },
   { system: 'Targets', article: 'Linux & macOS, amd64 / arm64', note: 'Flight range' },
-  { system: 'Database', article: 'PostgreSQL · uptrace/bun · sqlc · goose', note: 'Supported' },
+  { system: 'Database', article: 'PostgreSQL · narsilc · goose', note: 'Supported' },
   { system: 'UI', article: 'Inertia v3 · React, Vue, Svelte', note: 'Primary' },
+  { system: 'Email', article: 'Templ · Tailwind · inline styles', note: 'On pad' },
   { system: 'Agents', article: 'CLI + AGENTS.md', note: 'On pad' },
   { system: 'Jobs', article: 'River', note: 'On pad' },
 ]
@@ -117,6 +120,32 @@ function SectionLabel({ pad, title }: { pad: string; title: string }) {
   )
 }
 
+function BlueprintCallout({ className }: { className?: string }) {
+  return (
+    <div className={className} aria-hidden="true">
+      <p className="font-blueprint origin-center -rotate-8 text-center text-[1.35rem] leading-none tracking-wide text-card-foreground/90">
+        One-click Install
+      </p>
+      <svg
+        className="mx-auto mt-1 block text-card-foreground/80"
+        width="120"
+        height="100"
+        viewBox="0 0 120 100"
+        fill="none"
+      >
+        <path
+          d="M38 8
+             C 52 22, 66 48, 84 80"
+          stroke="currentColor"
+          strokeWidth="1.55"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
+    </div>
+  )
+}
+
 function InstallCommand() {
   const [copied, setCopied] = useState(false)
 
@@ -127,7 +156,7 @@ function InstallCommand() {
   }
 
   return (
-    <Card className="w-[85%] border-border">
+    <Card className="w-full border-border">
       <CardHeader className="border-b border-border pb-3">
         <CardTitle className="flex items-center justify-between gap-6 text-xs uppercase tracking-widest text-muted-foreground">
           <span className="flex items-center gap-2">
@@ -141,16 +170,16 @@ function InstallCommand() {
         <CardDescription>Get the Andurel CLI on your machine.</CardDescription>
       </CardHeader>
       <CardContent>
-        <InputGroup className="h-10 bg-background" aria-label="Install command">
+        <InputGroup className="h-auto min-h-10 items-start bg-background py-1.5 sm:h-10 sm:items-center sm:py-0" aria-label="Install command">
           <InputGroupAddon>
             <InputGroupText>
-              <Kbd className="mr-4 bg-transparent px-0 font-mono text-accent">$</Kbd>
+              <Kbd className="mr-2 bg-transparent px-0 font-mono text-accent sm:mr-4">$</Kbd>
             </InputGroupText>
           </InputGroupAddon>
-          <InputGroupText className="font-mono text-xs whitespace-nowrap text-card-foreground">
+          <InputGroupText className="min-w-0 flex-1 break-all font-mono text-xs leading-5 text-card-foreground">
             {INSTALL_COMMAND}
           </InputGroupText>
-          <InputGroupAddon className="mx-6" align="inline-end">
+          <InputGroupAddon className="mx-2 shrink-0 sm:mx-4" align="inline-end">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger
@@ -180,24 +209,28 @@ export default function Home() {
 
   return (
     <Layout title={homeTitle} description={siteDescription} jsonLd={homeJsonLd(canonical)}>
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-20 px-6 py-4 pb-20">
-        <section className="flex min-h-[34rem] flex-col justify-center gap-8 py-20 lg:min-h-[40rem] lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-col">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4 py-4 pb-20 sm:gap-20 sm:px-6">
+        <section className="grid gap-8 py-10 sm:py-16 lg:grid-cols-2 lg:items-end lg:gap-12 lg:py-20">
+          <div className="flex min-w-0 flex-col">
             <p className="mb-3 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-accent">
               Pad A · Clear for launch
             </p>
-            <h1 className="text-4xl font-semibold text-card-foreground sm:text-5xl lg:text-5xl lg:leading-[1.1]">
-              Space-grade Go framework <br /> For humans and{' '}
+            <h1 className="text-3xl font-semibold leading-tight text-card-foreground sm:text-4xl lg:text-5xl lg:leading-[1.1]">
+              Space-grade Go framework{' '}
+              <span className="hidden sm:inline">
+                <br />
+              </span>
+              For humans and{' '}
               <span className="italic underline decoration-accent">agents</span>
             </h1>
-            <p className="mt-5 max-w-lg text-lg leading-7 text-neutral-foreground">
+            <p className="mt-5 max-w-lg text-base leading-7 text-neutral-foreground sm:text-lg">
               Everything you and your agent(s) need to build robust and performant applications,
               that will scale to the far-side of the moon.
             </p>
-            <div className="mt-8 flex max-w-xl justify-between gap-x-4">
+            <div className="mt-8 flex max-w-xl flex-col gap-3 sm:flex-row sm:gap-x-4">
               <Button
                 size="lg"
-                className="h-12 w-1/2 px-6 text-sm"
+                className="h-12 w-full px-6 text-sm sm:w-1/2"
                 nativeButton={false}
                 render={<a href={routes.documentationShow('latest', 'introduction')} />}
               >
@@ -206,7 +239,7 @@ export default function Home() {
               </Button>
               <Button
                 size="lg"
-                className="h-12 w-1/2 px-6 text-sm"
+                className="h-12 w-full px-6 text-sm sm:w-1/2"
                 variant="outline"
                 nativeButton={false}
                 render={<a href="https://github.com/mbvlabs/andurel" />}
@@ -215,20 +248,32 @@ export default function Home() {
               </Button>
             </div>
           </div>
-          <div className="flex flex-1 items-center justify-end">
+
+          <div className="relative flex w-full min-w-0 flex-col justify-end pt-2 lg:pt-28">
+            <BlueprintCallout className="pointer-events-none absolute top-0 left-1/2 hidden w-max -translate-x-1/2 lg:block" />
+            <p className="font-blueprint mb-3 -rotate-3 text-xl text-card-foreground/90 lg:hidden">
+              One-click Install
+            </p>
             <InstallCommand />
           </div>
         </section>
 
         <section>
-          <div className="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-3 lg:grid-cols-5">
-            {telemetry.map((item) => (
-              <div key={item.label} className="bg-background px-4 py-4">
+          <div className="grid grid-cols-1 gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
+            {telemetry.map((item, index) => (
+              <div
+                key={item.label}
+                className={
+                  index === telemetry.length - 1
+                    ? 'bg-background px-4 py-4 sm:col-span-2 lg:col-span-1'
+                    : 'bg-background px-4 py-4'
+                }
+              >
                 <p className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">
                   {item.label}
                 </p>
                 <p className="mt-2 flex items-center gap-2 font-mono text-sm text-card-foreground">
-                  <span className="size-1.5 bg-accent" />
+                  <span className="size-1.5 shrink-0 bg-accent" />
                   {item.value}
                 </p>
               </div>
@@ -271,10 +316,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="grid gap-10 lg:grid-cols-2">
-          <div>
+        <section className="grid gap-10 lg:grid-cols-2 lg:items-stretch">
+          <div className="flex flex-col">
             <SectionLabel pad="Crew 03" title="Two consoles, one vehicle" />
-            <div className="space-y-6">
+            <div className="grid flex-1 gap-6">
               <div className="border border-border p-5">
                 <p className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">
                   Flight crew
@@ -297,10 +342,21 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div>
+          <div className="flex flex-col">
             <SectionLabel pad="Manifest 04" title="Vehicle configuration" />
-            <Card className="border-border">
-              <CardContent className="p-0">
+            <div className="flex flex-1 flex-col divide-y divide-border border border-border md:hidden">
+              {manifest.map((row) => (
+                <div key={row.system} className="flex flex-col gap-2 p-4">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="font-medium text-card-foreground">{row.system}</p>
+                    <p className="shrink-0 font-mono text-xs text-accent">{row.note}</p>
+                  </div>
+                  <p className="font-mono text-sm leading-6 text-muted-foreground">{row.article}</p>
+                </div>
+              ))}
+            </div>
+            <Card className="hidden min-h-0 flex-1 flex-col border-border md:flex">
+              <CardContent className="flex flex-1 flex-col p-0">
                 <Table>
                   <TableHeader>
                     <TableRow>
