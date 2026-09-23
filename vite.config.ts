@@ -4,7 +4,7 @@ import inertia from '@inertiajs/vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig(({ command }) => ({
+export default defineConfig({
   plugins: [react(), inertia({ ssr: { entry: 'resources/js/ssr.tsx' } }), tailwindcss()],
   resolve: {
     alias: {
@@ -20,15 +20,8 @@ export default defineConfig(({ command }) => ({
       input: 'resources/js/app.tsx',
     },
   },
-  // CNB drops node_modules after the frontend build. cmd/ssr only has the
-  // bundle, so production SSR must inline npm imports instead of resolving them.
-  ssr: command === 'build' ? { noExternal: true } : {},
   server: {
     port: 5173,
     strictPort: true,
-    origin: 'http://localhost:5173',
-    cors: {
-      origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
-    },
   },
-}))
+})

@@ -7,16 +7,21 @@ import (
 	"andurel-site/router/cookies"
 	"andurel-site/router/routes"
 
+	"github.com/mbvlabs/andurel/pkg/kiks"
 	"github.com/mbvlabs/andurel/pkg/routing"
 
 	"github.com/labstack/echo/v5"
 	"github.com/maypok86/otter/v2"
 )
 
-func AuthOnly(session *cookies.Session) echo.MiddlewareFunc {
+func AuthOnly() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
-			if session.ExtractFromCookieApp(c).IsAuthenticated {
+			app, err := kiks.Get[*cookies.App](c.Request().Context())
+			if err != nil {
+				return err
+			}
+			if app != nil && app.IsAuthenticated {
 				return next(c)
 			}
 

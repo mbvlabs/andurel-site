@@ -12,7 +12,7 @@ import (
 const (
 	DefaultInertiaContainerID         = "app"
 	DefaultInertiaViteDevURL          = "http://localhost:5173/assets/dist"
-	DefaultInertiaProtocolDebug       = false
+	DefaultInertiaProtocolDebug       = true
 	DefaultInertiaSSRRuntime          = "node"
 	DefaultInertiaSSRBundle           = "assets/dist/ssr/ssr.js"
 	DefaultInertiaSSRListen           = "http://127.0.0.1:13714"
@@ -21,7 +21,7 @@ const (
 	DefaultInertiaSSRRequestTimeout   = 2 * time.Second
 	DefaultInertiaSSRMaxResponseBytes = int64(2097152)
 	DefaultInertiaSSRMinimumMajor     = 22
-	DefaultInertiaSSRFailFast         = false
+	DefaultInertiaSSRFailFast         = true
 	DefaultInertiaEntryPoint          = "resources/js/app.tsx"
 )
 

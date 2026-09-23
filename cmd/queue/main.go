@@ -11,10 +11,10 @@ import (
 
 	"andurel-site/config"
 	"andurel-site/queue"
-	"andurel-site/telemetry"
 
 	"github.com/mbvlabs/andurel/pkg/email"
 	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 	"github.com/riverqueue/river"
 	"go.uber.org/fx"
 )
@@ -32,11 +32,11 @@ func main() {
 		fx.Provide(
 			func() context.Context { return ctx },
 			newEmailSenders,
+			newTelemetry,
 		),
 
 		config.Module,
 		databaseModule,
-		telemetry.Module,
 		queue.Module,
 		queueProcessorModule,
 	)
@@ -65,7 +65,7 @@ var databaseModule = fx.Module(
 var queueProcessorModule = fx.Module(
 	"queue-processor",
 	fx.Provide(
-		func(_ *telemetry.Telemetry) *slog.Logger { return slog.Default() },
+		func(tel *telemetry.Telemetry) *slog.Logger { return tel.Logger() },
 		newQueueProcessor,
 	),
 	fx.Invoke(queueProcessorLifecycle),
@@ -75,8 +75,16 @@ func newDatabase(
 	lifecycle fx.Lifecycle,
 	ctx context.Context,
 	cfg storage.Config,
+	tel *telemetry.Telemetry,
 ) (*storage.Postgres, error) {
-	db, err := storage.NewPostgres(ctx, cfg)
+	opts := []storage.Option{}
+	if tel != nil {
+		opts = append(opts, storage.WithOpenTelemetry(storage.TelemetryConfig{
+			TracerProvider: tel.TracerProvider(),
+			MeterProvider:  tel.MeterProvider(),
+		}))
+	}
+	db, err := storage.NewPostgres(ctx, cfg, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,13 +113,52 @@ func newQueueProcessor(params queueProcessorParams) (*storage.QueueProcessor, er
 	)
 }
 
+func newTelemetry(
+	lifecycle fx.Lifecycle,
+	ctx context.Context,
+	appCfg config.App,
+	cfg config.Telemetry,
+) (*telemetry.Telemetry, error) {
+	opts := []telemetry.Option{
+		telemetry.WithTraceSampleRate(cfg.TraceSampleRate),
+		telemetry.WithBatchConfig(
+			cfg.BatchSize,
+			time.Duration(cfg.BatchTimeoutMs)*time.Millisecond,
+			2048,
+		),
+		telemetry.WithLogLevel(cfg.LogLevel),
+	}
+	if !appCfg.IsProduction() {
+		opts = append(opts, telemetry.WithConsole())
+	}
+	headers := telemetry.ParseHeaders(cfg.OtlpHeaders)
+	if cfg.OtlpLogsEndpoint != "" {
+		opts = append(opts, telemetry.WithOTLPLogs(cfg.OtlpLogsEndpoint, headers))
+	}
+	if cfg.OtlpTracesEndpoint != "" {
+		opts = append(opts, telemetry.WithOTLPTraces(cfg.OtlpTracesEndpoint, headers))
+	}
+	if cfg.OtlpMetricsEndpoint != "" {
+		opts = append(opts, telemetry.WithOTLPMetrics(cfg.OtlpMetricsEndpoint, headers))
+	}
+	tel, err := telemetry.New(ctx, cfg.ServiceName, cfg.ServiceVersion, opts...)
+	if err != nil {
+		return nil, err
+	}
+	lifecycle.Append(fx.Hook{OnStop: tel.Shutdown})
+	return tel, nil
+}
+
 func newEmailSenders(
 	ctx context.Context,
-	cfg config.MailTransport,
+	cfg config.Mail,
 ) (email.TransactionalSender, email.MarketingSender, error) {
 	switch cfg.Driver {
 	case config.MailpitDriver:
-		client, err := email.NewMailpit(cfg.Mailpit)
+		client, err := email.NewMailpit(email.MailpitConfig{
+			Host: cfg.Host,
+			Port: cfg.Port,
+		})
 		if err != nil {
 			return nil, nil, fmt.Errorf("create Mailpit client: %w", err)
 		}
@@ -126,7 +173,9 @@ func queueProcessorLifecycle(
 	lifecycle fx.Lifecycle,
 	appCtx context.Context,
 	processor *storage.QueueProcessor,
+	tel *telemetry.Telemetry,
 ) {
+	appCtx = tel.Context(appCtx)
 	lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			return processor.Start(appCtx)

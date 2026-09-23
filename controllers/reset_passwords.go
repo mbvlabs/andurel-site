@@ -2,15 +2,14 @@ package controllers
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
 
 	"andurel-site/router"
-	"andurel-site/router/cookies"
 	"andurel-site/router/routes"
 	"andurel-site/services"
 
 	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 	"github.com/mbvlabs/andurel/pkg/validation"
 
 	"github.com/labstack/echo/v5"
@@ -19,15 +18,13 @@ import (
 type ResetPasswords struct {
 	identity services.Identity
 	renderer *inertia.Renderer
-	session  *cookies.Session
 }
 
 func NewResetPasswords(
 	identity services.Identity,
 	renderer *inertia.Renderer,
-	session *cookies.Session,
 ) ResetPasswords {
-	return ResetPasswords{identity: identity, renderer: renderer, session: session}
+	return ResetPasswords{identity: identity, renderer: renderer}
 }
 
 func (rp ResetPasswords) RegisterRoutes(r *router.Router) error {
@@ -81,13 +78,16 @@ func (rp ResetPasswords) New(etx *echo.Context) error {
 }
 
 func (rp ResetPasswords) Create(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "reset_passwords.create")
+	defer span.End()
+
 	var payload struct {
 		Email string `json:"email"`
 	}
 
 	if err := etx.Bind(&payload); err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"could not parse password reset request payload",
 			"error",
 			err,
@@ -97,7 +97,7 @@ func (rp ResetPasswords) Create(etx *echo.Context) error {
 	}
 
 	if err := rp.identity.RequestResetPassword(
-		etx.Request().Context(),
+		ctx,
 		services.RequestResetPasswordData{
 			Email: payload.Email,
 		},
@@ -110,29 +110,14 @@ func (rp ResetPasswords) Create(etx *echo.Context) error {
 			).ValidationErrors(validationErrors.ToMap()).Render()
 		}
 
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"failed to request password reset",
 			"error",
 			err,
 		)
-		if flashErr := rp.session.AddFlash(
-			etx,
-			cookies.FlashError,
-			"Failed to send password reset code",
-		); flashErr != nil {
-			return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
-		}
 
 		return rp.renderer.Redirect(etx, routes.PasswordNew.URL(), http.StatusSeeOther)
-	}
-
-	if flashErr := rp.session.AddFlash(
-		etx,
-		cookies.FlashSuccess,
-		"If an account exists with that email, you will receive password reset instructions.",
-	); flashErr != nil {
-		return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
 	}
 
 	return rp.renderer.Redirect(etx, routes.SessionNew.URL(), http.StatusSeeOther)
@@ -143,14 +128,6 @@ func (rp ResetPasswords) Edit(etx *echo.Context) error {
 
 	token := etx.Param("token")
 	if token == "" {
-		if flashErr := rp.session.AddFlash(
-			etx,
-			cookies.FlashError,
-			"Invalid or missing reset token",
-		); flashErr != nil {
-			return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
-		}
-
 		return rp.renderer.Redirect(etx, routes.PasswordNew.URL(), http.StatusSeeOther)
 	}
 
@@ -160,6 +137,9 @@ func (rp ResetPasswords) Edit(etx *echo.Context) error {
 }
 
 func (rp ResetPasswords) Update(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "reset_passwords.update")
+	defer span.End()
+
 	var payload struct {
 		Token           string `json:"resetPasswordToken"`
 		Password        string `json:"password"`
@@ -167,8 +147,8 @@ func (rp ResetPasswords) Update(etx *echo.Context) error {
 	}
 
 	if err := etx.Bind(&payload); err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"could not parse password reset payload",
 			"error",
 			err,
@@ -177,7 +157,7 @@ func (rp ResetPasswords) Update(etx *echo.Context) error {
 	}
 
 	if err := rp.identity.ResetPassword(
-		etx.Request().Context(),
+		ctx,
 		services.ResetPasswordData{
 			Token:           payload.Token,
 			Password:        payload.Password,
@@ -192,40 +172,19 @@ func (rp ResetPasswords) Update(etx *echo.Context) error {
 			).ValidationErrors(validationErrors.ToMap()).Render()
 		}
 
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"failed to reset password",
 			"error",
 			err,
 		)
 
-		var errorMsg string
-		switch {
-		case errors.Is(err, services.ErrInvalidResetCode):
-			errorMsg = "Invalid reset code"
-		case errors.Is(err, services.ErrExpiredResetCode):
-			errorMsg = "Reset code has expired"
-		default:
-			errorMsg = "Failed to reset password"
-		}
-
-		if flashErr := rp.session.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
-			return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
-		}
 		redirectPath := routes.PasswordEdit.URL(payload.Token)
 		if payload.Token != "" {
 			redirectPath = routes.PasswordEdit.URL(payload.Token)
 		}
 
 		return rp.renderer.Redirect(etx, redirectPath, http.StatusSeeOther)
-	}
-
-	if flashErr := rp.session.AddFlash(
-		etx,
-		cookies.FlashSuccess,
-		"Password reset successfully! Please log in.",
-	); flashErr != nil {
-		return rp.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
 	}
 
 	return rp.renderer.Redirect(etx, routes.SessionNew.URL(), http.StatusSeeOther)

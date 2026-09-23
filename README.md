@@ -1,6 +1,8 @@
 # andurel-site
 
-A full-stack web application built with [Andurel](https://github.com/mbvlabs/andurel), a Rails-like web framework for Go that prioritizes development speed.
+A Go application built with [Andurel](https://github.com/mbvlabs/andurel), a space-grade framework for humans and agents.
+
+Inspired by Ruby on Rails, Andurel is now its own thing: generated Go you own, explicit wiring, and an agent-ready CLI.
 
 ## Project Structure
 
@@ -33,8 +35,6 @@ andurel-site/
 │   ├── routes/          # Route definitions
 │   ├── cookies/         # Session helpers
 │   └── middleware/      # Custom middleware
-├── pkg/
-│ 	└──telemetry/        # Observability (logs, traces, metrics)
 ├── views/               # Templ templates
 ├── .env.example         # Example environment configuration
 └── go.mod               # Go dependencies
@@ -46,7 +46,7 @@ andurel-site/
 
 - Go 1.24.4 or higher
 - PostgreSQL database
-- Andurel CLI: `go install github.com/mbvlabs/andurel@latest`
+- Andurel CLI: `go install github.com/mbvlabs/andurel/v2@latest`
 
 ### Setup
 
@@ -63,7 +63,7 @@ andurel-site/
 
 3. **Run migrations**
    ```bash
-   andurel migration up
+   andurel db migrate up
    ```
 
 4. **Start the development server**
@@ -88,7 +88,7 @@ This orchestrates Air (Go), Templ watch, and Tailwind CSS compilation.
 
 ```bash
 # Open interactive database console
-andurel app console
+andurel db console
 ```
 
 Provides a SQL console connected to your database for ad-hoc queries and exploration.
@@ -97,38 +97,64 @@ Provides a SQL console connected to your database for ad-hoc queries and explora
 
 ```bash
 # Create a new migration
-andurel migration new create_users_table
+andurel generate migration create_users_table
 
 # Run all pending migrations
-andurel migration up
+andurel db migrate up
 
 # Rollback last migration
-andurel migration down
+andurel db migrate down
 
 # Rollback to specific version
-andurel migration down-to [version]
+andurel db migrate down-to [version]
 
 # Apply up to specific version
-andurel migration up-to [version]
+andurel db migrate up-to [version]
 
 # Reset database (rollback all, then reapply)
-andurel migration reset
+andurel db migrate reset
 
 # Fix migration version gaps
-andurel migration fix
+andurel db migrate fix
 ```
+
+### Create, refresh, and inspect
+
+```bash
+# Create application-owned files
+andurel generate migration create_users_table
+andurel generate model User
+andurel generate scaffold Product
+
+# Refresh derived files
+andurel sync queries --json
+andurel sync views
+andurel sync routes --json
+andurel sync payloads --json
+
+# Inspect project shape
+andurel inspect project --json
+andurel inspect routes --json
+andurel inspect models --json
+
+# Discover commands
+andurel commands --json
+andurel commands --check
+```
+
+`andurel sync` refreshes generated app files. `andurel tool sync` downloads pinned binaries.
 
 ## How-To Guides
 
 ### Generate a New Resource
 
-The Andurel generator creates complete CRUD resources with models, controllers, views, and routes.
+Andurel generates models, factories, controllers, routes, and pages that belong to the application.
 
 **Prerequisites**: You need a database table first. Create a migration:
 
 ```bash
 # 1. Create a migration for your table
-andurel migration new create_products_table
+andurel generate migration create_products_table
 ```
 
 Edit the generated migration file in `migrations/` to define your table schema:
@@ -151,7 +177,7 @@ DROP TABLE products;
 Apply the migration:
 
 ```bash
-andurel migration up
+andurel db migrate up
 ```
 
 **Generate the resource**:
@@ -174,7 +200,7 @@ The generator also:
 - Creates Bun-backed model methods for CRUD operations
 - Creates a complete CRUD interface at `/products`
 
-**Custom table names**: If your table doesn't follow Rails naming conventions (model `Product` → table `products`):
+**Custom table names**: If your table doesn't follow the default naming (model `Product` → table `products`):
 
 ```bash
 # Map Product model to a custom table name
@@ -291,8 +317,8 @@ templ WelcomeEmail(userName string) {
 }
 ```
 
-`andurel run`, `andurel generate view`, and `andurel build` compile emails
-automatically. Run `andurel email compile` for a standalone compilation pass.
+`andurel run`, `andurel sync views`, and `andurel build` compile emails
+automatically. Run `andurel sync email` for a standalone compilation pass.
 
 **2. Send the email**
 
@@ -338,32 +364,37 @@ When modifying your database schema:
 
 ```bash
 # 1. Create a migration
-andurel migration new add_email_to_users
+andurel generate migration add_email_to_users
 
 # 2. Edit the migration file
 # Add your ALTER TABLE statements
 
 # 3. Apply the migration
-andurel migration up
+andurel db migrate up
 
 # 4. Refresh affected models
 andurel g model User --refresh
 ```
 ### Customize Styling
 
-This project uses Tailwind CSS. Customize your theme in `css/themes.css`:
+This project uses Tailwind CSS v4 with shadcn-style CSS variables in `css/theme.css`:
 
 ```css
-@layer theme {
-  :root {
-    --color-primary: theme('colors.blue.600');
-    --color-secondary: theme('colors.gray.600');
-  }
+:root {
+  --primary: #ff6b1a;
+  --primary-foreground: #130f0b;
+  --ring: #8df7a4;
+  --radius: 0;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
 }
 ```
 
-Add reusable wrapper classes in `css/components.css` under `@layer components`, then import or compose in your views.
-Use `examples/html/*.html` for snippet-based patterns (pure HTML + Datastar attributes).
+Use semantic utilities in views (`bg-background`, `text-foreground`, `bg-primary`, `border-border`, `ring-ring`).
 The development server automatically rebuilds CSS on changes.
 
 ## Environment Configuration
@@ -409,6 +440,7 @@ CSRF_TRUSTED_ORIGINS=
 # Telemetry (optional)
 TELEMETRY_SERVICE_NAME=andurel-site
 TELEMETRY_SERVICE_VERSION=1.0.0
+LOG_LEVEL=INFO
 OTLP_LOGS_ENDPOINT=
 OTLP_METRICS_ENDPOINT=
 OTLP_TRACES_ENDPOINT=
@@ -417,11 +449,11 @@ TRACE_SAMPLE_RATE=1.0
 
 ## Session, CORS, and CSRF Protection
 
-Application sessions use `HttpOnly` cookies with `SameSite=Lax` and `Path=/`. Production cookies also use `Secure`. `SESSION_MAX_AGE` is the lifetime in seconds and defaults to seven days (`604800`). Saving session state renews the expiration for another seven days. Signing out deletes the cookie immediately.
+Application sessions are defined in `router/cookies` (`cookies.NewJar`, FX `cookies.Module`) and loaded onto `context.Context` by `pkg/kiks`. Controllers read and write bag cookies with `kiks.Get` / `kiks.Exists` / `kiks.Set` / `kiks.Destroy` (`Get`, `Exists`, `Set`, and `Destroy` return an error when the bag is missing, the type is unregistered, or the type is native-only — use the same pointer type you registered, e.g. `*cookies.App`). Mark named bag cookies with `kiks.Bagged(...)` in `NewJar`; unmarked named cookies use native `kiks.Read` / `Write` / `Clear` with an injected `*kiks.Jar`. The App session payload is persisted by a cookie-backed `Store` (`kiks.NewCookieStore`). Each Go type may be registered at most once per jar — two same-shape cookies need distinct types. Cookies are `HttpOnly` with `SameSite=Lax` and `Path=/`. Production cookies also use `Secure`. `SESSION_MAX_AGE` is the lifetime in seconds and defaults to seven days (`604800`). Saving session state renews the expiration for another seven days. Signing out destroys the session immediately.
 
 CORS allows credentials and trusts only the configured application origin (`PROTOCOL` + `DOMAIN`) by default. `CORS_ALLOWED_ORIGINS` accepts a comma-separated list of additional exact origins. Wildcard origins are rejected when the application starts.
 
-CSRF protection uses Fetch Metadata to align with Rails behavior. Unsafe API requests bypass CSRF only when they carry a non-empty Bearer token and do not carry the application session cookie. Cookie-authenticated unsafe requests remain protected on every path.
+CSRF protection uses Fetch Metadata. Unsafe API requests bypass CSRF only when they carry a non-empty Bearer token and do not carry the application session cookie. Cookie-authenticated unsafe requests remain protected on every path.
 
 **Strategies** (`CSRF_STRATEGY`):
 - `header_only` (default): Unsafe requests must include the `Sec-Fetch-Site` header. Requests missing this header are rejected with `403`.
@@ -438,8 +470,8 @@ CSRF protection uses Fetch Metadata to align with Rails behavior. Unsafe API req
 ## Development Tips
 
 1. **Live Reload**: Use `andurel run` during development for automatic reloading
-2. **Type Safety**: Let Bun models and Templ catch errors at compile time
-3. **Database Console**: Use `andurel app console` for quick database queries
+2. **Type Safety**: Let narsilc-backed models and Templ catch errors at compile time
+3. **Database Console**: Use `andurel db console` for quick database queries
 4. **Hot Reload**: Changes to Go, Templ, or CSS automatically trigger rebuilds
 5. **Tailwind**: Use Tailwind's utility classes in your Templ templates
 
@@ -453,13 +485,13 @@ andurel run
 andurel g resource Product
 
 # Add a migration
-andurel migration new add_field_to_products
+andurel generate migration add_field_to_products
 
 # Run migrations
-andurel migration up
+andurel db migrate up
 
 # Access database console
-andurel app console
+andurel db console
 
 # Run tests
 go test ./...
@@ -532,7 +564,7 @@ func TestProducts_Create(t *testing.T) {
 	}
 
 	// Assert database state
-	products, err := models.AllProducts(c.Request().Context(), db.Executor())
+	products, err := models.NewProducts(db).All(c.Request().Context())
 	if err != nil {
 		t.Fatalf("failed to query products: %v", err)
 	}
@@ -598,13 +630,21 @@ func TestProducts_Show(t *testing.T) {
 	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
 
 	// Create test data with default values
-	product := factories.Product().Create(db.Executor())
+	product, err := factories.CreateProduct(context.Background(), db)
+	if err != nil {
+		t.Fatalf("create product: %v", err)
+	}
 
 	// Or customize specific fields
-	premiumProduct := factories.Product().
-		WithName("Premium Product").
-		WithPrice("99.99").
-		Create(db.Executor())
+	premiumProduct, err := factories.CreateProduct(
+		context.Background(),
+		db,
+		factories.WithProductsName("Premium Product"),
+		factories.WithProductsPrice("99.99"),
+	)
+	if err != nil {
+		t.Fatalf("create premium product: %v", err)
+	}
 
 	// Test your controller with the created data
 	// ...
@@ -618,9 +658,12 @@ func TestProducts_Show(t *testing.T) {
 ```go
 func TestFindProduct(t *testing.T) {
 	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
-	product := factories.Product().Create(db.Executor())
+	product, err := factories.CreateProduct(context.Background(), db)
+	if err != nil {
+		t.Fatalf("create product: %v", err)
+	}
 
-	found, err := models.FindProduct(context.Background(), db.Executor(), product.ID)
+	found, err := models.NewProducts(db).Find(context.Background(), product.ID)
 	if err != nil {
 		t.Fatalf("FindProduct failed: %v", err)
 	}
@@ -639,11 +682,13 @@ func TestPaginateProducts(t *testing.T) {
 
 	// Create test data
 	for i := 0; i < 25; i++ {
-		factories.Product().Create(db.Executor())
+		if _, err := factories.CreateProduct(context.Background(), db); err != nil {
+			t.Fatalf("create product: %v", err)
+		}
 	}
 
 	// Test pagination
-	result, err := models.PaginateProducts(context.Background(), db.Executor(), 1, 10)
+	result, err := models.NewProducts(db).Paginate(context.Background(), 1, 10)
 	if err != nil {
 		t.Fatalf("PaginateProducts failed: %v", err)
 	}
@@ -665,14 +710,25 @@ func TestCreateOrder(t *testing.T) {
 	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
 
 	// Create dependencies
-	user := factories.User().Create(db.Executor())
-	product := factories.Product().Create(db.Executor())
+	user, err := factories.CreateUser(context.Background(), db)
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+	product, err := factories.CreateProduct(context.Background(), db)
+	if err != nil {
+		t.Fatalf("create product: %v", err)
+	}
 
 	// Test order creation
-	order := factories.Order().
-		WithUserID(user.ID).
-		WithProductID(product.ID).
-		Create(db.Executor())
+	order, err := factories.CreateOrder(
+		context.Background(),
+		db,
+		factories.WithOrdersUserID(user.ID),
+		factories.WithOrdersProductID(product.ID),
+	)
+	if err != nil {
+		t.Fatalf("create order: %v", err)
+	}
 
 	if order.UserID != user.ID {
 		t.Errorf("order user_id mismatch")
@@ -718,7 +774,7 @@ The test helper automatically:
 3. **Test isolation**: Each test should be independent and not rely on other tests
 4. **Descriptive names**: Name tests clearly (e.g., `TestProducts_Create_WithInvalidData`)
 5. **Assert clearly**: Check both success cases and expected database state
-6. **Don't test frameworks**: Focus on your business logic, not Echo or Bun behavior
+6. **Don't test frameworks**: Focus on your business logic, not Echo or narsilc behavior
 
 ## Learn More
 

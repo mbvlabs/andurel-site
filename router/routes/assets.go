@@ -24,14 +24,6 @@ var Sitemap = routing.NewSimpleRoute(
 	"",
 )
 
-const IndexNowKey = "apcjhbexrqfdfjmevdnh77d1ws6bhf59"
-
-var IndexNow = routing.NewSimpleRoute(
-	"/"+IndexNowKey+".txt",
-	"assets.indexnow",
-	"",
-)
-
 var Stylesheet = routing.NewSimpleRoute(
 	fmt.Sprintf("/css/%v/style.css", startTime),
 	"css.stylesheet",
@@ -52,11 +44,5 @@ var Script = routing.NewRouteWithFile(
 var ViteBuild = routing.NewSimpleRoute(
 	fmt.Sprintf("/dist/%v/*", startTime),
 	"vite.build",
-	AssetsPrefix,
-)
-
-var ViteDevFiles = routing.NewSimpleRoute(
-	"/dist/*",
-	"vite.dev-files",
 	AssetsPrefix,
 )

@@ -2,16 +2,16 @@ package controllers
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
+	"strings"
 
 	"andurel-site/router"
-	"andurel-site/router/cookies"
 	"andurel-site/router/middleware"
 	"andurel-site/router/routes"
 	"andurel-site/services"
 
 	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 	"github.com/mbvlabs/andurel/pkg/validation"
 
 	"github.com/labstack/echo/v5"
@@ -20,15 +20,13 @@ import (
 type Registrations struct {
 	identity services.Identity
 	renderer *inertia.Renderer
-	session  *cookies.Session
 }
 
 func NewRegistrations(
 	identity services.Identity,
 	renderer *inertia.Renderer,
-	session *cookies.Session,
 ) Registrations {
-	return Registrations{identity: identity, renderer: renderer, session: session}
+	return Registrations{identity: identity, renderer: renderer}
 }
 
 func (r Registrations) RegisterRoutes(rtr *router.Router) error {
@@ -65,6 +63,36 @@ func (r Registrations) New(etx *echo.Context) error {
 }
 
 func (r Registrations) Create(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "user.registration")
+	defer span.End()
+
+	outcome := "success"
+	var (
+		email  string
+		userID any
+		cause  error
+	)
+	defer func() {
+		args := []any{"registration.outcome", outcome}
+		if email != "" {
+			args = append(args, "user.email", email)
+			if _, domain, found := strings.Cut(email, "@"); found && domain != "" {
+				args = append(args, "user.email_domain", domain)
+			}
+		}
+		if userID != nil {
+			args = append(args, "user.id", userID)
+		}
+		if cause != nil {
+			args = append(args, "error", cause)
+			if outcome == "error" {
+				_ = telemetry.Fail(ctx, cause)
+			}
+		}
+		telemetry.Set(ctx, args...)
+		telemetry.Info(ctx, "user.registration", args...)
+	}()
+
 	var payload struct {
 		Email           string `json:"email"`
 		Password        string `json:"password"`
@@ -72,24 +100,25 @@ func (r Registrations) Create(etx *echo.Context) error {
 	}
 
 	if err := etx.Bind(&payload); err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
-			"could not parse signup form payload",
-			"error",
-			err,
-		)
+		outcome = "bind_error"
+		cause = err
 		return r.renderer.Page(etx, "Errors/BadRequest", inertia.Props{}).Render()
 	}
 
-	if err := r.identity.RegisterUser(
-		etx.Request().Context(),
+	email = payload.Email
+
+	user, err := r.identity.RegisterUser(
+		ctx,
 		services.RegisterUserData{
 			Email:           payload.Email,
 			Password:        payload.Password,
 			ConfirmPassword: payload.ConfirmPassword,
 		},
-	); err != nil {
+	)
+	if err != nil {
 		if validationErrors, ok := validation.As(err); ok {
+			outcome = "validation_error"
+			cause = err
 			return r.renderer.Page(
 				etx,
 				"Auth/Registration",
@@ -97,23 +126,12 @@ func (r Registrations) Create(etx *echo.Context) error {
 			).ValidationErrors(validationErrors.ToMap()).Render()
 		}
 
-		slog.ErrorContext(
-			etx.Request().Context(),
-			"failed to register user",
-			"error",
-			err,
-		)
-
-		if flashErr := r.session.AddFlash(
-			etx,
-			cookies.FlashError,
-			"Failed to register user",
-		); flashErr != nil {
-			return r.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
-		}
+		outcome = "error"
+		cause = err
 
 		return r.renderer.Redirect(etx, routes.RegistrationNew.URL(), http.StatusSeeOther)
 	}
 
+	userID = user.ID
 	return r.renderer.Redirect(etx, routes.ConfirmationNew.URL(), http.StatusSeeOther)
 }

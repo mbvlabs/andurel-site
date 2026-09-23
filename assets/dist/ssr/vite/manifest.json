@@ -1,8 +1,0 @@
-{
-  "resources/js/ssr.tsx": {
-    "file": "ssr.js",
-    "name": "ssr",
-    "src": "resources/js/ssr.tsx",
-    "isEntry": true
-  }
-}

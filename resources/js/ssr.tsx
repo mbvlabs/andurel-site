@@ -2,16 +2,8 @@ import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
 import createServer from '@inertiajs/react/server'
 import ReactDOMServer from 'react-dom/server'
 
-import { FlashToasts, pageFlashes } from '@/components/flash-toasts'
-
 type PageModule = {
   default: ResolvedComponent
-}
-
-type InertiaSetupProps = {
-  initialPage?: {
-    flash?: unknown
-  }
 }
 
 const serverOptions = {
@@ -27,12 +19,7 @@ createServer(page =>
       const pages = import.meta.glob<PageModule>('./Pages/**/*.tsx', { eager: true })
       return pages[`./Pages/${name}.tsx`].default
     },
-    setup: ({ App, props }) => (
-      <>
-        <App {...props} />
-        <FlashToasts initialFlashes={pageFlashes((props as InertiaSetupProps).initialPage?.flash)} />
-      </>
-    ),
+    setup: ({ App, props }) => <App {...props} />,
   }),
   serverOptions,
 )

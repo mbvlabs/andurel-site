@@ -5,33 +5,29 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"path"
 	"strings"
 
 	"andurel-site/assets"
 	"andurel-site/config"
-	"andurel-site/docs"
 	"andurel-site/router"
 	"andurel-site/router/routes"
 
 	"github.com/labstack/echo/v5"
+	"github.com/mbvlabs/andurel/pkg/routing"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 )
 
 const threeMonthsCache = "7776000"
 
 type Assets struct {
-	cache      *Cache[string]
-	appCfg     config.App
-	viteDevURL string
-	site       *docs.Site
+	cache  *Cache[string]
+	appCfg config.App
 }
 
-func NewAssets(cache *Cache[string], appCfg config.App, inertiaCfg config.Inertia, site *docs.Site) Assets {
-	return Assets{cache: cache, appCfg: appCfg, viteDevURL: inertiaCfg.ViteDevURL, site: site}
+func NewAssets(cache *Cache[string], appCfg config.App) Assets {
+	return Assets{cache: cache, appCfg: appCfg}
 }
 
 func (a Assets) RegisterRoutes(r *router.Router) error {
@@ -52,16 +48,6 @@ func (a Assets) RegisterRoutes(r *router.Router) error {
 		Path:    routes.Sitemap.Path(),
 		Name:    routes.Sitemap.Name(),
 		Handler: a.Sitemap,
-	})
-	if err != nil {
-		errs = append(errs, err)
-	}
-
-	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.IndexNow.Path(),
-		Name:    routes.IndexNow.Name(),
-		Handler: a.IndexNow,
 	})
 	if err != nil {
 		errs = append(errs, err)
@@ -106,18 +92,6 @@ func (a Assets) RegisterRoutes(r *router.Router) error {
 		errs = append(errs, err)
 	}
 
-	if !a.appCfg.IsProduction() {
-		_, err = r.AddRoute(echo.Route{
-			Method:  http.MethodGet,
-			Path:    routes.ViteDevFiles.Path(),
-			Name:    routes.ViteDevFiles.Name(),
-			Handler: a.ViteDevFiles,
-		})
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-
 	return errors.Join(errs...)
 }
 
@@ -160,42 +134,44 @@ func createRobotsTxt(baseURL string) string {
 	)
 }
 
-func (a Assets) IndexNow(etx *echo.Context) error {
-	return etx.String(http.StatusOK, routes.IndexNowKey)
-}
-
 func (a Assets) Robots(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "assets.robots")
+	defer span.End()
+
 	cacheKey := "assets:robots"
 
 	robotsTxt, err := a.cache.Get(cacheKey, func() (string, error) {
-		return createRobotsTxt(a.appCfg.BaseURL), nil
+		return createRobotsTxt(a.appCfg.BaseURL()), nil
 	})
 	if err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"failed to get robots.txt from cache",
 			"error", err,
 		)
-		return etx.String(http.StatusOK, createRobotsTxt(a.appCfg.BaseURL))
+		return etx.String(http.StatusOK, createRobotsTxt(a.appCfg.BaseURL()))
 	}
 
 	return etx.String(http.StatusOK, robotsTxt)
 }
 
 func (a Assets) Sitemap(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "assets.sitemap")
+	defer span.End()
+
 	cacheKey := "assets:sitemap"
 
 	sitemap, err := a.cache.Get(cacheKey, func() (string, error) {
-		return createSitemap(a.appCfg.BaseURL, a.site)
+		return createSitemap(a.appCfg.BaseURL(), []routing.Route{})
 	})
 	if err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"failed to get sitemap from cache",
 			"error", err,
 		)
 
-		result, err := createSitemap(a.appCfg.BaseURL, a.site)
+		result, err := createSitemap(a.appCfg.BaseURL(), []routing.Route{})
 		if err != nil {
 			return err
 		}
@@ -220,28 +196,15 @@ type Sitemap struct {
 	URL     []URL    `xml:"url"`
 }
 
-func createSitemap(baseURL string, site *docs.Site) (string, error) {
-	urls := []URL{
-		{
-			Loc:        sitemapLoc(baseURL, routes.HomePage.URL()),
-			ChangeFreq: "weekly",
-			Priority:   "1.0",
-		},
-	}
+func createSitemap(baseURL string, routes []routing.Route) (string, error) {
+	var urls []URL
 
-	if site != nil {
-		for _, document := range site.Documents() {
-			priority := "0.8"
-			if document.Version != docs.LatestVersion {
-				priority = "0.6"
-			}
-			urls = append(urls, URL{
-				Loc:        sitemapLoc(baseURL, document.URL()),
-				ChangeFreq: "weekly",
-				Priority:   priority,
-			})
-		}
-	}
+	urls = append(urls, URL{
+		Loc:        baseURL,
+		ChangeFreq: "monthly",
+		LastMod:    "2024-10-22T09:43:09+00:00",
+		Priority:   "1",
+	})
 
 	sitemap := Sitemap{
 		XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9",
@@ -254,10 +217,6 @@ func createSitemap(baseURL string, site *docs.Site) (string, error) {
 	}
 
 	return xml.Header + string(xmlBytes), nil
-}
-
-func sitemapLoc(baseURL, path string) string {
-	return strings.TrimRight(baseURL, "/") + "/" + strings.TrimLeft(path, "/")
 }
 
 func (a Assets) Stylesheet(etx *echo.Context) error {
@@ -307,10 +266,6 @@ func contentTypeByExt(name string) string {
 		return "application/json"
 	case strings.HasSuffix(name, ".svg"):
 		return "image/svg+xml"
-	case strings.HasSuffix(name, ".woff2"):
-		return "font/woff2"
-	case strings.HasSuffix(name, ".woff"):
-		return "font/woff"
 	default:
 		return "application/octet-stream"
 	}
@@ -330,18 +285,4 @@ func (a Assets) ViteBuild(etx *echo.Context) error {
 
 	etx = a.enableCaching(etx, data)
 	return etx.Blob(http.StatusOK, contentTypeByExt(param), data)
-}
-
-func (a Assets) ViteDevFiles(etx *echo.Context) error {
-	target, err := url.Parse(a.viteDevURL)
-	if err != nil {
-		return err
-	}
-
-	proxy := httputil.NewSingleHostReverseProxy(&url.URL{
-		Scheme: target.Scheme,
-		Host:   target.Host,
-	})
-	proxy.ServeHTTP(etx.Response(), etx.Request())
-	return nil
 }

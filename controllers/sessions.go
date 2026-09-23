@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
 
 	"andurel-site/router"
@@ -12,6 +11,8 @@ import (
 	"andurel-site/services"
 
 	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/kiks"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 	"github.com/mbvlabs/andurel/pkg/validation"
 
 	"github.com/labstack/echo/v5"
@@ -20,15 +21,13 @@ import (
 type Sessions struct {
 	identity services.Identity
 	renderer *inertia.Renderer
-	session  *cookies.Session
 }
 
 func NewSessions(
 	identity services.Identity,
 	renderer *inertia.Renderer,
-	session *cookies.Session,
 ) Sessions {
-	return Sessions{identity: identity, renderer: renderer, session: session}
+	return Sessions{identity: identity, renderer: renderer}
 }
 
 func (s Sessions) RegisterRoutes(r *router.Router) error {
@@ -75,14 +74,17 @@ func (s Sessions) New(etx *echo.Context) error {
 }
 
 func (s Sessions) Create(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "sessions.create")
+	defer span.End()
+
 	var payload struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
 	if err := etx.Bind(&payload); err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"could not parse login form payload",
 			"error",
 			err,
@@ -91,7 +93,7 @@ func (s Sessions) Create(etx *echo.Context) error {
 	}
 
 	user, err := s.identity.AuthenticateUser(
-		etx.Request().Context(),
+		ctx,
 		services.LoginData{
 			Email:    payload.Email,
 			Password: payload.Password,
@@ -106,69 +108,33 @@ func (s Sessions) Create(etx *echo.Context) error {
 			).ValidationErrors(validationErrors.ToMap()).Render()
 		}
 
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"failed to authenticate user",
 			"error",
 			err,
 		)
 
-		var errorMsg string
-		switch {
-		case errors.Is(err, services.ErrInvalidCredentials):
-			errorMsg = "Invalid email or password"
-		case errors.Is(err, services.ErrEmailNotVerified):
-			errorMsg = "Please verify your email before logging in"
-		default:
-			errorMsg = "Failed to log in"
-		}
-
-		if flashErr := s.session.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
-			return s.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
-		}
-
 		return s.renderer.Redirect(etx, routes.SessionNew.URL(), http.StatusSeeOther)
 	}
 
-	if err := s.session.CreateAppSession(etx, user); err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
-			"failed to create session",
-			"error",
-			err,
-		)
-
-		return s.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
-	}
-
-	if flashErr := s.session.AddFlash(
-		etx,
-		cookies.FlashSuccess,
-		"Successfully logged in!",
-	); flashErr != nil {
-		return s.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
+	if err := kiks.Set(etx.Request().Context(), &cookies.App{
+		UserID:          user.ID.String(),
+		IsAdmin:         user.IsAdmin,
+		IsAuthenticated: true,
+	}); err != nil {
+		return err
 	}
 
 	return s.renderer.Location(etx, routes.HomePage.URL())
 }
 
 func (s Sessions) Destroy(etx *echo.Context) error {
-	if err := s.session.DestroyAppSession(etx); err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
-			"failed to destroy session",
-			"error",
-			err,
-		)
-		return s.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
-	}
+	ctx, span := telemetry.From(etx, "sessions.destroy")
+	defer span.End()
 
-	if flashErr := s.session.AddFlash(
-		etx,
-		cookies.FlashSuccess,
-		"Successfully logged out!",
-	); flashErr != nil {
-		return s.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
+	if err := kiks.Destroy[*cookies.App](ctx); err != nil {
+		return err
 	}
 
 	return s.renderer.Redirect(etx, routes.SessionNew.URL(), http.StatusSeeOther)

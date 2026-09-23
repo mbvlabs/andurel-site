@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
 
 	"andurel-site/router"
@@ -11,6 +10,8 @@ import (
 	"andurel-site/services"
 
 	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/kiks"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 	"github.com/mbvlabs/andurel/pkg/validation"
 
 	"github.com/labstack/echo/v5"
@@ -19,15 +20,13 @@ import (
 type Confirmations struct {
 	identity services.Identity
 	renderer *inertia.Renderer
-	session  *cookies.Session
 }
 
 func NewConfirmations(
 	identity services.Identity,
 	renderer *inertia.Renderer,
-	session *cookies.Session,
 ) Confirmations {
-	return Confirmations{identity: identity, renderer: renderer, session: session}
+	return Confirmations{identity: identity, renderer: renderer}
 }
 
 func (c Confirmations) RegisterRoutes(r *router.Router) error {
@@ -61,13 +60,16 @@ func (c Confirmations) New(etx *echo.Context) error {
 }
 
 func (c Confirmations) Create(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "confirmations.create")
+	defer span.End()
+
 	var payload struct {
 		Code string `json:"code"`
 	}
 
 	if err := etx.Bind(&payload); err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"could not parse verification form payload",
 			"error",
 			err,
@@ -76,7 +78,7 @@ func (c Confirmations) Create(etx *echo.Context) error {
 	}
 
 	user, err := c.identity.VerifyEmail(
-		etx.Request().Context(),
+		ctx,
 		services.VerifyEmailData{
 			Code: payload.Code,
 		},
@@ -90,47 +92,22 @@ func (c Confirmations) Create(etx *echo.Context) error {
 			).ValidationErrors(validationErrors.ToMap()).Render()
 		}
 
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"failed to verify email",
 			"error",
 			err,
 		)
 
-		var errorMsg string
-		switch {
-		case errors.Is(err, services.ErrInvalidVerificationCode):
-			errorMsg = "Invalid verification code"
-		case errors.Is(err, services.ErrExpiredVerificationCode):
-			errorMsg = "Verification code has expired"
-		default:
-			errorMsg = "Failed to verify email"
-		}
-
-		if flashErr := c.session.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
-			return c.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
-		}
-
 		return c.renderer.Redirect(etx, routes.ConfirmationNew.URL(), http.StatusSeeOther)
 	}
 
-	if err := c.session.CreateAppSession(etx, user); err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
-			"failed to create session",
-			"error",
-			err,
-		)
-
-		return c.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
-	}
-
-	if flashErr := c.session.AddFlash(
-		etx,
-		cookies.FlashSuccess,
-		"Email verified successfully!",
-	); flashErr != nil {
-		return c.renderer.Page(etx, "Errors/InternalError", inertia.Props{}).Render()
+	if err := kiks.Set(etx.Request().Context(), &cookies.App{
+		UserID:          user.ID.String(),
+		IsAdmin:         user.IsAdmin,
+		IsAuthenticated: true,
+	}); err != nil {
+		return err
 	}
 
 	return c.renderer.Location(etx, routes.HomePage.URL())

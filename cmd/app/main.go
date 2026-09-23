@@ -6,14 +6,13 @@ import (
 	"andurel-site/controllers"
 	"andurel-site/models"
 	"andurel-site/router"
+	"andurel-site/router/cookies"
 	"andurel-site/router/routes"
 	"andurel-site/services"
-	"andurel-site/telemetry"
 	"andurel-site/views"
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,6 +22,7 @@ import (
 	"github.com/mbvlabs/andurel/pkg/inertia"
 	"github.com/mbvlabs/andurel/pkg/server"
 	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 	"go.uber.org/fx"
 )
 
@@ -40,6 +40,7 @@ func main() {
 		fx.Provide(
 			func() context.Context { return ctx },
 			newEmailSenders,
+			newTelemetry,
 		),
 
 		config.Module,
@@ -47,9 +48,9 @@ func main() {
 		queueInsertModule,
 		models.Module,
 		inertiaModule,
-		telemetry.Module,
 		services.Module,
 		controllers.Module,
+		cookies.Module,
 		router.Module,
 
 		fx.Invoke(startServer),
@@ -91,7 +92,9 @@ func startServer(
 	r *router.Router,
 	appCfg config.App,
 	httpCfg config.HTTP,
+	tel *telemetry.Telemetry,
 ) {
+	appCtx = tel.Context(appCtx)
 	srv := server.New(
 		appCtx,
 		httpCfg.Host,
@@ -109,7 +112,7 @@ func startServer(
 
 	lc.Append(fx.Hook{
 		OnStart: func(_ context.Context) error {
-			slog.InfoContext(
+			telemetry.Info(
 				appCtx,
 				"starting server",
 				"host",
@@ -123,7 +126,7 @@ func startServer(
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			slog.InfoContext(ctx, "initiating graceful shutdown")
+			telemetry.Info(ctx, "initiating graceful shutdown")
 			return stopAndWait(ctx, func(ctx context.Context) error {
 				var shutdownErr error
 				for _, shutdowner := range srv.Shutdowners {
@@ -145,8 +148,16 @@ func newDatabase(
 	lifecycle fx.Lifecycle,
 	ctx context.Context,
 	cfg storage.Config,
+	tel *telemetry.Telemetry,
 ) (*storage.Postgres, error) {
-	db, err := storage.NewPostgres(ctx, cfg)
+	opts := []storage.Option{}
+	if tel != nil {
+		opts = append(opts, storage.WithOpenTelemetry(storage.TelemetryConfig{
+			TracerProvider: tel.TracerProvider(),
+			MeterProvider:  tel.MeterProvider(),
+		}))
+	}
+	db, err := storage.NewPostgres(ctx, cfg, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -162,11 +173,47 @@ func newQueueInsert(
 	return storage.NewQueueInsert(connection, cfg.Config)
 }
 
+func newTelemetry(
+	lifecycle fx.Lifecycle,
+	ctx context.Context,
+	appCfg config.App,
+	cfg config.Telemetry,
+) (*telemetry.Telemetry, error) {
+	opts := []telemetry.Option{
+		telemetry.WithTraceSampleRate(cfg.TraceSampleRate),
+		telemetry.WithBatchConfig(
+			cfg.BatchSize,
+			time.Duration(cfg.BatchTimeoutMs)*time.Millisecond,
+			2048,
+		),
+		telemetry.WithLogLevel(cfg.LogLevel),
+	}
+	if !appCfg.IsProduction() {
+		opts = append(opts, telemetry.WithConsole())
+	}
+	headers := telemetry.ParseHeaders(cfg.OtlpHeaders)
+	if cfg.OtlpLogsEndpoint != "" {
+		opts = append(opts, telemetry.WithOTLPLogs(cfg.OtlpLogsEndpoint, headers))
+	}
+	if cfg.OtlpTracesEndpoint != "" {
+		opts = append(opts, telemetry.WithOTLPTraces(cfg.OtlpTracesEndpoint, headers))
+	}
+	if cfg.OtlpMetricsEndpoint != "" {
+		opts = append(opts, telemetry.WithOTLPMetrics(cfg.OtlpMetricsEndpoint, headers))
+	}
+	tel, err := telemetry.New(ctx, cfg.ServiceName, cfg.ServiceVersion, opts...)
+	if err != nil {
+		return nil, err
+	}
+	lifecycle.Append(fx.Hook{OnStop: tel.Shutdown})
+	return tel, nil
+}
+
 func newInertia(
 	appCfg config.App,
 	cfg config.Inertia,
 ) (*inertia.Renderer, error) {
-	return inertia.NewRenderer(
+	renderer, err := inertia.NewRenderer(
 		cfg.ContainerID,
 		routes.ViteBuild.Path(),
 		cfg.EntryPoint,
@@ -179,21 +226,26 @@ func newInertia(
 		inertia.WithProjectName(appCfg.ProjectName),
 		inertia.WithEnvironment(appCfg.Environment),
 		inertia.WithProtocolDebug(cfg.ProtocolDebug),
-		inertia.WithShared(inertia.Props{
-			"appVersion": appVersion,
-			"appUrl":     appCfg.BaseURL,
-		}),
+		inertia.WithShared(inertia.Props{"appVersion": appVersion}),
 		inertia.WithSSRFailFast(cfg.SSRFailFast),
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return renderer, nil
 }
 
 func newEmailSenders(
 	ctx context.Context,
-	cfg config.MailTransport,
+	cfg config.Mail,
 ) (email.TransactionalSender, email.MarketingSender, error) {
 	switch cfg.Driver {
 	case config.MailpitDriver:
-		client, err := email.NewMailpit(cfg.Mailpit)
+		client, err := email.NewMailpit(email.MailpitConfig{
+			Host: cfg.Host,
+			Port: cfg.Port,
+		})
 		if err != nil {
 			return nil, nil, fmt.Errorf("create Mailpit client: %w", err)
 		}
@@ -213,7 +265,7 @@ func startInBackground(
 	go func() {
 		defer close(done)
 		if err := start(ctx); err != nil {
-			slog.Error(name+" error", "error", err)
+			telemetry.Error(ctx, name+" error", "error", err)
 		}
 	}()
 	return done

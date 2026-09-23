@@ -2,25 +2,20 @@
 package router
 
 import (
-	"andurel-site/config"
-	"andurel-site/router/appctx"
-	"andurel-site/router/cookies"
-	"andurel-site/router/middleware"
-	"andurel-site/telemetry"
-	"encoding/gob"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strings"
 
-	"github.com/google/uuid"
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/v5/session"
+	"andurel-site/config"
+	"andurel-site/router/middleware"
+	"andurel-site/router/routes"
+
 	"github.com/labstack/echo/v5"
 	echomw "github.com/labstack/echo/v5/middleware"
 	"github.com/mbvlabs/andurel/pkg/inertia"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"github.com/mbvlabs/andurel/pkg/kiks"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 	"go.uber.org/fx"
 )
 
@@ -33,18 +28,15 @@ func New(
 	appCfg config.App,
 	httpCfg config.HTTP,
 	sessionCfg config.Session,
-	cookieSession *cookies.Session,
+	jar *kiks.Jar,
 	tel *telemetry.Telemetry,
 	renderer *inertia.Renderer,
 ) (*Router, error) {
-	gob.Register(uuid.UUID{})
-	gob.Register(cookies.FlashMessage{})
-
 	router := echo.New()
 	defaultHTTPErrorHandler := echo.DefaultHTTPErrorHandler(false)
 	router.HTTPErrorHandler = func(c *echo.Context, err error) {
 		if panicErr, ok := errors.AsType[*echomw.PanicStackError](err); ok {
-			slog.ErrorContext(
+			telemetry.Error(
 				c.Request().Context(),
 				"http panic recovered",
 				"method", c.Request().Method,
@@ -53,7 +45,7 @@ func New(
 				"stack", string(panicErr.Stack),
 			)
 		} else {
-			slog.ErrorContext(
+			telemetry.Error(
 				c.Request().Context(),
 				"http handler error",
 				"method", c.Request().Method,
@@ -69,7 +61,7 @@ func New(
 		appCfg,
 		httpCfg,
 		sessionCfg,
-		cookieSession,
+		jar,
 		tel,
 		"_csrf",
 		renderer,
@@ -80,7 +72,7 @@ func New(
 
 	router.Use(globalMiddleware...)
 
-	handler := otelhttp.NewHandler(router, "http")
+	handler := telemetry.WrapHandler("http", router, tel)
 
 	return &Router{
 		e:       router,
@@ -92,7 +84,7 @@ func SetupGlobalMiddleware(
 	appCfg config.App,
 	httpCfg config.HTTP,
 	sessionCfg config.Session,
-	cookieSession *cookies.Session,
+	jar *kiks.Jar,
 	tel *telemetry.Telemetry,
 	csrfName string,
 	renderer *inertia.Renderer,
@@ -101,7 +93,7 @@ func SetupGlobalMiddleware(
 		httpCfg.CSRFStrategy,
 		httpCfg.CSRFTrustedOrigins,
 		csrfName,
-		appCfg.BaseURL,
+		appCfg.BaseURL(),
 		appCfg.Environment,
 		appCfg.Domain,
 		sessionCfg.Name,
@@ -109,63 +101,25 @@ func SetupGlobalMiddleware(
 	if err != nil {
 		return nil, err
 	}
-	sessionStore, err := newApplicationSessionStore(
-		sessionCfg.AuthenticationKey,
-		sessionCfg.EncryptionKey,
-		sessionCfg.MaxAge,
-		appCfg.IsProduction(),
-	)
+	corsConfig, err := newCORSConfig(appCfg.BaseURL(), httpCfg.CORSAllowedOrigins)
 	if err != nil {
-		return nil, err
-	}
-	corsConfig, err := newCORSConfig(appCfg.BaseURL, httpCfg.CORSAllowedOrigins)
-	if err != nil {
-		return nil, err
-	}
-	if err := renderer.SetReflashHandler(func(etx *echo.Context) error {
-		flashes := appctx.Flashes(etx.Request().Context())
-		return cookieSession.Reflash(etx, flashes)
-	}); err != nil {
 		return nil, err
 	}
 
 	// Order matters: middlewares execute in the order listed, with Recover last
 	// to catch panics from all preceding middlewares.
 	middlewares := []echo.MiddlewareFunc{
-		middleware.TraceRouteAttributes(tel),
-		middleware.Logger(tel),
-		session.Middleware(sessionStore),
-		middleware.ValidateSession(cookieSession),
+		middleware.Telemetry(tel),
+		middleware.TraceRouteAttributes(),
+		middleware.Logger(),
+		jar.EchoMiddleware(kiks.SkipPrefixes(routes.AssetsPrefix, routes.APIPrefix)),
 		renderer.Middleware(),
-		middleware.RegisterRequestMeta(cookieSession),
 		echomw.CORSWithConfig(corsConfig),
 		csrfMiddleware,
 		echomw.Recover(),
 	}
 
 	return middlewares, nil
-}
-
-func newApplicationSessionStore(
-	authKey []byte,
-	encKey []byte,
-	maxAge int,
-	secure bool,
-) (*sessions.CookieStore, error) {
-	if maxAge <= 0 {
-		return nil, errors.New("SESSION_MAX_AGE must be greater than zero")
-	}
-
-	store := sessions.NewCookieStore(authKey, encKey)
-	store.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   maxAge,
-		HttpOnly: true,
-		Secure:   secure,
-		SameSite: http.SameSiteLaxMode,
-	}
-
-	return store, nil
 }
 
 func newCORSConfig(
@@ -219,14 +173,5 @@ func (r *Router) AddRouteNotFound(
 
 var Module = fx.Module(
 	"router",
-	fx.Provide(newSession),
 	fx.Provide(New),
 )
-
-func newSession(appCfg config.App, sessionCfg config.Session) *cookies.Session {
-	return cookies.NewSession(
-		sessionCfg.Name,
-		appCfg.ProjectName,
-		appCfg.Environment,
-	)
-}
