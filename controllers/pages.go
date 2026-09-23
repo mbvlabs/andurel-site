@@ -49,12 +49,7 @@ func (p Pages) RegisterRoutes(r *router.Router) error {
 }
 
 func (p Pages) Home(etx *echo.Context) error {
-	return p.renderer.Page(etx, "Welcome", inertia.Props{
-		"appName":         "andurel-site",
-		"docsURL":         "https://andurel.com",
-		"registrationURL": routes.RegistrationNew.URL(),
-		"loginURL":        routes.SessionNew.URL(),
-	}).Render()
+	return p.renderer.Page(etx, "Home", inertia.Props{}).SSR().Render()
 }
 
 func (p Pages) NotFound(etx *echo.Context) error {

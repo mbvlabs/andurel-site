@@ -1,0 +1,113 @@
+package docs
+
+const docsPrefix = "/docs"
+
+type NavigationPage struct {
+	Slug        string           `json:"slug"`
+	Title       string           `json:"title"`
+	Description string           `json:"description"`
+	URL         string           `json:"url"`
+	Children    []NavigationPage `json:"children,omitempty"`
+}
+
+type NavigationSection struct {
+	Title string           `json:"title"`
+	Pages []NavigationPage `json:"pages"`
+}
+
+type NavigationVersion struct {
+	Name     string              `json:"name"`
+	URL      string              `json:"url"`
+	Sections []NavigationSection `json:"sections"`
+}
+
+func PageURL(version, slug string) string {
+	return docsPrefix + "/" + version + "/" + slug
+}
+
+func VersionPath(version string) string {
+	return docsPrefix + "/" + version
+}
+
+func LatestURL() string {
+	url, ok := VersionURL(LatestVersion)
+	if ok {
+		return url
+	}
+
+	return docsPrefix
+}
+
+func VersionURL(version string) (string, bool) {
+	for _, entry := range Catalog {
+		if entry.Name != version {
+			continue
+		}
+		for _, section := range entry.Sections {
+			if len(section.Pages) == 0 {
+				continue
+			}
+			return PageURL(entry.Name, section.Pages[0].Slug), true
+		}
+	}
+
+	return "", false
+}
+
+func Find(version, slug string) (Version, Section, Page, bool) {
+	for _, entry := range Catalog {
+		if entry.Name != version {
+			continue
+		}
+		for _, section := range entry.Sections {
+			if page, ok := findPage(section.Pages, slug); ok {
+				return entry, section, page, true
+			}
+		}
+	}
+
+	return Version{}, Section{}, Page{}, false
+}
+
+func Navigation() []NavigationVersion {
+	versions := make([]NavigationVersion, 0, len(Catalog))
+	for _, version := range Catalog {
+		url, ok := VersionURL(version.Name)
+		if !ok {
+			url = VersionPath(version.Name)
+		}
+
+		sections := make([]NavigationSection, 0, len(version.Sections))
+		for _, section := range version.Sections {
+			sections = append(sections, NavigationSection{
+				Title: section.Title,
+				Pages: navigationPages(version.Name, section.Pages),
+			})
+		}
+
+		versions = append(versions, NavigationVersion{
+			Name:     version.Name,
+			URL:      url,
+			Sections: sections,
+		})
+	}
+
+	return versions
+}
+
+func navigationPages(version string, pages []Page) []NavigationPage {
+	result := make([]NavigationPage, 0, len(pages))
+	for _, page := range pages {
+		entry := NavigationPage{
+			Slug:        page.Slug,
+			Title:       page.Title,
+			Description: page.Description,
+			URL:         PageURL(version, page.Slug),
+		}
+		if len(page.Children) > 0 {
+			entry.Children = navigationPages(version, page.Children)
+		}
+		result = append(result, entry)
+	}
+	return result
+}

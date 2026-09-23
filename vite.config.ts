@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [react(), inertia({ ssr: { entry: 'resources/js/ssr.tsx' } }), tailwindcss()],
   resolve: {
     alias: {
+      '@/css': fileURLToPath(new URL('./css', import.meta.url)),
       '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
     },
   },

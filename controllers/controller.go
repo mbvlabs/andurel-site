@@ -2,10 +2,18 @@
 package controllers
 
 import (
+	"andurel-site/config"
 	"andurel-site/controllers/api"
+	"andurel-site/docs"
 	"andurel-site/router"
+	"andurel-site/views"
+
 	"go.uber.org/fx"
 )
+
+func configureViews(cfg config.App) {
+	views.ConfigureHead(cfg.ProjectName, cfg.BaseURL())
+}
 
 var otherCache = NewCacheBuilder[string]().WithSize(2).Build
 
@@ -18,11 +26,14 @@ var constructors = fx.Provide(
 	NewRegistrations,
 	NewConfirmations,
 	NewResetPasswords,
+	docs.New,
+	NewDocumentations,
 )
 
 var Module = fx.Module(
 	"controllers",
 	constructors,
+	fx.Invoke(configureViews),
 	fx.Invoke(func(r *router.Router, c Pages) error {
 		return c.RegisterRoutes(r)
 	}),
@@ -42,6 +53,9 @@ var Module = fx.Module(
 		return c.RegisterRoutes(r)
 	}),
 	fx.Invoke(func(r *router.Router, c ResetPasswords) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c Documentations) error {
 		return c.RegisterRoutes(r)
 	}),
 )

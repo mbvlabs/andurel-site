@@ -3,6 +3,7 @@
 export const routes = {
   confirmationCreate: () => '/users/confirmation',
   confirmationNew: () => '/users/confirmation/new',
+  documentationShow: (version: string, slug: string) => `/docs/${version}/${slug}`,
   homePage: () => '/',
   passwordCreate: () => '/users/password',
   passwordEdit: (token: string) => `/users/password/${token}/edit`,

@@ -4,6 +4,7 @@ go 1.27.1
 
 require (
 	github.com/a-h/templ v0.3.1020
+	github.com/alecthomas/chroma/v2 v2.2.0
 	github.com/go-faker/faker/v4 v4.9.0
 	github.com/gosimple/slug v1.15.0
 	github.com/jackc/pgx/v5 v5.11.0
@@ -20,6 +21,8 @@ require (
 	github.com/mbvlabs/andurel/pkg/validation v0.1.4
 	github.com/mbvlabs/narsilc v0.4.4
 	github.com/riverqueue/river v0.40.0
+	github.com/yuin/goldmark v1.8.6
+	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
 	go.uber.org/fx v1.24.0
 	golang.org/x/crypto v0.55.0
 )
@@ -37,6 +40,7 @@ require (
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/cpuguy83/dockercfg v0.3.2 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
+	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/docker/go-connections v0.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/ebitengine/purego v0.10.0 // indirect

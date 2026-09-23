@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" shape-rendering="crispEdges">
+  <!-- 16px reduction of the BrandMark so 1px strokes still read in tabs. -->
+  <rect width="16" height="16" fill="#52605c"/>
+  <rect x="1" y="1" width="14" height="14" fill="#101414"/>
+  <rect x="3" y="3" width="4" height="4" fill="#8df7a4"/>
+  <rect x="4" y="4" width="2" height="2" fill="#101414"/>
+  <rect x="9" y="3" width="4" height="4" fill="#52605c"/>
+  <rect x="10" y="4" width="2" height="2" fill="#101414"/>
+  <rect x="3" y="9" width="4" height="4" fill="#52605c"/>
+  <rect x="4" y="10" width="2" height="2" fill="#101414"/>
+  <rect x="9" y="9" width="4" height="4" fill="#8df7a4"/>
+</svg>
