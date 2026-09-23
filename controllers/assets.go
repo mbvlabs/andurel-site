@@ -106,16 +106,21 @@ func (a Assets) RegisterRoutes(r *router.Router) error {
 		errs = append(errs, err)
 	}
 
+	// Vite emits absolute /assets/dist/<file> URLs for hashed fonts and other
+	// secondary assets (see vite base). Entry CSS/JS use the timestamped
+	// ViteBuild path above; these files still need a non-timestamped route.
+	viteDistHandler := a.ViteBuild
 	if !a.appCfg.IsProduction() {
-		_, err = r.AddRoute(echo.Route{
-			Method:  http.MethodGet,
-			Path:    routes.ViteDevFiles.Path(),
-			Name:    routes.ViteDevFiles.Name(),
-			Handler: a.ViteDevFiles,
-		})
-		if err != nil {
-			errs = append(errs, err)
-		}
+		viteDistHandler = a.ViteDevFiles
+	}
+	_, err = r.AddRoute(echo.Route{
+		Method:  http.MethodGet,
+		Path:    routes.ViteDevFiles.Path(),
+		Name:    routes.ViteDevFiles.Name(),
+		Handler: viteDistHandler,
+	})
+	if err != nil {
+		errs = append(errs, err)
 	}
 
 	return errors.Join(errs...)
