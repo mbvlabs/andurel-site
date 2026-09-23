@@ -7,7 +7,7 @@ export const siteTagline = 'Space-grade Go framework for humans and agents'
 export const siteDescription =
   'Andurel is the web development framework for Go. Everything you and your agents need to build robust, performant applications.'
 export const twitterSite = '@mbvlabs'
-export const defaultOgImage = 'https://media.andurel.com/andurel-og.png'
+export const defaultOgImage = 'https://media.andurel.com/brand/andurel-og-square.png'
 export const defaultOgAlt = 'Andurel wordmark'
 export const githubURL = 'https://github.com/mbvlabs/andurel'
 export const organizationURL = 'https://mbvlabs.com'

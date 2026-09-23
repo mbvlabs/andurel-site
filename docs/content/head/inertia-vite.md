@@ -43,7 +43,7 @@ Customize the root for fonts, analytics, CSP nonces, or extra meta tags. Do not 
 After editing Templ, regenerate Go:
 
 ```bash
-andurel generate view
+andurel sync views
 ```
 
 ## Development assets

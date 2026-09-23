@@ -40,8 +40,8 @@ The router and controllers are Fx modules. Dependencies are constructor paramete
 ## Inspect and export routes
 
 ```bash
-andurel routes --json
-andurel generate routes
+andurel inspect routes --json
+andurel sync routes
 ```
 
-The manifest reports route names, paths, parameters, and source locations. In Inertia projects, the generator uses that same manifest to write `resources/js/routes.ts`.
+The manifest reports route names, paths, parameters, and source locations. In Inertia projects, `sync routes` uses that same manifest to write `resources/js/routes.ts`.

@@ -9,7 +9,7 @@ andurel generate email Welcome
 andurel email compile
 ```
 
-Write email templates under `email/` and utilities in `css/email.css`. `andurel run`, `andurel generate view`, and `andurel build` compile the templates automatically without changing the authored `.templ` files.
+Write email templates under `email/` and utilities in `css/email.css`. `andurel run`, `andurel sync views`, `andurel sync email`, and `andurel build` compile the templates automatically without changing the authored `.templ` files.
 
 ## Send typed messages
 

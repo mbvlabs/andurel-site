@@ -4,13 +4,13 @@ The `andurel` command creates projects, generates application code, manages data
 
 ## Discover the current surface
 
-The master CLI is evolving toward v2, so discover commands instead of copying a static list:
+The v2 CLI evolves with each release, so discover commands instead of copying a static list:
 
 ```bash
 andurel --help
 andurel commands --json
-andurel project info --json
-andurel config show --json
+andurel inspect project --json
+andurel packages list --json
 ```
 
 ## Daily workflow
@@ -19,22 +19,24 @@ andurel config show --json
 andurel run
 andurel fmt
 andurel doctor --verbose
-andurel build --version v2.0.0-dev
+andurel build --version v2.0.0-alpha
 ```
 
-`run` coordinates live reload and code generation. `fmt` formats Go and Templ. `doctor` checks project health, package migration issues, and generated code. `build` compiles sqlc, email, Templ, CSS, optional Vite/SSR assets, and the Go application.
+`run` coordinates live reload and code generation. `fmt` formats Go and Templ. `doctor` checks project health, package migration issues, and generated code. `build` compiles narsilc when query files exist, email, Templ, CSS, optional Vite/SSR assets, and the Go application.
 
 ## Generate application code
 
 ```bash
 andurel generate model Product
 andurel generate query ProductReport --table products
-andurel generate queries
+andurel sync queries
 andurel generate controller Product
 andurel generate scaffold Product
 andurel generate job SendReceipt
 andurel generate email Receipt
 ```
+
+Keep derived TypeScript and Templ output current with `andurel sync routes`, `andurel sync payloads`, and `andurel sync views`.
 
 ## Preview mutations
 

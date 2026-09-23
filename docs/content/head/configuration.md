@@ -46,8 +46,8 @@ Behind a proxy, a normal split is `DOMAIN=app.example.com`, `PROTOCOL=https`, `H
 | `DB_CONNECT_TIMEOUT` | `5s` | Initial connection timeout |
 | `DB_STATEMENT_CACHE_CAPACITY` | `512` | Statement-cache entries; zero disables |
 | `DB_DESCRIPTION_CACHE_CAPACITY` | `512` | Description-cache entries; zero disables |
-| `DB_MAX_OPEN_CONNECTIONS` | `25` | Open pool limit |
-| `DB_MAX_IDLE_CONNECTIONS` | `25` | Idle pool limit |
+| `DB_MAX_OPEN_CONNECTIONS` | `25` | Open pool limit (pgxpool `MaxConns`) |
+| `DB_MAX_IDLE_CONNECTIONS` | `25` | Accepted for compatibility; not applied to the pgx pool |
 | `DB_CONNECTION_MAX_LIFETIME` | `1h` | Reusable connection lifetime |
 | `DB_CONNECTION_MAX_IDLE_TIME` | `30m` | Idle connection lifetime |
 | `DB_OPEN_TELEMETRY` | `true` | pgx instrumentation |

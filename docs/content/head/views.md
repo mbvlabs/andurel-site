@@ -17,7 +17,7 @@ templ ProductsIndex(products []models.Product) {
 Regenerate Go code after editing Templ files:
 
 ```bash
-andurel generate view
+andurel sync views
 ```
 
 This command also compiles Tailwind utilities in email templates.
@@ -28,6 +28,6 @@ Named fragments let a controller return only changed HTML. Keep application stat
 
 ## Inertia pages
 
-An Inertia application owns `views/root.templ` and its adapter-specific files under `resources/js`. Pass application-facing structs or maps with stable JSON tags; do not serialize database model structs or sqlc-generated rows directly.
+An Inertia application owns `views/root.templ` and its adapter-specific files under `resources/js`. Pass application-facing structs or maps with stable JSON tags; do not serialize database model structs or narsilc-generated rows directly.
 
 The v3 adapter supports partial reloads, deferred and once props, merge metadata, flash messages, redirects, asset-version reloads, and optional SSR. Configure the renderer once through Fx and inject it into controllers. See [Inertia](/docs/head/inertia).

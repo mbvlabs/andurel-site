@@ -111,6 +111,6 @@ A typical mutating action:
 4. On domain failure, add an error flash and `Redirect` back to the form.
 5. On success, add a success flash and `Redirect` or `Location`.
 
-Generated `--inertia` resource controllers follow this pattern for create, update, and destroy. Auth controllers mix `ValidationErrors` redisplay with `Location` after login so the root document picks up the session cookie.
+Generated Inertia resource controllers follow this pattern for create, update, and destroy. Auth controllers mix `ValidationErrors` redisplay with `Location` after login so the root document picks up the session cookie.
 
 See [Pages and Visits](/docs/head/inertia-pages) for `Page` and [Generators](/docs/head/inertia-generators) for the scaffolded form flow.

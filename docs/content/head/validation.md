@@ -1,6 +1,6 @@
 # Validation
 
-`github.com/mbvlabs/andurel/pkg/validation` builds structured, JSON-ready field errors and records rule metadata during the same pass. Configuration and model inputs use it without coupling validation to Echo, Fx, Bun, Templ, or Inertia.
+`github.com/mbvlabs/andurel/pkg/validation` builds structured, JSON-ready field errors and records rule metadata during the same pass. Configuration and model inputs use it without coupling validation to Echo, Fx, storage, Templ, or Inertia.
 
 ## Builder lifecycle
 

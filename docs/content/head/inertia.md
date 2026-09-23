@@ -31,7 +31,7 @@ return c.renderer.Page(etx, "Products/Index", inertia.Props{
 
 A normal browser request receives the full `views.Root` document, page JSON, and development or production Vite tags. A request with `X-Inertia: true` receives only the JSON page object. Both append `X-Inertia` to `Vary`.
 
-Go retains authorization, validation, queries, and payload construction. Vue, React, or Svelte owns page rendering and local interaction. Do not serialize Bun models or sqlc rows directly; define backend-owned payload structs with stable JSON tags.
+Go retains authorization, validation, queries, and payload construction. Vue, React, or Svelte owns page rendering and local interaction. Do not serialize model entities or narsilc rows directly; define backend-owned payload structs with stable JSON tags.
 
 ## Protocol essentials
 

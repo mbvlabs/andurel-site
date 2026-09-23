@@ -11,8 +11,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import type { DocHeading, DocLink, DocNavigationProps } from '@/types/docs'
 
 type ShowProps = DocNavigationProps & {
@@ -26,7 +24,20 @@ type ShowProps = DocNavigationProps & {
   next: DocLink | null
 }
 
-function PagerCard({
+function VersionCrumb({ name }: { name: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span>{name}</span>
+      {name === 'head' ? (
+        <span className="hidden text-[10px] font-medium tracking-wide text-primary/90 sm:inline">
+          v2 alpha
+        </span>
+      ) : null}
+    </span>
+  )
+}
+
+function PagerLink({
   align,
   label,
   page,
@@ -38,18 +49,23 @@ function PagerCard({
   return (
     <Link
       href={page.url}
-      className={cn('block h-full min-w-0', align === 'end' && 'sm:col-start-2')}
+      className={cn(
+        'group flex min-w-0 flex-col gap-1 rounded-none border border-border/70 bg-transparent px-4 py-3 transition-colors hover:border-border hover:bg-muted/30',
+        align === 'end' && 'items-end text-right sm:col-start-2',
+      )}
     >
-      <Card size="sm" className="h-full transition-colors hover:bg-muted/50">
-        <CardHeader className={align === 'end' ? 'items-end text-right' : undefined}>
-          <CardDescription>{label}</CardDescription>
-          <CardTitle className="flex min-w-0 items-center gap-1.5">
-            {align === 'start' && <ChevronLeftIcon className="size-4 shrink-0" />}
-            <span className="truncate">{page.title}</span>
-            {align === 'end' && <ChevronRightIcon className="size-4 shrink-0" />}
-          </CardTitle>
-        </CardHeader>
-      </Card>
+      <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+        {label}
+      </span>
+      <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-foreground">
+        {align === 'start' && (
+          <ChevronLeftIcon className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+        )}
+        <span className="truncate">{page.title}</span>
+        {align === 'end' && (
+          <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+        )}
+      </span>
     </Link>
   )
 }
@@ -81,40 +97,52 @@ export default function Show({
       description={description}
       headings={headings}
     >
-      <Breadcrumb className="mb-6 min-w-0 sm:mb-7">
-        <BreadcrumbList>
+      <Breadcrumb className="mb-5 min-w-0 sm:mb-6">
+        <BreadcrumbList className="gap-1 text-[11px] tracking-wide sm:gap-1.5">
           <BreadcrumbItem>
-            <BreadcrumbLink render={<Link href={versionUrl} />}>{currentVersion}</BreadcrumbLink>
+            <BreadcrumbLink
+              render={<Link href={versionUrl} />}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <VersionCrumb name={currentVersion} />
+            </BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbSeparator />
+          <BreadcrumbSeparator className="text-muted-foreground/50" />
           <BreadcrumbItem>
-            <span>{currentSection}</span>
+            <span className="text-muted-foreground">{currentSection}</span>
           </BreadcrumbItem>
           {parent ? (
             <>
-              <BreadcrumbSeparator />
+              <BreadcrumbSeparator className="text-muted-foreground/50" />
               <BreadcrumbItem className="min-w-0">
-                <BreadcrumbLink render={<Link href={parent.url} />} className="truncate">
+                <BreadcrumbLink
+                  render={<Link href={parent.url} />}
+                  className="truncate text-muted-foreground hover:text-foreground"
+                >
                   {parent.title}
                 </BreadcrumbLink>
               </BreadcrumbItem>
             </>
           ) : null}
-          <BreadcrumbSeparator />
+          <BreadcrumbSeparator className="text-muted-foreground/50" />
           <BreadcrumbItem className="min-w-0">
-            <BreadcrumbPage className="truncate">{title}</BreadcrumbPage>
+            <BreadcrumbPage className="truncate font-medium text-foreground/90">
+              {title}
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
       <article className="docs-content min-w-0" dangerouslySetInnerHTML={{ __html: html }} />
+
       {(previous || next) && (
-        <>
-          <Separator className="mt-10 sm:mt-14" />
-          <nav className="mt-6 grid gap-3 sm:grid-cols-2" aria-label="Documentation pagination">
-            {previous ? <PagerCard align="start" label="Previous" page={previous} /> : null}
-            {next ? <PagerCard align="end" label="Next" page={next} /> : null}
-          </nav>
-        </>
+        <nav
+          className="mt-10 grid gap-3 border-t border-border/80 pt-6 sm:mt-12 sm:grid-cols-2 sm:pt-8"
+          aria-label="Documentation pagination"
+        >
+          {previous ? <PagerLink align="start" label="Previous" page={previous} /> : null}
+          {next ? <PagerLink align="end" label="Next" page={next} /> : null}
+        </nav>
       )}
     </DocLayout>
   )

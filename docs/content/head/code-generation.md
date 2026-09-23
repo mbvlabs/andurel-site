@@ -7,19 +7,19 @@ Andurel generates application-owned code that you can edit after creation. Frame
 Start with the canonical SQL migration, then generate CRUD:
 
 ```bash
-andurel database migrate new create_products_table
-andurel database migrate up
+andurel generate migration create_products_table
+andurel db migrate up
 andurel generate scaffold Product
 ```
 
-The scaffold includes a constructed model API, entity and data types, a synchronized factory, controller, typed routes, and views. Pass `--inertia` for pages using the configured adapter or `--api` for JSON handlers. See [Generators](/docs/head/inertia-generators) for the Inertia payload, TypeScript, and route-helper flow.
+The scaffold includes a constructed model API, entity and data types, a synchronized factory, controller, typed routes, and views. Generation follows the UI in `andurel.lock` (Inertia pages or Templ). Pass `--api` for JSON handlers. See [Generators](/docs/head/inertia-generators) for the Inertia payload, TypeScript, and route-helper flow.
 
 ## Generate individual parts
 
 ```bash
 andurel generate model Product
 andurel generate model Product --mode read-only
-andurel generate factory Product
+andurel sync factory Product --sync
 andurel generate controller Product index show
 andurel generate controller Dashboard overview --model-name User
 andurel generate query SalesReport
@@ -32,11 +32,12 @@ Model modes are `crud`, `read-only`, and `create-only`. Model generation reads m
 ## Keep generated state current
 
 ```bash
-andurel generate factories --check --json
-andurel generate factories --sync --json
-andurel generate view
-andurel generate queries
-andurel generate routes
+andurel sync factories --check --json
+andurel sync factories --sync --json
+andurel sync views
+andurel sync queries
+andurel sync routes
+andurel sync payloads
 ```
 
-Use `--dry-run --diff --json` before broad mutations. sqlc output under `models/internal/queries` and Templ-generated Go are derived files; models, factories, controllers, SQL query files, routes, and authored views are application code.
+Use `--dry-run --diff --json` before broad mutations. narsilc output under `models/internal/queries` and Templ-generated Go are derived files; models, factories, controllers, SQL query files, routes, and authored views are application code.

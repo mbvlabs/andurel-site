@@ -34,7 +34,7 @@ return c.renderer.Page(
 ).Render()
 ```
 
-Generated scaffolds emit these payload types next to the controller and matching TypeScript declarations under `resources/js/types`. Do not pass `models.Product` or sqlc rows into `Page`. Map to an application-owned struct first so nullability, money, and hidden columns stay explicit.
+Generated scaffolds emit these payload types next to the controller and matching TypeScript declarations under `resources/js/types`. Do not pass `models.Product` or narsilc rows into `Page`. Map to an application-owned struct first so nullability, money, and hidden columns stay explicit.
 
 Dotted keys unpack into nested objects:
 
@@ -175,4 +175,4 @@ func productResources(products []models.Product) []ProductData {
 
 Put Always props that layouts need on every visit, defer secondary widgets, and keep the index query on the first response. If a page feels slow, inspect which resolvers run on full visits before adding more partial-reload machinery.
 
-Generated `--inertia` controllers already use `FromStruct` and TypeScript types. Hand-written pages should follow the same pattern so `generate` output and application code stay interchangeable. See [Generators](/docs/head/inertia-generators).
+Generated Inertia resource controllers already use `FromStruct` and TypeScript types. Hand-written pages should follow the same pattern so `generate` output and application code stay interchangeable. See [Generators](/docs/head/inertia-generators).

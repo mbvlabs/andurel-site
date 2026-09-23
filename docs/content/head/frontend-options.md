@@ -1,6 +1,6 @@
 # Frontend Options
 
-Andurel supports server-owned HTML with Templ and Datastar, or client-owned pages with Inertia and Vue, React, or Svelte. Both use the same Echo router, models, services, sessions, validation, and PostgreSQL infrastructure. The choice is where rendering and interaction state live.
+Andurel supports client-owned pages with Inertia and Vue, React, or Svelte (the default), or server-owned HTML with Templ and Datastar. Both use the same Echo router, models, services, sessions, validation, and PostgreSQL infrastructure. The choice is where rendering and interaction state live.
 
 ## Choose by ownership
 
@@ -16,6 +16,8 @@ Andurel supports server-owned HTML with Templ and Datastar, or client-owned page
 | Strong fit | Forms, content, operations screens, server-led workflows | App-like navigation and rich local interaction |
 
 Complexity alone does not decide it. Templ can stream live multi-fragment updates, while a small Inertia page still introduces a client runtime and JSON boundary.
+
+New projects default to **Inertia React/pnpm**. Pass `--ui templ/datastar` (or another Inertia combo) at `andurel new` time. The choice is stored in `andurel.lock` and drives later generators.
 
 ## Working with Templ
 
@@ -58,7 +60,7 @@ return c.renderer.Page(etx, "Products/Index", inertia.Props{
 
 The first visit renders application-owned `views/root.templ`, embeds the page object, and loads Vite. Later visits return page JSON and the official adapter swaps the component. Go retains authorization, validation, queries, and payload construction; Vue, React, or Svelte owns page rendering and local interaction.
 
-Define page payload structs with stable JSON tags and matching TypeScript declarations. Do not serialize database models or sqlc rows directly. Partial reloads and prop policies reduce work but do not remove the need for a deliberate browser API. See [Inertia](/docs/head/inertia) and [Props](/docs/head/inertia-props).
+Define page payload structs with stable JSON tags and matching TypeScript declarations. Do not serialize database models or narsilc rows directly. Partial reloads and prop policies reduce work but do not remove the need for a deliberate browser API. See [Inertia](/docs/head/inertia) and [Props](/docs/head/inertia-props).
 
 ## Forms and validation
 
@@ -72,23 +74,24 @@ Domain validation should be shared. Only its transport and presentation differ.
 
 One Echo application can have Templ and Inertia routes. Keep each route's response contract consistent: an Inertia navigation must receive an Inertia page or explicit location response, not arbitrary HTML.
 
-Resource generation defaults to Templ, including inside an Inertia scaffold. Opt in per resource:
+Resource generation follows the UI recorded in `andurel.lock`. In an Inertia project, scaffolds and controllers emit Inertia pages for that adapter. Use `--api` for JSON handlers instead of pages:
 
 ```bash
-andurel generate scaffold Product --inertia
-andurel generate routes
+andurel generate scaffold Product
+andurel generate scaffold Product --api
+andurel sync routes
 ```
 
-`generate routes` creates typed TypeScript URL helpers from marked route declarations. Templ and frontend layouts are not shared components: one renders in Go, the other in the client runtime.
+`sync routes` creates typed TypeScript URL helpers from marked route declarations. Templ and frontend layouts are not shared components: one renders in Go, the other in the client runtime.
 
-A clean mixed boundary is public Templ marketing pages beside an authenticated Inertia application. Avoid implementing the same feature twice without a concrete reason.
+A clean mixed boundary is public Templ marketing pages beside an authenticated Inertia application. Avoid implementing the same feature twice without a concrete reason. To add Templ resources inside an Inertia app, change the project UI or hand-author Templ handlers — generators follow the lockfile.
 
 ## Development, assets, and SSR
 
 Both choices compile Templ because base documents and email use it:
 
 ```bash
-andurel generate view
+andurel sync views
 ```
 
 Inertia additionally runs Vite during development and embeds production output in the Go binary. The package manager recorded in `andurel.lock` controls dependency installation; it does not select the Node runtime used by `cmd/ssr`.

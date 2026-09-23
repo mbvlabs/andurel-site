@@ -45,6 +45,10 @@ const docsColumns =
 const headerColumns =
   'grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] gap-x-3 sm:gap-x-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,48rem)_minmax(14rem,1fr)] xl:gap-x-24'
 
+/** Idle muted link + active left rail; kills default filled active chip. */
+const docNavLinkClassName =
+  'relative text-sidebar-foreground/60 hover:bg-transparent hover:text-sidebar-foreground active:bg-transparent data-open:hover:bg-transparent data-active:bg-transparent data-active:font-medium data-active:text-sidebar-foreground before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-sm before:bg-transparent data-active:before:bg-sidebar-primary'
+
 type DocLayoutProps = DocNavigationProps & {
   children: ReactNode
   headings?: DocHeading[]
@@ -64,6 +68,19 @@ function pageOrDescendantIsCurrent(page: DocPage, currentSlug: string): boolean 
   return page.children?.some((child) => pageOrDescendantIsCurrent(child, currentSlug)) ?? false
 }
 
+function VersionLabel({ name }: { name: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span>{name}</span>
+      {name === 'head' ? (
+        <span className="hidden text-[10px] font-medium tracking-wide text-primary sm:inline">
+          v2 alpha
+        </span>
+      ) : null}
+    </span>
+  )
+}
+
 function DocNavPage({ page, currentSlug }: { page: DocPage; currentSlug: string }) {
   const children = page.children ?? []
   const expanded = children.length > 0 && pageOrDescendantIsCurrent(page, currentSlug)
@@ -75,6 +92,7 @@ function DocNavPage({ page, currentSlug }: { page: DocPage; currentSlug: string 
         aria-current={currentSlug === page.slug ? 'page' : undefined}
         aria-expanded={children.length > 0 ? expanded : undefined}
         tooltip={page.title}
+        className={docNavLinkClassName}
         render={<Link href={page.url} />}
       >
         <span>{page.title}</span>
@@ -89,6 +107,7 @@ function DocNavPage({ page, currentSlug }: { page: DocPage; currentSlug: string 
               <SidebarMenuSubButton
                 isActive={currentSlug === child.slug}
                 aria-current={currentSlug === child.slug ? 'page' : undefined}
+                className={docNavLinkClassName}
                 render={<Link href={child.url} />}
               >
                 <span>{child.title}</span>
@@ -135,7 +154,7 @@ function HeaderActions({
     <nav className="flex shrink-0 items-center gap-1 sm:gap-2 text-sm">
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
-          {currentVersion}
+          <VersionLabel name={currentVersion} />
           <ChevronDownIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -143,7 +162,7 @@ function HeaderActions({
             <DropdownMenuLabel>Versions</DropdownMenuLabel>
             {versions.map((version) => (
               <DropdownMenuItem key={version.name} render={<Link href={version.url} />}>
-                {version.name}
+                <VersionLabel name={version.name} />
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
@@ -194,15 +213,17 @@ export default function DocLayout({
         })}
       />
       <Sidebar className="border-sidebar-border">
-        <SidebarHeader className="h-14 flex-row items-center border-b border-sidebar-border px-4 py-0">
+        <SidebarHeader className="h-14 shrink-0 flex-row items-center border-b border-sidebar-border px-4 py-0">
           <DocBrand />
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="gap-1 px-1 pb-4 pt-2">
           {catalog?.sections.map((section) => (
-            <SidebarGroup key={section.title}>
-              <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+            <SidebarGroup key={section.title} className="px-2 py-3 first:pt-1">
+              <SidebarGroupLabel className="h-auto px-2 pb-2 pt-0 text-sm font-semibold tracking-wide text-sidebar-foreground">
+                {section.title}
+              </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="gap-0.5">
                   {section.pages.map((page) => (
                     <DocNavPage key={page.slug} page={page} currentSlug={currentSlug} />
                   ))}

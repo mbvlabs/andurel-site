@@ -41,4 +41,4 @@ andurel generate controller Dashboard overview
 andurel generate controller v1/User --api
 ```
 
-Use `--model-name` when a controller is backed by a differently named model, `--api` for JSON handlers, or `--inertia` for pages using the configured frontend adapter.
+Use `--model-name` when a controller is backed by a differently named model, or `--api` for JSON handlers. Otherwise generation follows the UI recorded in `andurel.lock` (Inertia pages or Templ).

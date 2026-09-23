@@ -182,11 +182,11 @@ var headSections = []Section{
 	{
 		Title: "Getting Started",
 		Pages: []Page{
-			{Slug: "introduction", Title: "Introduction", Description: "Meet Andurel v2 and its application architecture."},
-			{Slug: "installation", Title: "Installation", Description: "Install the v2 development CLI and create an application."},
+			{Slug: "introduction", Title: "Introduction", Description: "Meet Andurel v2.0.0-alpha and its application architecture."},
+			{Slug: "installation", Title: "Installation", Description: "Install the v2.0.0-alpha CLI and create an application."},
 			{Slug: "configuration", Title: "Configuration", Description: "Compose validated application configuration with Fx."},
 			{Slug: "directory-structure", Title: "Directory Structure", Description: "Understand the files and process boundaries in a v2 project."},
-			{Slug: "frontend-options", Title: "Frontend Options", Description: "Choose Templ with Datastar or Inertia v3."},
+			{Slug: "frontend-options", Title: "Frontend Options", Description: "Choose Inertia v3 (default) or Templ with Datastar."},
 			{Slug: "v2-migration", Title: "Moving to v2", Description: "Plan a manual move from an Andurel v1 application."},
 		},
 	},
@@ -202,7 +202,7 @@ var headSections = []Section{
 		Title: "Framework Packages",
 		Pages: []Page{
 			{Slug: "framework-packages", Title: "Framework Packages", Description: "Understand package boundaries, composition, and versioning."},
-			{Slug: "storage", Title: "Storage", Description: "Configure PostgreSQL, transactions, sqlc, tests, and River clients."},
+			{Slug: "storage", Title: "Storage", Description: "Configure PostgreSQL, narsilc connections, transactions, tests, and River."},
 			{
 				Slug:        "inertia",
 				Title:       "Inertia",
@@ -228,8 +228,8 @@ var headSections = []Section{
 	{
 		Title: "Data and Services",
 		Pages: []Page{
-			{Slug: "database", Title: "Database", Description: "Use the shared PostgreSQL connection, Bun models, and transactions."},
-			{Slug: "sql-queries", Title: "SQL Queries", Description: "Use sqlc for complex queries inside the model layer."},
+			{Slug: "database", Title: "Database", Description: "Use the shared pgx connection, narsilc models, and transactions."},
+			{Slug: "sql-queries", Title: "SQL Queries", Description: "Author narsilc SQL and keep generated clients behind models."},
 			{Slug: "authentication", Title: "Authentication", Description: "Use generated identity, session, and account flows."},
 			{Slug: "email", Title: "Email", Description: "Compile and send typed transactional and marketing email."},
 			{Slug: "queues", Title: "Queues", Description: "Insert jobs from the web process and run dedicated workers."},

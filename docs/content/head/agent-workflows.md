@@ -7,14 +7,13 @@ Andurel's CLI exposes structured discovery and mutation reports for agents and a
 ```bash
 andurel --agent --help
 andurel commands --json
-andurel project info --json
-andurel config show --json
-andurel routes --json
-andurel models --json
-andurel migrations --json
-andurel controllers --json
-andurel views --json
-andurel jobs --json
+andurel inspect project --json
+andurel inspect routes --json
+andurel inspect models --json
+andurel inspect migrations --json
+andurel inspect controllers --json
+andurel inspect views --json
+andurel inspect jobs --json
 ```
 
 Use the returned command tree and project metadata instead of assuming a v1 command or directory still exists.

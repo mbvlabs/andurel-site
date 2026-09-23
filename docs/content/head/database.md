@@ -1,6 +1,6 @@
 # Database
 
-Andurel v2 uses PostgreSQL through the standalone storage package. One shared `database/sql` pool backed by pgx serves Bun, sqlc, and River.
+Andurel v2 uses PostgreSQL through the standalone storage package. One shared **pgx** pool serves narsilc-backed models and River.
 
 ## Connect through storage
 
@@ -16,22 +16,22 @@ func NewProducts(db storage.Connection) Products {
 }
 ```
 
-Use `db.Executor()` for Bun operations and `db.DB()` for standard SQL consumers. Keep entities, validation, relationships, and persistence methods together in their owning model file.
+Pass `db` to narsilc with `queries.New(db)`. Keep entities, validation, relationships, and persistence methods together in their owning model file. See [SQL Queries](/docs/head/sql-queries).
 
 ## Schema and migrations
 
-SQL migrations under root `migrations/` are the source of truth. The package embeds `*.sql` files for CLI, tests, and deployment tooling. Bun tags and sqlc output do not replace migrations.
+SQL migrations under root `migrations/` are the source of truth. The package embeds `*.sql` files for CLI, tests, and deployment tooling. narsilc output does not replace migrations.
 
 ```bash
-andurel database migrate new create_products_table
-andurel database migrate up
+andurel generate migration create_products_table
+andurel db migrate up
 andurel generate model Product
 ```
 
 ## Transactions
 
-Transactions bridge Bun and standard SQL. Use `storage.RunInTransaction` for multi-step workflows. Within the transaction, `Executor()` serves Bun model work and `SQL()` can be passed to `queries.WithTx` for sqlc. This keeps all operations on one transaction and pool.
+Use `storage.RunInTransaction` for multi-step workflows. Within the transaction, pass `tx` to `queries.New(tx)` so every statement shares one PostgreSQL transaction and the same pool.
 
 ## Factories and seeds
 
-Factories live beside models under `models/factories`. Named seed compositions live in root `seeds/` and are run through `cmd/seeds`. Check generated factories for drift with `andurel generate factories --check --json` and sync them explicitly.
+Factories live beside models under `models/factories`. Named seed compositions live in root `seeds/` and are run through `cmd/seeds` / `andurel db seed`. Check generated factories for drift with `andurel sync factories --check --json` and refresh them with `--sync`.

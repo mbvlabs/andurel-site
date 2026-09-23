@@ -78,14 +78,16 @@ export default function DocsSearch({
         type="button"
         variant="outline"
         className={cn(
-          'hidden h-8 w-full min-w-0 shrink justify-start text-muted-foreground md:inline-flex',
+          'hidden h-8 w-full min-w-0 shrink justify-start gap-2 border-border/70 bg-transparent text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground md:inline-flex',
           className,
         )}
         onClick={() => setOpen(true)}
       >
         <SearchIcon />
         <span className="flex-1 truncate text-left">Search documentation...</span>
-        <Kbd className="pointer-events-none hidden border border-border lg:inline-flex">⌘K</Kbd>
+        <Kbd className="pointer-events-none hidden border border-border bg-transparent text-muted-foreground lg:inline-flex">
+          ⌘K
+        </Kbd>
       </Button>
       <CommandDialog
         open={open}
