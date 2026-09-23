@@ -410,6 +410,22 @@ export default function Home() {
             <ArrowRightIcon data-icon="inline-end" />
           </Button>
         </section>
+
+        <Separator />
+
+        <section className="mx-auto max-w-2xl text-center">
+          <p className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
+            Heritage · Prior vehicles
+          </p>
+          <h2 className="mt-3 text-xl font-semibold tracking-tight text-card-foreground sm:text-2xl">
+            They wrote the flight manual. We lit the engines.
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-muted-foreground">
+            Ruby on Rails and Laravel proved that convention, joy, and batteries-included could
+            ship the web. Andurel left the interpreters on the ground and built the vehicle that
+            leaves the atmosphere.
+          </p>
+        </section>
       </div>
     </Layout>
   )
