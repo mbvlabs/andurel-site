@@ -279,7 +279,20 @@ var headSections = []Section{
 		Title: "Command Line",
 		Pages: []Page{
 			{Slug: "cli", Title: "Overview", Description: "Discover the v2 project workflow and command surface."},
-			{Slug: "generate", Title: "generate", Description: "Create application-owned models, queries, controllers, jobs, email, and resources."},
+			{
+				Slug:        "generate",
+				Title:       "generate",
+				Description: "Create application-owned models, queries, controllers, jobs, email, and resources.",
+				Children: []Page{
+					{Slug: "generate-scaffold", Title: "scaffold", Description: "Generate a model, controller, views, and routes for an existing table."},
+					{Slug: "generate-migration", Title: "migration", Description: "Create a new SQL migration file under migrations/."},
+					{Slug: "generate-model", Title: "model", Description: "Generate or update a model API from SQL migration history."},
+					{Slug: "generate-controller", Title: "controller", Description: "Generate a controller, views or pages, and typed routes."},
+					{Slug: "generate-query", Title: "query", Description: "Create a narsilc SQL query file under models/queries/."},
+					{Slug: "generate-job", Title: "job", Description: "Generate a River job and worker registration."},
+					{Slug: "generate-email", Title: "email", Description: "Author a new transactional or marketing email template."},
+				},
+			},
 			{Slug: "sync", Title: "sync", Description: "Refresh derived views, queries, routes, payloads, email, and factories."},
 			{Slug: "inspect", Title: "inspect", Description: "Read project shape without writing files."},
 			{Slug: "db", Title: "db", Description: "Create, migrate, rebuild, seed, and inspect PostgreSQL."},

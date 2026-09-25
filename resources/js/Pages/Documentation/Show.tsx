@@ -70,15 +70,12 @@ function PagerLink({
   )
 }
 
-export default function Show({
+function Show({
   versions,
   currentVersion,
-  currentSlug,
   currentSection,
   title,
-  description,
   html,
-  headings,
   parent,
   previous,
   next,
@@ -88,15 +85,7 @@ export default function Show({
     `/docs/${currentVersion}`
 
   return (
-    <DocLayout
-      versions={versions}
-      currentVersion={currentVersion}
-      currentSlug={currentSlug}
-      currentSection={currentSection}
-      title={title}
-      description={description}
-      headings={headings}
-    >
+    <>
       <Breadcrumb className="mb-5 min-w-0 sm:mb-6">
         <BreadcrumbList className="gap-1 text-[11px] tracking-wide sm:gap-1.5">
           <BreadcrumbItem>
@@ -144,6 +133,10 @@ export default function Show({
           {next ? <PagerLink align="end" label="Next" page={next} /> : null}
         </nav>
       )}
-    </DocLayout>
+    </>
   )
 }
+
+Show.layout = DocLayout
+
+export default Show

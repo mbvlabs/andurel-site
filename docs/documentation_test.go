@@ -116,3 +116,49 @@ func TestNestedInertiaPagesLoadInReadingOrder(t *testing.T) {
 		t.Fatalf("generators next = %+v, want hypermedia", generators.Next)
 	}
 }
+
+func TestNestedGeneratePagesLoadInReadingOrder(t *testing.T) {
+	site, err := New()
+	if err != nil {
+		t.Fatalf("load documentation: %v", err)
+	}
+
+	overview, ok := site.Find(HeadVersion, "generate")
+	if !ok {
+		t.Fatal("expected head/generate to exist")
+	}
+	if overview.Parent != nil {
+		t.Fatalf("overview parent = %+v, want nil", overview.Parent)
+	}
+	if overview.Next == nil || overview.Next.URL != "/docs/head/generate-scaffold" {
+		t.Fatalf("overview next = %+v, want scaffold", overview.Next)
+	}
+	if !strings.Contains(overview.HTML, "Generate versus sync") {
+		t.Fatal("expected generate intro to document generate versus sync")
+	}
+
+	scaffold, ok := site.Find(HeadVersion, "generate-scaffold")
+	if !ok {
+		t.Fatal("expected head/generate-scaffold to exist")
+	}
+	if scaffold.Parent == nil || scaffold.Parent.URL != "/docs/head/generate" {
+		t.Fatalf("scaffold parent = %+v, want generate overview", scaffold.Parent)
+	}
+	if scaffold.Previous == nil || scaffold.Previous.URL != "/docs/head/generate" {
+		t.Fatalf("scaffold previous = %+v, want generate", scaffold.Previous)
+	}
+	if scaffold.Next == nil || scaffold.Next.URL != "/docs/head/generate-migration" {
+		t.Fatalf("scaffold next = %+v, want migration", scaffold.Next)
+	}
+	if !strings.Contains(scaffold.HTML, "--skip-factory") {
+		t.Fatal("expected scaffold page to document --skip-factory")
+	}
+
+	email, ok := site.Find(HeadVersion, "generate-email")
+	if !ok {
+		t.Fatal("expected head/generate-email to exist")
+	}
+	if email.Next == nil || email.Next.URL != "/docs/head/sync" {
+		t.Fatalf("email next = %+v, want sync", email.Next)
+	}
+}

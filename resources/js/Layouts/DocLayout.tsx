@@ -49,13 +49,13 @@ const headerColumns =
 const docNavLinkClassName =
   'relative text-sidebar-foreground/60 hover:bg-transparent hover:text-sidebar-foreground active:bg-transparent data-open:hover:bg-transparent data-active:bg-transparent data-active:font-medium data-active:text-sidebar-foreground before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-sm before:bg-transparent data-active:before:bg-sidebar-primary'
 
-type DocLayoutProps = DocNavigationProps & {
-  children: ReactNode
-  headings?: DocHeading[]
-  title: string
-  description: string
-  currentSection: string
-}
+type DocLayoutPageProps = SharedPageProps &
+  DocNavigationProps & {
+    currentSection: string
+    title: string
+    description: string
+    headings?: DocHeading[]
+  }
 
 function currentCatalog(versions: DocVersion[], currentVersion: string) {
   return versions.find((version) => version.name === currentVersion) ?? versions[0]
@@ -182,19 +182,19 @@ function HeaderActions({
   )
 }
 
-export default function DocLayout({
-  children,
-  versions,
-  currentVersion,
-  currentSlug,
-  currentSection,
-  title,
-  description,
-  headings,
-}: DocLayoutProps) {
+export default function DocLayout({ children }: { children: ReactNode }) {
+  const {
+    versions,
+    currentVersion,
+    currentSlug,
+    currentSection,
+    title,
+    description,
+    headings,
+    appUrl,
+  } = usePage<DocLayoutPageProps>().props
   const catalog = currentCatalog(versions, currentVersion)
   const canonical = useCanonicalUrl()
-  const { appUrl } = usePage<SharedPageProps>().props
 
   return (
     <SidebarProvider>

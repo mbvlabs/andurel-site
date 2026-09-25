@@ -39,6 +39,8 @@ andurel db migrate down-to 8
 andurel db migrate fix
 ```
 
+Creating the SQL file is [generate migration](/docs/head/generate-migration); applying and rolling back is `andurel db migrate`.
+
 `migrate` shells out to the pinned `bin/goose` against root `migrations/`. Goose status looks like:
 
 ```text

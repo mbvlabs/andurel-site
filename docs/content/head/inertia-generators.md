@@ -129,4 +129,4 @@ Edit page components, layouts, and CSS freely. Re-running a generator will not r
 5. Add `.SSR()` only on pages that should hit Vite or `cmd/ssr`.
 6. Run `andurel doctor` before committing when `routes.ts` or generated views changed.
 
-See [Frontend](/docs/head/frontend) for choosing Templ versus Inertia, and [generate](/docs/head/generate) for non-Inertia generators.
+See [Frontend](/docs/head/frontend) for choosing Templ versus Inertia, and [generate](/docs/head/generate) for the full generate group ([scaffold](/docs/head/generate-scaffold), [controller](/docs/head/generate-controller)).

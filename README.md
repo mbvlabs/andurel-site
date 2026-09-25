@@ -8,36 +8,36 @@ Inspired by Ruby on Rails, Andurel is now its own thing: generated Go you own, e
 
 ```
 andurel-site/
-├── assets/              # Static assets (compiled CSS, images)
-├── bin/                 # Command-line tools
-│   ├── app              # Main application binary
-│   ├── console          # Database console
-│   ├── migration        # Migration runner
-│   └── shadowfax        # Development server
-├── cmd/                 # Command entry points
-│   ├── app/             # Main web application
-│   ├── queue/           # Background queue processor
-│   └── seeds/           # Database seeding
-├── clients/             # External service clients
-├── config/              # Application configuration
-├── controllers/         # HTTP request handlers
-├── css/                 # Source CSS files (Tailwind wrappers + theme)
+├── assets/ # Static assets (compiled CSS, images)
+├── bin/ # Command-line tools
+│ ├── app # Main application binary
+│ ├── console # Database console
+│ ├── migration # Migration runner
+│ └── shadowfax # Development server
+├── cmd/ # Command entry points
+│ ├── app/ # Main web application
+│ ├── queue/ # Background queue processor
+│ └── seeds/ # Database seeding
+├── clients/ # External service clients
+├── config/ # Application configuration
+├── controllers/ # HTTP request handlers
+├── css/ # Source CSS files (Tailwind wrappers + theme)
 ├── examples/
-│   └── html/            # Copy/paste HTML snippets with Datastar attributes
-├── migrations/          # SQL migration files
-├── seeds/               # Database seed definitions
-├── email/               # Email templates and sending
-├── models/              # Data models and business logic
-├── queue/               # Background job processing
-│   ├── jobs/            # Job definitions
-│   └── workers/         # Worker implementations
-├── router/              # Routes and middleware
-│   ├── routes/          # Route definitions
-│   ├── cookies/         # Session helpers
-│   └── middleware/      # Custom middleware
-├── views/               # Templ templates
-├── .env.example         # Example environment configuration
-└── go.mod               # Go dependencies
+│ └── html/ # Copy/paste HTML snippets with Datastar attributes
+├── migrations/ # SQL migration files
+├── seeds/ # Database seed definitions
+├── email/ # Email templates and sending
+├── models/ # Data models and business logic
+├── queue/ # Background job processing
+│ ├── jobs/ # Job definitions
+│ └── workers/ # Worker implementations
+├── router/ # Routes and middleware
+│ ├── routes/ # Route definitions
+│ ├── cookies/ # Session helpers
+│ └── middleware/ # Custom middleware
+├── views/ # Templ templates
+├── .env.example # Example environment configuration
+└── go.mod # Go dependencies
 ```
 
 ## Quick Start
@@ -51,25 +51,25 @@ andurel-site/
 ### Setup
 
 1. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+ ```bash
+ cp .env.example .env
+ # Edit .env with your configuration
+ ```
 
 2. **Create database**
-   ```bash
-   createdb andurel-site_development
-   ```
+ ```bash
+ createdb andurel-site_development
+ ```
 
 3. **Run migrations**
-   ```bash
-   andurel db migrate up
-   ```
+ ```bash
+ andurel db migrate up
+ ```
 
 4. **Start the development server**
-   ```bash
-   andurel run
-   ```
+ ```bash
+ andurel run
+ ```
 
 Your application is now running at `http://localhost:8080` with live reload for Go, Templ, and CSS changes!
 
@@ -162,12 +162,12 @@ Edit the generated migration file in `migrations/` to define your table schema:
 ```sql
 -- +goose Up
 CREATE TABLE products (
-    id UUID PRIMARY KEY,
-    name TEXT NOT NULL,
-    description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+ id UUID PRIMARY KEY,
+ name TEXT NOT NULL,
+ description TEXT,
+ price DECIMAL(10, 2) NOT NULL,
+ created_at TIMESTAMP NOT NULL,
+ updated_at TIMESTAMP NOT NULL
 );
 
 -- +goose Down
@@ -236,8 +236,8 @@ Create a new job type in `queue/jobs/`:
 package jobs
 
 type MyJobArgs struct {
-    UserID   string
-    Action   string
+ UserID string
+ Action string
 }
 
 func (MyJobArgs) Kind() string { return "my_job" }
@@ -252,14 +252,14 @@ Create the worker in `queue/workers/`:
 package workers
 
 import (
-    "context"
-    "andurel-site/queue/jobs"
+ "context"
+ "andurel-site/queue/jobs"
 )
 
 func ProcessMyJob(ctx context.Context, msg []byte) error {
-    // Your job logic here
-    // Unmarshal msg to jobs.MyJobArgs and process
-    return nil
+ // Your job logic here
+ // Unmarshal msg to jobs.MyJobArgs and process
+ return nil
 }
 ```
 
@@ -280,8 +280,8 @@ import "andurel-site/queue/jobs"
 
 // Enqueue a job through your queue client
 err := queue.Enqueue(ctx, jobs.MyJobArgs{
-    UserID: "123",
-    Action: "send_welcome_email",
+ UserID: "123",
+ Action: "send_welcome_email",
 })
 ```
 
@@ -310,10 +310,10 @@ Add your template in `email/`:
 package email
 
 templ WelcomeEmail(userName string) {
-    @BaseLayout() {
-        <h1 class="text-[28px] leading-9 font-bold text-[#414552]">Welcome, { userName }!</h1>
-        <p class="text-base leading-6 text-[#414552]">Thank you for joining us.</p>
-    }
+ @BaseLayout() {
+ <h1 class="text-[28px] leading-9 font-bold text-[#414552]">Welcome, { userName }!</h1>
+ <p class="text-base leading-6 text-[#414552]">Thank you for joining us.</p>
+ }
 }
 ```
 
@@ -326,23 +326,23 @@ automatically. Run `andurel sync email` for a standalone compilation pass.
 import (
 	"context"
 
-    "andurel-site/config"
-    "andurel-site/email"
+ "andurel-site/config"
+ "andurel-site/email"
 )
 
 func sendWelcome(
-    ctx context.Context,
-    sender email.TransactionalSender,
-    mailCfg config.Mail,
+ ctx context.Context,
+ sender email.TransactionalSender,
+ mailCfg config.Mail,
 ) error {
-    data := email.TransactionalData{
-        From:    mailCfg.DefaultSenderSignature,
-        To:      []string{"user@example.com"},
-        Subject: "Welcome!",
-        Body:    WelcomeEmail("John Doe"),
-    }
+ data := email.TransactionalData{
+ From: mailCfg.DefaultSenderSignature,
+ To: []string{"user@example.com"},
+ Subject: "Welcome!",
+ Body: WelcomeEmail("John Doe"),
+ }
 
-    return email.SendTransactional(ctx, data, sender)
+ return email.SendTransactional(ctx, data, sender)
 }
 ```
 
@@ -381,16 +381,16 @@ This project uses Tailwind CSS v4 with shadcn-style CSS variables in `css/theme.
 
 ```css
 :root {
-  --primary: #ff6b1a;
-  --primary-foreground: #130f0b;
-  --ring: #8df7a4;
-  --radius: 0;
+ --primary: #ff6b1a;
+ --primary-foreground: #130f0b;
+ --ring: #8df7a4;
+ --radius: 0;
 }
 
 @theme inline {
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-ring: var(--ring);
+ --color-primary: var(--primary);
+ --color-primary-foreground: var(--primary-foreground);
+ --color-ring: var(--ring);
 }
 ```
 
@@ -449,7 +449,7 @@ TRACE_SAMPLE_RATE=1.0
 
 ## Session, CORS, and CSRF Protection
 
-Application sessions are defined in `router/cookies` (`cookies.NewJar`, FX `cookies.Module`) and loaded onto `context.Context` by `pkg/kiks`. Controllers read and write bag cookies with `kiks.Get` / `kiks.Exists` / `kiks.Set` / `kiks.Destroy` (`Get`, `Exists`, `Set`, and `Destroy` return an error when the bag is missing, the type is unregistered, or the type is native-only — use the same pointer type you registered, e.g. `*cookies.App`). Mark named bag cookies with `kiks.Bagged(...)` in `NewJar`; unmarked named cookies use native `kiks.Read` / `Write` / `Clear` with an injected `*kiks.Jar`. The App session payload is persisted by a cookie-backed `Store` (`kiks.NewCookieStore`). Each Go type may be registered at most once per jar — two same-shape cookies need distinct types. Cookies are `HttpOnly` with `SameSite=Lax` and `Path=/`. Production cookies also use `Secure`. `SESSION_MAX_AGE` is the lifetime in seconds and defaults to seven days (`604800`). Saving session state renews the expiration for another seven days. Signing out destroys the session immediately.
+Application sessions are defined in `router/cookies` (`cookies.NewJar`, FX `cookies.Module`) and loaded onto `context.Context` by `pkg/kiks`. Controllers read and write bag cookies with `kiks.Get` / `kiks.Exists` / `kiks.Set` / `kiks.Destroy` (`Get`, `Exists`, `Set`, and `Destroy` return an error when the bag is missing, the type is unregistered, or the type is native-only. Use the same pointer type you registered, e.g. `*cookies.App`). Mark named bag cookies with `kiks.Bagged(...)` in `NewJar`; unmarked named cookies use native `kiks.Read` / `Write` / `Clear` with an injected `*kiks.Jar`. The App session payload is persisted by a cookie-backed `Store` (`kiks.NewCookieStore`). Each Go type may be registered at most once per jar. Two same-shape cookies need distinct types. Cookies are `HttpOnly` with `SameSite=Lax` and `Path=/`. Production cookies also use `Secure`. `SESSION_MAX_AGE` is the lifetime in seconds and defaults to seven days (`604800`). Saving session state renews the expiration for another seven days. Signing out destroys the session immediately.
 
 CORS allows credentials and trusts only the configured application origin (`PROTOCOL` + `DOMAIN`) by default. `CORS_ALLOWED_ORIGINS` accepts a comma-separated list of additional exact origins. Wildcard origins are rejected when the application starts.
 
@@ -593,9 +593,9 @@ type ProductBuilder struct {
 func Product() *ProductBuilder {
 	return &ProductBuilder{
 		data: models.CreateProductData{
-			Name:        "Test Product",
+			Name: "Test Product",
 			Description: "Test description",
-			Price:       "29.99",
+			Price: "29.99",
 		},
 	}
 }

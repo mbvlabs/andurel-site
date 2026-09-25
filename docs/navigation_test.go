@@ -169,6 +169,50 @@ func TestNavigationNestsInertiaChildren(t *testing.T) {
 	}
 }
 
+func TestNavigationNestsGenerateChildren(t *testing.T) {
+	versions := Navigation()
+	head := findNavVersion(t, versions, HeadVersion)
+
+	var generate NavigationPage
+	for _, section := range head.Sections {
+		if section.Title != "Command Line" {
+			continue
+		}
+		for _, page := range section.Pages {
+			if page.Slug == "generate" {
+				generate = page
+			}
+		}
+	}
+	if generate.Slug == "" {
+		t.Fatal("expected Command Line / generate in head navigation")
+	}
+	if generate.URL != "/docs/head/generate" {
+		t.Fatalf("generate URL = %q, want /docs/head/generate", generate.URL)
+	}
+
+	want := []string{
+		"generate-scaffold",
+		"generate-migration",
+		"generate-model",
+		"generate-controller",
+		"generate-query",
+		"generate-job",
+		"generate-email",
+	}
+	if len(generate.Children) != len(want) {
+		t.Fatalf("generate children = %d, want %d", len(generate.Children), len(want))
+	}
+	for i, slug := range want {
+		if generate.Children[i].Slug != slug {
+			t.Fatalf("children[%d].Slug = %q, want %q", i, generate.Children[i].Slug, slug)
+		}
+		if generate.Children[i].URL != "/docs/head/"+slug {
+			t.Fatalf("children[%d].URL = %q", i, generate.Children[i].URL)
+		}
+	}
+}
+
 func findNavVersion(t *testing.T, versions []NavigationVersion, name string) NavigationVersion {
 	t.Helper()
 	for _, version := range versions {
