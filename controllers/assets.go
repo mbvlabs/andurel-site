@@ -5,10 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"path"
 	"strings"
 
@@ -19,105 +16,74 @@ import (
 	"andurel-site/router/routes"
 
 	"github.com/labstack/echo/v5"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 )
 
 const threeMonthsCache = "7776000"
 
 type Assets struct {
-	cache      *Cache[string]
-	appCfg     config.App
-	viteDevURL string
-	site       *docs.Site
+	cache  *Cache[string]
+	appCfg config.App
+	site   *docs.Site
 }
 
-func NewAssets(cache *Cache[string], appCfg config.App, inertiaCfg config.Inertia, site *docs.Site) Assets {
-	return Assets{cache: cache, appCfg: appCfg, viteDevURL: inertiaCfg.ViteDevURL, site: site}
+func NewAssets(cache *Cache[string], appCfg config.App, site *docs.Site) Assets {
+	return Assets{cache: cache, appCfg: appCfg, site: site}
 }
 
 func (a Assets) RegisterRoutes(r *router.Router) error {
 	errs := []error{}
 
-	_, err := r.AddRoute(echo.Route{
+	_, err := r.AddRoute(routes.Robots, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.Robots.Path(),
-		Name:    routes.Robots.Name(),
 		Handler: a.Robots,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 
-	_, err = r.AddRoute(echo.Route{
+	_, err = r.AddRoute(routes.Sitemap, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.Sitemap.Path(),
-		Name:    routes.Sitemap.Name(),
 		Handler: a.Sitemap,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 
-	_, err = r.AddRoute(echo.Route{
+	_, err = r.AddRoute(routes.IndexNow, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.IndexNow.Path(),
-		Name:    routes.IndexNow.Name(),
 		Handler: a.IndexNow,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 
-	_, err = r.AddRoute(echo.Route{
+	_, err = r.AddRoute(routes.Stylesheet, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.Stylesheet.Path(),
-		Name:    routes.Stylesheet.Name(),
 		Handler: a.Stylesheet,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 
-	_, err = r.AddRoute(echo.Route{
+	_, err = r.AddRoute(routes.Scripts, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.Scripts.Path(),
-		Name:    routes.Scripts.Name(),
 		Handler: a.Scripts,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 
-	_, err = r.AddRoute(echo.Route{
+	_, err = r.AddRoute(routes.Script, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.Script.Path(),
-		Name:    routes.Script.Name(),
 		Handler: a.Script,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
-	_, err = r.AddRoute(echo.Route{
+	_, err = r.AddRoute(routes.ViteBuild, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.ViteBuild.Path(),
-		Name:    routes.ViteBuild.Name(),
 		Handler: a.ViteBuild,
-	})
-	if err != nil {
-		errs = append(errs, err)
-	}
-
-	// Vite emits absolute /assets/dist/<file> URLs for hashed fonts and other
-	// secondary assets (see vite base). Entry CSS/JS use the timestamped
-	// ViteBuild path above; these files still need a non-timestamped route.
-	viteDistHandler := a.ViteBuild
-	if !a.appCfg.IsProduction() {
-		viteDistHandler = a.ViteDevFiles
-	}
-	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.ViteDevFiles.Path(),
-		Name:    routes.ViteDevFiles.Name(),
-		Handler: viteDistHandler,
 	})
 	if err != nil {
 		errs = append(errs, err)
@@ -165,19 +131,18 @@ func createRobotsTxt(baseURL string) string {
 	)
 }
 
-func (a Assets) IndexNow(etx *echo.Context) error {
-	return etx.String(http.StatusOK, routes.IndexNowKey)
-}
-
 func (a Assets) Robots(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "assets.robots")
+	defer span.End()
+
 	cacheKey := "assets:robots"
 
 	robotsTxt, err := a.cache.Get(cacheKey, func() (string, error) {
 		return createRobotsTxt(a.appCfg.BaseURL()), nil
 	})
 	if err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"failed to get robots.txt from cache",
 			"error", err,
 		)
@@ -187,15 +152,22 @@ func (a Assets) Robots(etx *echo.Context) error {
 	return etx.String(http.StatusOK, robotsTxt)
 }
 
+func (a Assets) IndexNow(etx *echo.Context) error {
+	return etx.String(http.StatusOK, routes.IndexNowKey)
+}
+
 func (a Assets) Sitemap(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "assets.sitemap")
+	defer span.End()
+
 	cacheKey := "assets:sitemap"
 
 	sitemap, err := a.cache.Get(cacheKey, func() (string, error) {
 		return createSitemap(a.appCfg.BaseURL(), a.site)
 	})
 	if err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
+		telemetry.Error(
+			ctx,
 			"failed to get sitemap from cache",
 			"error", err,
 		)
@@ -312,10 +284,6 @@ func contentTypeByExt(name string) string {
 		return "application/json"
 	case strings.HasSuffix(name, ".svg"):
 		return "image/svg+xml"
-	case strings.HasSuffix(name, ".woff2"):
-		return "font/woff2"
-	case strings.HasSuffix(name, ".woff"):
-		return "font/woff"
 	default:
 		return "application/octet-stream"
 	}
@@ -335,18 +303,4 @@ func (a Assets) ViteBuild(etx *echo.Context) error {
 
 	etx = a.enableCaching(etx, data)
 	return etx.Blob(http.StatusOK, contentTypeByExt(param), data)
-}
-
-func (a Assets) ViteDevFiles(etx *echo.Context) error {
-	target, err := url.Parse(a.viteDevURL)
-	if err != nil {
-		return err
-	}
-
-	proxy := httputil.NewSingleHostReverseProxy(&url.URL{
-		Scheme: target.Scheme,
-		Host:   target.Host,
-	})
-	proxy.ServeHTTP(etx.Response(), etx.Request())
-	return nil
 }

@@ -17,7 +17,8 @@ Use this skill when working in an Andurel project or generating Andurel code. It
 - Inspect returned artifact arrays before assuming which files changed.
 - Treat `andurel inspect project --json` as the source of truth for the configured Inertia adapter and JavaScript package manager.
 - Persist through narsilc-generated queries. Keep generated `models/internal/queries` types behind the owning model package.
-- After adding or changing Inertia routes, run `andurel sync routes --json` so frontend pages can import `resources/js/routes.ts`.
+- After adding or changing Inertia routes, run `andurel sync routes --json` so frontend pages can import `resources/js/routes.ts`. Helpers return full URLs after boot calls `configureRouteHosts` from the shared `hosts` prop; use `routes.name.path()` for a relative path.
+- `--host` and `--prefix` are independent on `generate controller` / `generate scaffold`. Declare extra `routing.HostName` consts in `config/hosts.go` and load them into `App.Hosts` before generating with `--host`.
 - After adding or changing Inertia controller payload or Bind structs, run `andurel sync payloads --json` so frontend pages can import `resources/js/types/payloads.ts`.
 - Follow the repository rules for verification.
 - Prefer the local project pattern over a generic Rails, Echo, Bun, Templ, or frontend framework convention.
@@ -48,6 +49,8 @@ Read [references/layer-placement.md](references/layer-placement.md) before addin
 - Put River job argument types in `queue/jobs/` and worker implementations or registration in `queue/`.
 - Put provider adapters in `clients/`, email templates/helpers in `email/`, and config/environment loading in `config/`.
 - Put reusable framework-like support that is independent of one resource in `internal/`.
+- Put Fx process graphs and infrastructure constructors in `internal/runtime`. `cmd/app` and `cmd/queue` only load env and call `runtime.App` / `runtime.Queue`.
+- `cmd/migrate` applies pending SQL with `storage.RunMigrations` on the embedded migration FS. It is a one-shot process, not part of `cmd/app` start. Development uses `andurel db migrate up`.
 - Register new constructors in the existing `fx` modules for the package that owns them.
 
 ## Output Modes
@@ -95,7 +98,17 @@ andurel inspect routes --json
 andurel sync routes --json
 ```
 
-`andurel sync routes` reads `router/routes/*.go` as the source of truth and writes `resources/js/routes.ts`. It only runs when `andurel.lock` has `scaffoldConfig.inertia` set to `vue`, `react`, or `svelte`. Import helpers from that file in Inertia pages instead of hard-coding URLs.
+`andurel sync routes` reads `router/routes/*.go` as the source of truth and writes `resources/js/routes.ts`. It only runs when `andurel.lock` has `scaffoldConfig.inertia` set to `vue`, `react`, or `svelte`. Import helpers from that file in Inertia pages instead of hard-coding URLs. Helpers include the route host and return absolute URLs once `configureRouteHosts` has run; call `routes.name.path()` when a relative path is required.
+
+Generate on a secondary host (after declaring the `HostName` and loading `App.Hosts`):
+
+```bash
+andurel generate controller Widget --host=admin --prefix=admin --dry-run --json
+andurel generate scaffold Widget --host=admin --json
+andurel sync routes --json
+```
+
+`--host` selects the Echo / `routing.Host(...)` binding. `--prefix` only affects the path and package namespace. Assets and `/api` stay on the primary host unless those routes set `Host(...)`.
 
 Generate Inertia payload types:
 
@@ -125,6 +138,15 @@ andurel sync queries --json
 ```
 
 Keep hand-written SQL in `models/queries/` and generated code in `models/internal/queries/`. Only the owning `models` package should import that internal package. Construct clients with `queries.New(db)` where `db` is `storage.Connection`, and inside shared transactions use `queries.New(tx)` where `tx` is `storage.Transaction`.
+
+After a migration changes columns on an existing table model:
+
+```bash
+andurel sync model Product --check --json
+andurel sync model Product --json
+```
+
+`andurel sync model` writes by default and updates the model only. Refresh the factory separately with `andurel sync factory`.
 
 Check or sync factories:
 

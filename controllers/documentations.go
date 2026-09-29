@@ -25,30 +25,24 @@ func (d Documentations) RegisterRoutes(r *router.Router) error {
 	var errs []error
 	var err error
 
-	_, err = r.AddRoute(echo.Route{
+	_, err = r.AddRoute(routes.DocumentationIndex, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.DocumentationIndex.Path(),
-		Name:    routes.DocumentationIndex.Name(),
 		Handler: d.Index,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 
-	_, err = r.AddRoute(echo.Route{
+	_, err = r.AddRoute(routes.DocumentationVersion, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.DocumentationVersion.Path(),
-		Name:    routes.DocumentationVersion.Name(),
 		Handler: d.Version,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 
-	_, err = r.AddRoute(echo.Route{
+	_, err = r.AddRoute(routes.DocumentationShow, echo.Route{
 		Method:  http.MethodGet,
-		Path:    routes.DocumentationShow.Path(),
-		Name:    routes.DocumentationShow.Name(),
 		Handler: d.Show,
 	})
 	if err != nil {

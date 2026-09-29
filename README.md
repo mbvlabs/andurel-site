@@ -8,36 +8,39 @@ Inspired by Ruby on Rails, Andurel is now its own thing: generated Go you own, e
 
 ```
 andurel-site/
-├── assets/ # Static assets (compiled CSS, images)
-├── bin/ # Command-line tools
-│ ├── app # Main application binary
-│ ├── console # Database console
-│ ├── migration # Migration runner
-│ └── shadowfax # Development server
-├── cmd/ # Command entry points
-│ ├── app/ # Main web application
-│ ├── queue/ # Background queue processor
-│ └── seeds/ # Database seeding
-├── clients/ # External service clients
-├── config/ # Application configuration
-├── controllers/ # HTTP request handlers
-├── css/ # Source CSS files (Tailwind wrappers + theme)
+├── assets/              # Static assets (compiled CSS, images)
+├── bin/                 # Command-line tools
+│   ├── app              # Main application binary
+│   ├── console          # Database console
+│   ├── migration        # Migration runner
+│   └── shadowfax        # Development server
+├── cmd/                 # Process entry points
+│   ├── app/             # Web process (runtime.App)
+│   ├── queue/           # Queue process (runtime.Queue)
+│   ├── migrate/         # Apply pending SQL migrations
+│   └── seeds/           # Database seeding
+├── clients/             # External service clients
+├── config/              # Application configuration
+├── controllers/         # HTTP request handlers
+├── css/                 # Source CSS files (Tailwind wrappers + theme)
 ├── examples/
-│ └── html/ # Copy/paste HTML snippets with Datastar attributes
-├── migrations/ # SQL migration files
-├── seeds/ # Database seed definitions
-├── email/ # Email templates and sending
-├── models/ # Data models and business logic
-├── queue/ # Background job processing
-│ ├── jobs/ # Job definitions
-│ └── workers/ # Worker implementations
-├── router/ # Routes and middleware
-│ ├── routes/ # Route definitions
-│ ├── cookies/ # Session helpers
-│ └── middleware/ # Custom middleware
-├── views/ # Templ templates
-├── .env.example # Example environment configuration
-└── go.mod # Go dependencies
+│   └── html/            # Copy/paste HTML snippets with Datastar attributes
+├── internal/
+│   └── runtime/         # Process graphs and infrastructure constructors
+├── migrations/          # SQL migration files
+├── seeds/               # Database seed definitions
+├── email/               # Email templates and sending
+├── models/              # Data models and business logic
+├── queue/               # Background job processing
+│   ├── jobs/            # Job definitions
+│   └── workers/         # Worker implementations
+├── router/              # Routes and middleware
+│   ├── routes/          # Route definitions
+│   ├── cookies/         # Session helpers
+│   └── middleware/      # Custom middleware
+├── views/               # Templ templates
+├── .env.example         # Example environment configuration
+└── go.mod               # Go dependencies
 ```
 
 ## Quick Start
@@ -51,25 +54,25 @@ andurel-site/
 ### Setup
 
 1. **Configure environment**
- ```bash
- cp .env.example .env
- # Edit .env with your configuration
- ```
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
 2. **Create database**
- ```bash
- createdb andurel-site_development
- ```
+   ```bash
+   createdb andurel-site_development
+   ```
 
 3. **Run migrations**
- ```bash
- andurel db migrate up
- ```
+   ```bash
+   andurel db migrate up
+   ```
 
 4. **Start the development server**
- ```bash
- andurel run
- ```
+   ```bash
+   andurel run
+   ```
 
 Your application is now running at `http://localhost:8080` with live reload for Go, Templ, and CSS changes!
 
@@ -118,6 +121,13 @@ andurel db migrate reset
 andurel db migrate fix
 ```
 
+Development uses `andurel db migrate` (goose CLI against `migrations/` on disk). To apply the same embedded SQL that tests use, build and run `cmd/migrate`. It only applies pending migrations. It is a one-shot process: run it, then start `cmd/app` / `cmd/queue`. Do not call it from application start.
+
+```bash
+go build -o migrate ./cmd/migrate
+./migrate
+```
+
 ### Create, refresh, and inspect
 
 ```bash
@@ -162,12 +172,12 @@ Edit the generated migration file in `migrations/` to define your table schema:
 ```sql
 -- +goose Up
 CREATE TABLE products (
- id UUID PRIMARY KEY,
- name TEXT NOT NULL,
- description TEXT,
- price DECIMAL(10, 2) NOT NULL,
- created_at TIMESTAMP NOT NULL,
- updated_at TIMESTAMP NOT NULL
+    id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
 );
 
 -- +goose Down
@@ -236,8 +246,8 @@ Create a new job type in `queue/jobs/`:
 package jobs
 
 type MyJobArgs struct {
- UserID string
- Action string
+    UserID   string
+    Action   string
 }
 
 func (MyJobArgs) Kind() string { return "my_job" }
@@ -252,14 +262,14 @@ Create the worker in `queue/workers/`:
 package workers
 
 import (
- "context"
- "andurel-site/queue/jobs"
+    "context"
+    "andurel-site/queue/jobs"
 )
 
 func ProcessMyJob(ctx context.Context, msg []byte) error {
- // Your job logic here
- // Unmarshal msg to jobs.MyJobArgs and process
- return nil
+    // Your job logic here
+    // Unmarshal msg to jobs.MyJobArgs and process
+    return nil
 }
 ```
 
@@ -280,8 +290,8 @@ import "andurel-site/queue/jobs"
 
 // Enqueue a job through your queue client
 err := queue.Enqueue(ctx, jobs.MyJobArgs{
- UserID: "123",
- Action: "send_welcome_email",
+    UserID: "123",
+    Action: "send_welcome_email",
 })
 ```
 
@@ -310,10 +320,10 @@ Add your template in `email/`:
 package email
 
 templ WelcomeEmail(userName string) {
- @BaseLayout() {
- <h1 class="text-[28px] leading-9 font-bold text-[#414552]">Welcome, { userName }!</h1>
- <p class="text-base leading-6 text-[#414552]">Thank you for joining us.</p>
- }
+    @BaseLayout() {
+        <h1 class="text-[28px] leading-9 font-bold text-[#414552]">Welcome, { userName }!</h1>
+        <p class="text-base leading-6 text-[#414552]">Thank you for joining us.</p>
+    }
 }
 ```
 
@@ -326,23 +336,23 @@ automatically. Run `andurel sync email` for a standalone compilation pass.
 import (
 	"context"
 
- "andurel-site/config"
- "andurel-site/email"
+    "andurel-site/config"
+    "andurel-site/email"
 )
 
 func sendWelcome(
- ctx context.Context,
- sender email.TransactionalSender,
- mailCfg config.Mail,
+    ctx context.Context,
+    sender email.TransactionalSender,
+    mailCfg config.Mail,
 ) error {
- data := email.TransactionalData{
- From: mailCfg.DefaultSenderSignature,
- To: []string{"user@example.com"},
- Subject: "Welcome!",
- Body: WelcomeEmail("John Doe"),
- }
+    data := email.TransactionalData{
+        From:    mailCfg.DefaultSenderSignature,
+        To:      []string{"user@example.com"},
+        Subject: "Welcome!",
+        Body:    WelcomeEmail("John Doe"),
+    }
 
- return email.SendTransactional(ctx, data, sender)
+    return email.SendTransactional(ctx, data, sender)
 }
 ```
 
@@ -381,16 +391,16 @@ This project uses Tailwind CSS v4 with shadcn-style CSS variables in `css/theme.
 
 ```css
 :root {
- --primary: #ff6b1a;
- --primary-foreground: #130f0b;
- --ring: #8df7a4;
- --radius: 0;
+  --primary: #ff6b1a;
+  --primary-foreground: #130f0b;
+  --ring: #8df7a4;
+  --radius: 0;
 }
 
 @theme inline {
- --color-primary: var(--primary);
- --color-primary-foreground: var(--primary-foreground);
- --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
 }
 ```
 
@@ -407,7 +417,7 @@ ENVIRONMENT=development
 HOST=localhost
 PORT=8080
 PROJECT_NAME=andurel-site
-DOMAIN=localhost:8080
+HOST_PRIMARY=localhost:8080
 PROTOCOL=http
 
 # Database
@@ -449,9 +459,9 @@ TRACE_SAMPLE_RATE=1.0
 
 ## Session, CORS, and CSRF Protection
 
-Application sessions are defined in `router/cookies` (`cookies.NewJar`, FX `cookies.Module`) and loaded onto `context.Context` by `pkg/kiks`. Controllers read and write bag cookies with `kiks.Get` / `kiks.Exists` / `kiks.Set` / `kiks.Destroy` (`Get`, `Exists`, `Set`, and `Destroy` return an error when the bag is missing, the type is unregistered, or the type is native-only. Use the same pointer type you registered, e.g. `*cookies.App`). Mark named bag cookies with `kiks.Bagged(...)` in `NewJar`; unmarked named cookies use native `kiks.Read` / `Write` / `Clear` with an injected `*kiks.Jar`. The App session payload is persisted by a cookie-backed `Store` (`kiks.NewCookieStore`). Each Go type may be registered at most once per jar. Two same-shape cookies need distinct types. Cookies are `HttpOnly` with `SameSite=Lax` and `Path=/`. Production cookies also use `Secure`. `SESSION_MAX_AGE` is the lifetime in seconds and defaults to seven days (`604800`). Saving session state renews the expiration for another seven days. Signing out destroys the session immediately.
+Application sessions are defined in `router/cookies` (`cookies.NewJar`, FX `cookies.Module`) and loaded onto `context.Context` by `pkg/kiks`. Controllers read and write bag cookies with `kiks.Get` / `kiks.Exists` / `kiks.Set` / `kiks.Destroy` (`Get`, `Exists`, `Set`, and `Destroy` return an error when the bag is missing, the type is unregistered, or the type is native-only — use the same pointer type you registered, e.g. `*cookies.App`). Mark named bag cookies with `kiks.Bagged(...)` in `NewJar`; unmarked named cookies use native `kiks.Read` / `Write` / `Clear` with an injected `*kiks.Jar`. The App session payload is persisted by a cookie-backed `Store` (`kiks.NewCookieStore`). Each Go type may be registered at most once per jar — two same-shape cookies need distinct types. Cookies are `HttpOnly` with `SameSite=Lax` and `Path=/`. Production cookies also use `Secure`. `SESSION_MAX_AGE` is the lifetime in seconds and defaults to seven days (`604800`). Saving session state renews the expiration for another seven days. Signing out destroys the session immediately.
 
-CORS allows credentials and trusts only the configured application origin (`PROTOCOL` + `DOMAIN`) by default. `CORS_ALLOWED_ORIGINS` accepts a comma-separated list of additional exact origins. Wildcard origins are rejected when the application starts.
+CORS allows credentials and trusts the union of configured host origins (`PROTOCOL` + `HOST_PRIMARY`, plus any extra `HOST_*` names) by default. `CORS_ALLOWED_ORIGINS` accepts a comma-separated list of additional exact origins. Wildcard origins are rejected when the application starts.
 
 CSRF protection uses Fetch Metadata. Unsafe API requests bypass CSRF only when they carry a non-empty Bearer token and do not carry the application session cookie. Cookie-authenticated unsafe requests remain protected on every path.
 
@@ -460,8 +470,35 @@ CSRF protection uses Fetch Metadata. Unsafe API requests bypass CSRF only when t
 - `header_or_legacy_token`: Allows legacy form tokens when `Sec-Fetch-Site` is missing. Forms must submit `_csrf` or send `X-CSRF-Token` header.
 
 **Trusted origins**:
-- The base URL (`PROTOCOL` + `DOMAIN`) is always trusted automatically.
+- Every configured host origin (`PROTOCOL` + `HOST_PRIMARY`, and extra hosts such as `HOST_ADMIN`) is trusted automatically.
 - `CSRF_TRUSTED_ORIGINS` accepts a comma-separated list of additional origins (e.g., `https://api.example.com,https://admin.example.com`).
+
+Session and CSRF cookies are host-only by default (no `Domain` attribute). Sharing login across subdomains is an explicit opt-in via `kiks.Domain(".example.com")` in `router/cookies` — never a generated default.
+
+## Multiple domains
+
+Single-host apps are the default: set `HOST_PRIMARY` and keep path namespaces such as `/admin/...` on the primary Echo.
+
+To serve a second domain from the same process:
+
+1. Declare a host name in `config/hosts.go`, for example `const HostAdmin routing.HostName = "admin"`.
+2. Load `HOST_ADMIN` (or another `HOST_*`) into `App.Hosts` at boot. Missing hostnames fail startup.
+3. Register aliases (`www`, extra names) as additional hostnames for that `HostName`.
+4. Declare the host on the route with `routing.Host(config.HostAdmin)`. Controllers register with `r.AddRoute(routes.WidgetsIndex, echo.Route{...})` and Fx invokes `c.RegisterRoutes(r)` with no host argument. Generators accept independent `--host` and `--prefix` flags:
+
+```bash
+andurel g controller Widget --host=admin --prefix=admin   # HostAdmin, /admin/widgets
+andurel g controller Widget --host=admin                  # HostAdmin, /widgets
+andurel g controller Widget --prefix=admin                # HostPrimary, /admin/widgets
+```
+
+The reverse proxy must forward the public `Host` header unchanged. When a configured hostname has no port, Andurel also registers `hostname:80` and `hostname:443` aliases so lookups succeed whether the proxy forwards a bare host or an explicit standard port. Unknown hosts are served by the primary Echo. Duplicate hostnames or aliases across `HostName`s fail at boot.
+
+Assets and `/api` stay on the primary host unless those routes set `routing.Host(...)`. A secondary-host page that loads `https://primary.example/assets/...` is a normal cross-origin request; CORS already unions every configured host origin. Layout `<link>` / `<script>` tags use `FullURL()` so they always point at the asset host — avoid relative `/assets/...` on secondary hosts.
+
+Inertia TypeScript helpers from `andurel sync routes` return full URLs. Boot configures origins once via the shared `hosts` prop (`configureRouteHosts` in `resources/js/app` / SSR entry), so `routes.homePage()` resolves to the correct host without per-call arguments. Use `routes.homePage.path()` when a relative path is required. Run `andurel sync routes` after adding host-bound Inertia routes. Not-found handlers are registered on every configured host.
+
+To serve assets from `assets.example.com`, declare `const HostAssets routing.HostName = "assets"`, bind `HOST_ASSETS`, and put `routing.Host(config.HostAssets)` on the asset routes. There is no framework special case — it is another named host.
 
 **Client/testing tips**:
 - For unsafe requests in tests or custom clients, include `Sec-Fetch-Site: same-origin`.
@@ -593,9 +630,9 @@ type ProductBuilder struct {
 func Product() *ProductBuilder {
 	return &ProductBuilder{
 		data: models.CreateProductData{
-			Name: "Test Product",
+			Name:        "Test Product",
 			Description: "Test description",
-			Price: "29.99",
+			Price:       "29.99",
 		},
 	}
 }

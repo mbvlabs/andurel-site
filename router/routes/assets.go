@@ -54,9 +54,3 @@ var ViteBuild = routing.NewSimpleRoute(
 	"vite.build",
 	AssetsPrefix,
 )
-
-var ViteDevFiles = routing.NewSimpleRoute(
-	"/dist/*",
-	"vite.dev-files",
-	AssetsPrefix,
-)

@@ -39,6 +39,7 @@ andurel --agent --help
 andurel generate scaffold Product --dry-run --json
 andurel generate migration create_posts
 andurel generate model Post --dry-run --json
+andurel generate model AggregateResult --custom id:uuid name:string currency:int64
 andurel db migrate up
 andurel inspect project --json
 andurel inspect routes --json
@@ -53,16 +54,19 @@ andurel run --tools mailpit
 
 ## Create vs refresh vs inspect
 
-- Create SQL: `andurel generate migration NAME` then `andurel db migrate up`.
-- Create a model: `andurel generate model NAME`.
+- Create SQL: `andurel generate migration NAME` then `andurel db migrate up`. A one-shot process that applies embedded SQL is `cmd/migrate`.
+- Create a table model: `andurel generate model NAME` from an existing migration.
+- Create a non-table model for narsilc queries: `andurel generate model NAME --custom field:type ...`. Do not use `--custom` when the entity maps to a real table. No CRUD methods or factory are generated. Fill in `models/queries/<name>.sql`, then run `andurel sync queries`.
+- Refresh a table model after migrations: `andurel sync model NAME`. Models marked `// andurel:custom` cannot be synced from migrations.
 - Compile SQL: `andurel sync queries`.
 - List models: `andurel inspect models --json`.
-- List routes: `andurel inspect routes --json`.
-- Write `resources/js/routes.ts`: `andurel sync routes --json` (Inertia only).
+- List routes: `andurel inspect routes --json` (includes host when set).
+- Write `resources/js/routes.ts`: `andurel sync routes --json` (Inertia only; helpers are host-aware full URLs after `configureRouteHosts`).
+- Bind a resource to a named host: declare `routing.HostName` in `config/hosts.go`, load `HOST_*` into `App.Hosts`, then `andurel generate controller|scaffold NAME --host=<name>`. `--prefix` is independent.
 - Compile Templ: `andurel sync views`.
 - List `.templ` files: `andurel inspect views --json`.
 
-`--json` and `--agent` never wait on a TTY. Pass `--yes`, `--force`, `--harness`, or `--primary-key` instead of answering a prompt.
+`--json` and `--agent` never wait on a TTY. Pass `--force`, `--harness`, or `--primary-key` instead of answering a prompt.
 
 ## Command table
 
@@ -81,7 +85,7 @@ andurel run --tools mailpit
 | `andurel db migrate fix` | Re-number migrations to fix gaps |
 | `andurel db migrate reset` | Roll back all migrations and re-apply them |
 | `andurel db migrate status` | Show migration status |
-| `andurel db migrate up` | Apply pending SQL migrations |
+| `andurel db migrate up` | Apply pending SQL migrations (dev CLI; production one-shot is `cmd/migrate`) |
 | `andurel db migrate up-to` | Apply migrations up to a version |
 | `andurel db nuke` | Drop and recreate the configured database |
 | `andurel db rebuild` | Drop, recreate, migrate, and seed the database |
@@ -93,7 +97,7 @@ andurel run --tools mailpit
 | `andurel generate email` | Author a new email template |
 | `andurel generate job` | Generate a background job and worker |
 | `andurel generate migration` | Create a new SQL migration file |
-| `andurel generate model` | Generate or update a model from a SQL migration |
+| `andurel generate model` | Generate a model from a SQL migration, or a custom query model with `--custom` |
 | `andurel generate query` | Create a narsilc SQL query file |
 | `andurel generate scaffold` | Generate a model, controller, views, and routes |
 | `andurel inspect` | Read-only project shape |
@@ -117,6 +121,7 @@ andurel run --tools mailpit
 | `andurel sync email` | Compile Tailwind classes in email templates |
 | `andurel sync factories` | Check or sync every model factory |
 | `andurel sync factory` | Sync one model factory from the model Entity |
+| `andurel sync model` | Sync one table model from SQL migrations |
 | `andurel sync payloads` | Write TypeScript payload types for Inertia |
 | `andurel sync queries` | Compile narsilc SQL into Go |
 | `andurel sync routes` | Write TypeScript route helpers for Inertia |

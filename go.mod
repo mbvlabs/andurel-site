@@ -14,12 +14,12 @@ require (
 	github.com/mbvlabs/andurel/pkg/email v0.3.3
 	github.com/mbvlabs/andurel/pkg/inertia v0.6.0
 	github.com/mbvlabs/andurel/pkg/kiks v0.2.0
-	github.com/mbvlabs/andurel/pkg/routing v0.3.0
+	github.com/mbvlabs/andurel/pkg/routing v0.4.0
 	github.com/mbvlabs/andurel/pkg/server v0.3.3
-	github.com/mbvlabs/andurel/pkg/storage v0.8.0
+	github.com/mbvlabs/andurel/pkg/storage v0.8.1
 	github.com/mbvlabs/andurel/pkg/telemetry v0.1.0
 	github.com/mbvlabs/andurel/pkg/validation v0.1.4
-	github.com/mbvlabs/narsilc v0.4.4
+	github.com/mbvlabs/narsilc v0.4.5
 	github.com/riverqueue/river v0.40.0
 	github.com/yuin/goldmark v1.8.6
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc

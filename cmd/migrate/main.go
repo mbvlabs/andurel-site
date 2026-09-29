@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"andurel-site/config"
 	"andurel-site/migrations"
@@ -13,16 +12,12 @@ import (
 )
 
 func main() {
-	if err := run(os.Args[1:]); err != nil {
+	if err := run(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run(args []string) error {
-	if len(args) > 0 {
-		return fmt.Errorf("unexpected argument %q", args[0])
-	}
-
+func run() error {
 	if err := config.LoadEnvironment(); err != nil {
 		return err
 	}
@@ -33,15 +28,15 @@ func run(args []string) error {
 	if err != nil {
 		return err
 	}
-
 	db, err := storage.NewPostgres(ctx, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer db.Close()
 
+	fmt.Println("Applying migrations...")
 	if err := storage.RunMigrations(ctx, db, migrations.Migrations, "."); err != nil {
-		return fmt.Errorf("failed to run migrations: %w", err)
+		return err
 	}
 
 	fmt.Println("Migrations complete!")

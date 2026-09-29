@@ -4,6 +4,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client'
 import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
 
 import { AppTree } from '@/app-tree'
+import { configureRouteHosts } from './routes'
 
 type PageProps = {
   [key: string]: unknown
@@ -19,6 +20,9 @@ createInertiaApp<PageProps>({
     return pages[`./Pages/${name}.tsx`].default
   },
   setup({ el, App, props }) {
+    configureRouteHosts(
+      (props.initialPage.props.hosts ?? {}) as Record<string, string>,
+    )
     const app = <AppTree App={App} props={props} />
     if (el.dataset.serverRendered === 'true') {
       hydrateRoot(el, app)
