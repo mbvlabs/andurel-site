@@ -4,7 +4,7 @@ Andurel v2 provides `github.com/mbvlabs/andurel/pkg/email` for transport-neutral
 
 ## Sender interfaces
 
-Consumers depend on capability-specific interfaces. The composition root selects `EMAIL_PROVIDER` and publishes these interfaces:
+Consumers depend on capability-specific interfaces. `internal/runtime` selects `EMAIL_PROVIDER` and publishes these interfaces:
 
 ```go
 type TransactionalSender interface {
@@ -15,7 +15,7 @@ type MarketingSender interface {
 }
 ```
 
-Generated apps default `EMAIL_PROVIDER` to `mailpit` for local capture. Wire a production transport in the composition root that implements the same interfaces.
+Generated apps default `EMAIL_PROVIDER` to `mailpit` for local capture. Wire a production transport in `internal/runtime` (`NewEmailSenders`) that implements the same interfaces.
 
 ## Generate and compile email
 

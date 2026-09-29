@@ -39,7 +39,7 @@ andurel inspect project --json
     "root": "/home/you/orbit",
     "module": "orbit",
     "go_version": "1.27.1",
-    "andurel_version": "v2.0.0-alpha",
+    "andurel_version": "v2.0.0-alpha.2",
     "scaffold_config": {
       "projectName": "orbit",
       "inertia": "react",

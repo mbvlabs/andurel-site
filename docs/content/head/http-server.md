@@ -38,7 +38,7 @@ The generated Fx stop hook invokes them with a bounded context, joins failures, 
 
 ## Fx lifecycle integration
 
-The package does not import Fx. The composition root owns hooks and total deadlines:
+The package does not import Fx. `internal/runtime` owns hooks and total deadlines:
 
 ```go
 lifecycle.Append(fx.Hook{
@@ -58,10 +58,10 @@ Asynchronous listen failures must reach supervision and readiness state. The gen
 
 ## Deployment boundary
 
-Host and port describe the local listener, not the public URL. Configure protocol and domain separately. TLS commonly terminates at a proxy or platform; a Go-owned TLS listener belongs in application composition rather than environment-dependent package behavior.
+Host and port describe the local listener, not the public URL. Configure `PROTOCOL` and `HOST_PRIMARY` separately (plus extra `HOST_*` names when you add hosts). TLS commonly terminates at a proxy or platform; a Go-owned TLS listener belongs in application composition rather than environment-dependent package behavior.
 
 The package does not create readiness endpoints. Build them from meaningful dependencies such as `storage.Connection.Health` with short timeouts. Liveness should normally report process health without failing for every transient dependency outage.
 
 ## Testing and extension
 
-Test handlers directly with `httptest`; bind a real port only for connection, timeout, or shutdown behavior. Extra long-lived resources can be supplied as shutdowners, but preserve ownership: the component constructor should define how it stops, while the composition root defines ordering and the overall deadline.
+Test handlers directly with `httptest`; bind a real port only for connection, timeout, or shutdown behavior. Extra long-lived resources can be supplied as shutdowners, but preserve ownership: the component constructor should define how it stops, while `internal/runtime` defines ordering and the overall deadline.

@@ -26,7 +26,11 @@ Names may include one lowercase namespace segment (`admin/Widget`). Namespaced c
 | --- | --- |
 | `--api` | Generate a JSON API controller under `controllers/api` (no views; default actions exclude `new`/`edit`) |
 | `--model-name` | Back the controller with a different existing model name |
+| `--host` | Named virtual host (`routing.HostName`); default `primary` |
+| `--prefix` | Path/package namespace (independent of `--host`) |
 | `--dry-run` / `--diff` | Preview without writing; see [generate](/docs/head/generate) |
+
+`--host` and `--prefix` are independent. `--host` selects the Echo / `routing.HostName`. `--prefix` is only the path and package namespace. Do not invent `--host` values: declare `routing.HostName` consts in `config/hosts.go` and load them into `App.Hosts` first. See [Routing](/docs/head/routing).
 
 With `--api`, any namespace segment in the name nests under `api`.
 
@@ -38,6 +42,7 @@ andurel generate controller Product index show --dry-run --json
 andurel generate controller Dashboard overview
 andurel generate controller Dashboard --model-name User
 andurel generate controller admin/Widget export
+andurel generate controller Widget --host=admin --prefix=admin
 andurel generate controller Users --api
 ```
 

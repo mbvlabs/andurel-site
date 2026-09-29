@@ -26,7 +26,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { homeJsonLd, homeTitle, siteDescription, useCanonicalUrl } from '@/lib/seo'
 import { routes } from '@/routes'
 
-const INSTALL_COMMAND = 'go install github.com/mbvlabs/andurel@latest'
+const INSTALL_COMMAND = 'go install github.com/mbvlabs/andurel/v2@v2.0.0-alpha.2'
 
 const telemetry = [
   { label: 'Vehicle', value: 'Andurel v2' },
@@ -81,7 +81,7 @@ const countdown = [
   {
     mark: 'T-3',
     title: 'Install the CLI',
-    command: 'go install github.com/mbvlabs/andurel@latest',
+    command: INSTALL_COMMAND,
     href: routes.documentationShow('latest', 'installation'),
   },
   {

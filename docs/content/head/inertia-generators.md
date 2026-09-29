@@ -18,7 +18,7 @@ The scaffold writes, among other things:
 
 | Area | Files |
 | --- | --- |
-| Renderer | `cmd/app` `newInertia`, `config/inertia.go` |
+| Renderer | `internal/runtime` `NewInertia`, `config/inertia.go` |
 | SSR process | `cmd/ssr`, `resources/js/ssr.tsx` (or `.ts`) |
 | Root document | `views/root.templ` |
 | Client entry | `resources/js/app.tsx` or `app.ts`, Vite config, `package.json` |
@@ -32,9 +32,9 @@ After scaffolding, install JavaScript dependencies with the recorded package man
 
 ## Wire-up the generators already emitted
 
-Generated `newInertia` calls `NewRenderer` with `views.Root`, embedded `assets.Files`, project name, environment, protocol debug, `appVersion` as a shared prop, and fail-fast from config. The router registers `renderer.Middleware()`, copies flashes with `inertia.ContextWithFlash`, and sets `SetReflashHandler`.
+Generated `NewInertia` calls `NewRenderer` with `views.Root`, embedded `assets.Files`, project name, environment, protocol debug, shared `appUrl` / `appVersion` / `hosts`, and fail-fast from config. The router registers `renderer.Middleware()`, copies flashes with `inertia.ContextWithFlash`, and sets `SetReflashHandler`.
 
-You change application behavior by editing those files, not by forking the package. Add `WithSharedProvider` next to `newInertia` for the current account. Opt individual pages into SSR with `.SSR()`. See [Renderer](/docs/head/inertia-renderer) and [SSR](/docs/head/inertia-ssr).
+You change application behavior by editing those files, not by forking the package. Add `WithSharedProvider` next to `NewInertia` for the current account. Opt individual pages into SSR with `.SSR()`. See [Renderer](/docs/head/inertia-renderer) and [SSR](/docs/head/inertia-ssr).
 
 ## Generate Inertia resources
 
@@ -43,6 +43,7 @@ andurel generate scaffold Product
 andurel generate controller Product
 andurel generate controller Product index show
 andurel generate controller Dashboard overview
+andurel generate controller Widget --host=admin --prefix=admin
 ```
 
 Generation reads the adapter from `andurel.toml`. It cannot combine UI page generation with `--api`.
@@ -77,7 +78,7 @@ import type { ProductData, ProductIndexProps } from '@/types/product'
 import { routes } from '@/routes'
 
 export default function Index({ items }: ProductIndexProps) {
- return <Link href={routes.productShow(routeID(item))}>View</Link>
+ return <Link href={routes.productShow.path(routeID(item))}>View</Link>
 }
 ```
 
@@ -91,7 +92,7 @@ Custom actions (`generate controller Dashboard overview`) add an empty controlle
 andurel sync routes
 ```
 
-This reads `router/routes/*.go` and writes `resources/js/routes.ts`. Only routes constructed with `routing.InertiaRoute()` are exported. That keeps asset and internal endpoints out of the browser bundle.
+This reads `router/routes/*.go` and writes `resources/js/routes.ts`. Only routes constructed with `routing.InertiaRoute()` are exported. That keeps asset and internal endpoints out of the browser bundle. Helpers include a host name; boot calls `configureRouteHosts` from the shared `hosts` prop so `routes.name()` is a full URL. Use `routes.name.path()` for a relative path.
 
 ```go
 var ProductShow = routing.NewRouteWithUUIDID(

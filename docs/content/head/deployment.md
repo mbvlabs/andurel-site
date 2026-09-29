@@ -14,16 +14,17 @@ The JavaScript package manager comes from `andurel.toml`. It is independent from
 
 ## Deploy process types
 
-`andurel build` produces the web application from `cmd/app`. Build the queue and SSR entry points separately when the application uses them:
+`andurel build` produces the web application from `cmd/app`. Build the queue, migrate, and SSR entry points separately when the application uses them:
 
 ```bash
+CGO_ENABLED=0 GOOS=linux go build -o orbit-migrate ./cmd/migrate
 CGO_ENABLED=0 GOOS=linux go build -o orbit-queue ./cmd/queue
 CGO_ENABLED=0 GOOS=linux go build -o orbit-ssr ./cmd/ssr
 ```
 
-Deploy these as separate process types. They may share a database and telemetry backend, but each owns its Fx lifecycle and shutdown. `cmd/ssr` still needs a Node runtime for the SSR bundle even when the Go wrapper owns process lifecycle.
+Deploy these as separate process types. App and queue may share a database and telemetry backend, but each owns its Fx lifecycle and shutdown. `cmd/migrate` is a one-shot: run it (or its image) before traffic reaches code that needs the new schema. `cmd/ssr` still needs a Node runtime for the SSR bundle even when the Go wrapper owns process lifecycle.
 
-Apply root `migrations/` as a deliberate release step before traffic reaches code that needs the new schema. Back up important data before destructive changes.
+Apply root `migrations/` as a deliberate release step before starting app and queue. Back up important data before destructive changes.
 
 ## Environment and health
 
@@ -33,4 +34,4 @@ The storage health check verifies the database. Configure the platform's startup
 
 ## Development releases
 
-The current `master` branch is the v2 development line. Pin the CLI commit and the independent package versions in `go.mod` for reproducible pre-release deployments. Do not treat the stable v1 `@latest` tag as v2 until `v2.0.0` is published.
+The current `master` branch is the v2 development line. Pin the CLI to `v2.0.0-alpha.2` and the independent package versions in `go.mod` for reproducible pre-release deployments. Do not treat the stable v1 `@latest` tag as v2 until `v2.0.0` is published.

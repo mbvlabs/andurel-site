@@ -10,7 +10,7 @@ Use the child pages for each subcommand's flags and file outputs. This page cove
 | --- | --- |
 | [scaffold](/docs/head/generate-scaffold) | Add a full resource from an existing table migration |
 | [migration](/docs/head/generate-migration) | Add a schema change as SQL under `migrations/` |
-| [model](/docs/head/generate-model) | Create or update a model API from migration history |
+| [model](/docs/head/generate-model) | Create a table model from migration history, or a custom query model with `--custom` |
 | [controller](/docs/head/generate-controller) | Add HTTP handlers, views/pages, and routes for an existing model |
 | [query](/docs/head/generate-query) | Author a new narsilc SQL file under `models/queries/` |
 | [job](/docs/head/generate-job) | Add a River job plus worker registration |
@@ -23,7 +23,7 @@ Use the child pages for each subcommand's flags and file outputs. This page cove
 | New or updated owned Go/SQL/frontend sources | `andurel generate ...` |
 | Refresh derived artifacts those sources imply | `andurel sync ...` |
 
-Generate writes migrations, model packages, controllers, route files, query SQL, job args, and email templates. Sync recompiles Templ, narsilc clients, TypeScript routes/payloads, email CSS, and factories. See [sync](/docs/head/sync).
+Generate writes migrations, model packages, controllers, route files, query SQL, job args, and email templates. Sync recompiles Templ, narsilc clients, TypeScript routes/payloads, email CSS, and factories, and refreshes table models from later migrations (`sync model`). See [sync](/docs/head/sync).
 
 ## Shared flags
 
@@ -58,6 +58,7 @@ andurel generate migration create_products_table
 andurel db migrate up
 andurel generate scaffold Product --dry-run --diff --json
 andurel generate scaffold Product
+andurel generate controller Widget --host=admin --prefix=admin
 ```
 
 Generation follows the UI recorded in `andurel.toml` / `andurel.lock` (Inertia pages for Vue, React, or Svelte; Templ otherwise). Pass `--api` on scaffold or controller for JSON under `controllers/api`. Inertia payload, TypeScript, and route-helper details live under [Generators](/docs/head/inertia-generators).

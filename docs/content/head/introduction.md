@@ -1,6 +1,6 @@
 # Introduction
 
-Andurel is a Rails-like web framework for Go. These **head** docs document Andurel **v2.0.0-alpha**, the current pre-release line (same commit as `master` today). APIs may still change before a stable `v2.0.0`.
+Andurel is a Rails-like web framework for Go. These **head** docs document Andurel **v2.0.0-alpha.2**, the current pre-release line. APIs may still change before a stable `v2.0.0`. See [What's New](/docs/head/whats-new) for hosts, custom models, storage 0.8.1, `internal/runtime`, and `cmd/migrate`.
 
 ## What v2 emphasizes
 
@@ -10,12 +10,12 @@ The framework still favors one-time generation: a scaffold creates models, facto
 
 ## Development status
 
-The `head` documentation URL slug stays `head`, but the product line named here is **v2.0.0-alpha**. Use the [latest documentation](/docs/latest/introduction) for the last v1 release line.
+The `head` documentation URL slug stays `head`, but the product line named here is **v2.0.0-alpha.2**. Use the [latest documentation](/docs/latest/introduction) for the last v1 release line.
 
 There is no automated upgrade path from v1 to v2. Create new v2 projects with the v2 CLI and migrate existing applications deliberately. See [Upgrade Guide](/docs/head/upgrade).
 
 ## Platform and requirements
 
-v2.0.0-alpha requires **Go 1.27.1** or newer and targets Linux and macOS on amd64 and arm64. PostgreSQL is the supported database.
+v2.0.0-alpha.2 requires **Go 1.27.1** or newer and targets Linux and macOS on amd64 and arm64. PostgreSQL is the supported database.
 
 Continue to [Installation](/docs/head/installation) to install the CLI and create a project.

@@ -5,15 +5,18 @@ Andurel v2 separates application-owned code, reusable framework modules, and exe
 ## Application layout
 
 ```text
-cmd/app/                  web process and Fx composition root
-cmd/queue/                queue worker process and lifecycle
+cmd/app/                  thin web process; calls runtime.App
+cmd/queue/                thin queue process; calls runtime.Queue
+cmd/migrate/              one-shot storage.RunMigrations (not part of cmd/app)
 cmd/ssr/                  Node SSR process owner (Inertia)
 cmd/seeds/                seed command entry point
+internal/runtime/         Fx process graphs (App, Queue, database, email, telemetry)
 config/                   environment loading and typed providers
+config/hosts.go           extra routing.HostName consts (not scaffolded)
 controllers/              HTTP handlers and route registration
 router/cookies/           kiks jar, session payload, cookie module
 router/middleware/        auth and related Echo middleware
-router/routes/            typed route declarations
+router/routes/            typed route declarations (optional routing.Host)
 views/                    Templ components and Inertia root document
 resources/js/             Inertia pages, layouts, Vite entry (when enabled)
 models/                   entities, model APIs, and Fx module
@@ -31,6 +34,8 @@ assets/                   embedded compiled assets
 andurel.toml              project manifest (UI, database, tool pins)
 andurel.lock              tool download digests
 ```
+
+Fx graphs live in `internal/runtime`. `cmd/app` and `cmd/queue` only load env and call `runtime.App` / `runtime.Queue`. Register new services, controllers, and workers in their package `Module`. Add process-wide providers (email drivers, extra Fx provides) in `internal/runtime`. `cmd/migrate` applies pending SQL and exits; development still uses `andurel db migrate up`.
 
 ## Reusable framework packages
 

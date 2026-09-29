@@ -1,6 +1,6 @@
 # Request Lifecycle
 
-An Andurel v2 application is one codebase with multiple process graphs. Understanding which process owns a request (or a job) keeps composition roots honest.
+An Andurel v2 application is one codebase with multiple process graphs. `cmd/app` and `cmd/queue` stay thin; Fx lives in `internal/runtime`. Understanding which process owns a request (or a job) keeps those graphs honest.
 
 ## Web process (`cmd/app`)
 
@@ -13,7 +13,7 @@ Typical path for an HTTP request:
 config.LoadEnvironment()
         |
         v
-Fx build: config, storage.Connection, models,
+runtime.App: config, storage.Connection, models,
           services, controllers, cookies.Jar, router
         |
         v
@@ -37,8 +37,8 @@ response; on signal: graceful shutdown, close pool
 ```
 
 1. `config.LoadEnvironment()` loads `.env` and process environment before Fx.
-2. Fx constructs validated config providers, `storage.Postgres` as `storage.Connection`, models, services, controllers, `cookies.NewJar`, and the router.
-3. `pkg/server` starts Echo with HTTP timeouts from `config.HTTP`.
+2. `runtime.App` constructs validated config providers, `storage.Postgres` as `storage.Connection`, models, services, controllers, `cookies.NewJar`, and the router.
+3. `pkg/server` starts Echo with HTTP timeouts from `config.HTTP`. Named hosts each get a child Echo; unknown `Request.Host` values are served by the primary Echo.
 4. Middleware runs in order: kiks bag load (`jar.EchoMiddleware`), CSRF, auth gates, Inertia middleware when configured.
 5. A controller handler receives injected collaborators (not ambient globals).
 6. The handler validates input, calls model APIs, and either renders Inertia via `*inertia.Renderer` (`Page` / redirects) or returns Templ / Datastar through `pkg/hypermedia`.
@@ -49,7 +49,7 @@ Queue insertion belongs here: inject `storage.InsertQueue` (or `*storage.QueueIn
 
 ## Queue process (`cmd/queue`)
 
-`cmd/queue` constructs the same `storage.Connection`, a River `QueueProcessor`, registered workers, telemetry, and email transports. It does not construct Echo or Inertia.
+`cmd/queue` calls `runtime.Queue`. It constructs the same `storage.Connection`, a River `QueueProcessor`, registered workers, telemetry, and email transports. It does not construct Echo or Inertia.
 
 ```text
 Fx build: storage.Connection, QueueProcessor,
@@ -98,11 +98,18 @@ cmd/app Page(...).SSR()
 
 `cmd/ssr` owns the Node runtime bind (`INERTIA_SSR_LISTEN`). The web renderer posts to `INERTIA_SSR_URL` (or Vite's `/__inertia_ssr` in development). Pages still opt into SSR individually. See [SSR](/docs/head/inertia-ssr).
 
+## Migrate process (`cmd/migrate`)
+
+`cmd/migrate` is a one-shot process. It loads environment, opens PostgreSQL, runs `storage.RunMigrations` on `migrations.Migrations`, and exits. It is not part of `cmd/app` start.
+
+Development still uses `andurel db migrate up`. Production and CI should run the migrate binary (or image) before starting app and queue. See [Migrations & Seeding](/docs/head/migrations) and [Deployment](/docs/head/deployment).
+
 ## Where state lives
 
 | Concern | Owner |
 | --- | --- |
 | PostgreSQL rows | `storage.Connection` / `storage.Transaction` in the owning process |
+| Applied schema | `cmd/migrate` in production; `andurel db migrate up` in development |
 | Session and flash | kiks cookies on the HTTP path ([Cookies & Sessions](/docs/head/cookies-sessions)) |
 | Background side effects | River jobs processed in `cmd/queue` |
 | Browser document / visits | Inertia renderer in `cmd/app`, optional Node SSR in `cmd/ssr` |

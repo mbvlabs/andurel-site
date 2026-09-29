@@ -4,7 +4,7 @@ Generated applications include structured logging, metrics, traces, and HTTP ins
 
 ## Process-local wiring
 
-Both `cmd/app` and `cmd/queue` include the application-owned telemetry module. Fx starts and stops exporters with each process. Composition roots call `telemetry.New` with service identity and `With*` options from `config.Telemetry`. Do not call `otel.SetTracerProvider` or `slog.SetDefault`; use the injected `*telemetry.Telemetry` and package helpers that read it from context.
+Both `cmd/app` and `cmd/queue` include the application-owned telemetry module via `internal/runtime`. Fx starts and stops exporters with each process. `runtime.NewTelemetry` calls `telemetry.New` with service identity and `With*` options from `config.Telemetry`. Do not call `otel.SetTracerProvider` or `slog.SetDefault`; use the injected `*telemetry.Telemetry` and package helpers that read it from context.
 
 ```go
 tel, err := telemetry.New(ctx, cfg.ServiceName, cfg.ServiceVersion,

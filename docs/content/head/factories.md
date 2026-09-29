@@ -4,7 +4,7 @@ Factories live under `models/factories` and build model entities for tests and s
 
 ## Generate and sync
 
-Model generation creates a matching factory unless you pass `--skip-factory`. Refresh factories after Entity changes:
+Model generation creates a matching factory unless you pass `--skip-factory` or `--custom`. Refresh factories after Entity changes. Custom models (`// andurel:custom`) have no factory and cannot be synced with `andurel sync factory`.
 
 ```bash
 andurel sync factory Product --check

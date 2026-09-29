@@ -20,9 +20,9 @@ Fx calls only providers used by a process. Web needs HTTP and queue insertion; q
 | --- | --- | --- |
 | `ENVIRONMENT` | `development` | Runtime policy; `production` enables generated production behavior |
 | `PROJECT_NAME` | project name | Application and telemetry identity |
-| `DOMAIN` | `localhost:8080` | Public host, optionally with port |
+| `HOST_PRIMARY` | required | Public hostname for `routing.HostPrimary`, optionally with port |
 | `PROTOCOL` | `http` when empty | Public HTTP or HTTPS scheme |
-| `HOST` | `localhost` | Local listen host, not public domain |
+| `HOST` | `localhost` | Local listen host, not the public hostname |
 | `PORT` | `8080` | Listen port, 1 through 65535 |
 | `HTTP_IDLE_TIMEOUT` | `120s` | Keep-alive idle bound; zero disables |
 | `HTTP_READ_TIMEOUT` | `10s` | Request-read bound; zero disables |
@@ -31,7 +31,9 @@ Fx calls only providers used by a process. Web needs HTTP and queue insertion; q
 | `CSRF_STRATEGY` | `header_only` | Or `header_or_legacy_token` compatibility mode |
 | `CSRF_TRUSTED_ORIGINS` | empty | Explicit additional trusted origins |
 
-Behind a proxy, a normal split is `DOMAIN=app.example.com`, `PROTOCOL=https`, `HOST=0.0.0.0`, and an internal port. Credentialed wildcards are rejected.
+Behind a proxy, a normal split is `HOST_PRIMARY=app.example.com`, `PROTOCOL=https`, `HOST=0.0.0.0`, and an internal port. Credentialed wildcards are rejected.
+
+`config.App.Domain` still holds the primary hostname (loaded from `HOST_PRIMARY`). CORS and CSRF trust the union of configured host origins (`PROTOCOL` + each `HOST_*`). Extra hosts are not scaffolded: declare a `routing.HostName` const in `config/hosts.go`, load `HOST_<NAME>` into `App.Hosts`, and bind routes with `routing.Host(...)`. See [Routing](/docs/head/routing).
 
 ## Database
 
@@ -93,7 +95,7 @@ Edit `NewQueueWorker` for named queues or per-queue concurrency. Validation cove
 
 ## Email and telemetry
 
-`DEFAULT_SENDER_SIGNATURE` defaults to `noreply@DOMAIN`. `EMAIL_PROVIDER` selects an installed transport. Development defaults to `mailpit`, with `MAILPIT_HOST=0.0.0.0` and `MAILPIT_PORT=1025`. Production requires a transport wired in the composition root that implements the generated sender interfaces.
+`DEFAULT_SENDER_SIGNATURE` defaults to `noreply@` plus the primary hostname (`HOST_PRIMARY`). `EMAIL_PROVIDER` selects an installed transport. Development defaults to `mailpit`, with `MAILPIT_HOST=0.0.0.0` and `MAILPIT_PORT=1025`. Production requires a transport wired in `internal/runtime` (`NewEmailSenders`) that implements the generated sender interfaces.
 
 | Telemetry variable | Default |
 | --- | --- |

@@ -7,6 +7,7 @@
 | Need | Command |
 | --- | --- |
 | New model, controller, job, email, scaffold, migration | `andurel generate ...` |
+| Refresh a table model after a migration changes columns | `andurel sync model NAME` |
 | Refresh `*_templ.go`, narsilc clients, routes.ts, payloads, email CSS, factories | `andurel sync ...` |
 | Drift check without writing | `andurel sync factory NAME --check` / `sync factories --check` |
 
@@ -19,6 +20,7 @@ Generate creates or updates owned Go/SQL/frontend sources. Sync recompiles or re
 ```bash
 andurel sync views
 andurel sync queries
+andurel sync model Post
 andurel sync routes --json
 andurel sync payloads --json
 andurel sync email
@@ -32,6 +34,7 @@ andurel sync factories --sync
 | --- | --- |
 | `views` | `.templ` → `*_templ.go` (and email compile when inputs exist) |
 | `queries` | `models/queries/*.sql` → `models/internal/queries` Go clients |
+| `model` | SQL migrations → existing table-backed `models/NAME.go` |
 | `routes` | route declarations → `resources/js/routes.ts` |
 | `payloads` | controller payload structs → `resources/js/types/payloads.ts` |
 | `email` | authored email templates → inlined Tailwind / renderers |
@@ -100,6 +103,15 @@ andurel sync queries --json
 ```
 
 When SQL changed, `files_updated` lists regenerated clients under `models/internal/queries/`.
+
+Table model refresh:
+
+```bash
+andurel sync model Product --check --json
+andurel sync model Product
+```
+
+Custom models (`// andurel:custom`) cannot be synced from migrations. Factory refresh is `andurel sync factory NAME`.
 
 Factory check:
 

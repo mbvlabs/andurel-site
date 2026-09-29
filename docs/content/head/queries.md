@@ -18,7 +18,7 @@ After editing the SQL, compile Go code:
 andurel sync queries
 ```
 
-Output is written under `models/internal/queries`. The command is a no-op when `models/queries` contains no annotated SQL files. `andurel run`, `andurel build`, scaffolding, and related flows also regenerate narsilc output when query files exist. The narsilc binary version comes from `andurel.toml` `[tools]`; digests live in `andurel.lock`.
+Output is written under `models/internal/queries`. The command is a no-op unless a query file has a `-- name:` annotation with SQL after it. Empty files and comment-only stubs do not count as query sources (`pkg/storage` v0.8.1). `andurel run`, `andurel build`, scaffolding, and related flows also regenerate narsilc output when those annotated files exist. The narsilc binary version comes from `andurel.toml` `[tools]`; digests live in `andurel.lock`.
 
 ## Annotate SQL
 

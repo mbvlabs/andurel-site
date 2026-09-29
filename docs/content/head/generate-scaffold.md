@@ -20,10 +20,14 @@ andurel generate scaffold NAME [flags]
 | Flag | What it does |
 | --- | --- |
 | `--api` | Generate a JSON API controller under `controllers/api` instead of UI pages |
+| `--host` | Named virtual host (`routing.HostName`); default `primary` |
+| `--prefix` | Path/package namespace (independent of `--host`) |
 | `--primary-key` | Specify the primary key column (skips interactive detection) |
 | `--table-name` | Override the default table name derived from `NAME` |
 | `--skip-factory` | Skip generating a factory for the model |
 | `--dry-run` / `--diff` | Preview without writing; see [generate](/docs/head/generate) for shared flags |
+
+`--host` and `--prefix` are independent, the same as [controller](/docs/head/generate-controller). Do not invent `--host` values: declare `routing.HostName` consts in `config/hosts.go` and load them into `App.Hosts` first.
 
 Without `--api`, generation follows the project UI in `andurel.lock` (Inertia adapter or Templ).
 
@@ -33,6 +37,7 @@ Without `--api`, generation follows the project UI in `andurel.lock` (Inertia ad
 andurel generate scaffold Product --dry-run --diff --json
 andurel generate scaffold Product
 andurel generate scaffold admin/Widget
+andurel generate scaffold Widget --host=admin
 andurel generate scaffold Product --api
 andurel generate scaffold Product --table-name catalog_products --primary-key id
 ```

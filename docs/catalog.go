@@ -182,17 +182,17 @@ var headSections = []Section{
 	{
 		Title: "Prologue",
 		Pages: []Page{
-			{Slug: "whats-new", Title: "What's New in v2", Description: "Highlights from Andurel v2.0.0-alpha with a link to the full GitHub changelog."},
+			{Slug: "whats-new", Title: "What's New in v2", Description: "Andurel v2.0.0-alpha.2: hosts, custom models, storage 0.8.1, internal/runtime, and cmd/migrate."},
 			{Slug: "upgrade", Title: "Upgrade Guide", Description: "Plan a manual move from an Andurel v1 application to v2."},
 		},
 	},
 	{
 		Title: "Getting Started",
 		Pages: []Page{
-			{Slug: "introduction", Title: "Introduction", Description: "Meet Andurel v2.0.0-alpha and its application architecture."},
-			{Slug: "installation", Title: "Installation", Description: "Install the v2.0.0-alpha CLI and create an application."},
-			{Slug: "configuration", Title: "Configuration", Description: "Compose validated application configuration with Fx."},
-			{Slug: "directory-structure", Title: "Directory Structure", Description: "Understand the files and process boundaries in a v2 project."},
+			{Slug: "introduction", Title: "Introduction", Description: "Meet Andurel v2.0.0-alpha.2 and its application architecture."},
+			{Slug: "installation", Title: "Installation", Description: "Install the v2.0.0-alpha.2 CLI and create an application."},
+			{Slug: "configuration", Title: "Configuration", Description: "Compose validated configuration, HOST_PRIMARY, and extra hosts."},
+			{Slug: "directory-structure", Title: "Directory Structure", Description: "Understand internal/runtime, cmd/migrate, and process boundaries in a v2 project."},
 			{Slug: "frontend", Title: "Frontend", Description: "Choose Inertia v3 (default) or Templ with Datastar."},
 			{Slug: "agentic-development", Title: "Agentic Development", Description: "Arm agents with the Andurel skill, AGENTS.md, and JSON CLI discovery."},
 			{Slug: "deployment", Title: "Deployment", Description: "Build application assets and operate the web, queue, and SSR processes."},
@@ -210,7 +210,7 @@ var headSections = []Section{
 	{
 		Title: "The Basics",
 		Pages: []Page{
-			{Slug: "routing", Title: "Routing", Description: "Declare typed routes, Echo handlers, and Inertia route helpers."},
+			{Slug: "routing", Title: "Routing", Description: "Declare typed routes, named hosts, Echo handlers, and Inertia route helpers."},
 			{Slug: "controllers", Title: "Controllers", Description: "Handle requests with explicit injected dependencies."},
 			{Slug: "cookies-sessions", Title: "Cookies & Sessions", Description: "Use kiks for bagged cookies, sessions, and flash messages."},
 			{Slug: "validation", Title: "Validation", Description: "Build structured field errors and reusable validation rules."},
@@ -222,8 +222,8 @@ var headSections = []Section{
 		Pages: []Page{
 			{Slug: "database", Title: "Getting Started", Description: "Configure PostgreSQL through storage.Connection, transactions, and River."},
 			{Slug: "queries", Title: "Queries", Description: "Author narsilc SQL and keep generated clients behind models."},
-			{Slug: "migrations", Title: "Migrations & Seeding", Description: "Manage root migrations and seeds with andurel db."},
-			{Slug: "models", Title: "Models", Description: "Construct model APIs with storage.Connection and inject them through Fx."},
+			{Slug: "migrations", Title: "Migrations & Seeding", Description: "Manage root migrations with andurel db and the cmd/migrate binary."},
+			{Slug: "models", Title: "Models", Description: "Construct table-backed and custom model APIs with storage.Connection."},
 			{Slug: "factories", Title: "Factories", Description: "Generate and sync model factories for tests and seeds."},
 		},
 	},
@@ -286,7 +286,7 @@ var headSections = []Section{
 				Children: []Page{
 					{Slug: "generate-scaffold", Title: "scaffold", Description: "Generate a model, controller, views, and routes for an existing table."},
 					{Slug: "generate-migration", Title: "migration", Description: "Create a new SQL migration file under migrations/."},
-					{Slug: "generate-model", Title: "model", Description: "Generate or update a model API from SQL migration history."},
+					{Slug: "generate-model", Title: "model", Description: "Generate a table model from SQL migrations, or a custom query model."},
 					{Slug: "generate-controller", Title: "controller", Description: "Generate a controller, views or pages, and typed routes."},
 					{Slug: "generate-query", Title: "query", Description: "Create a narsilc SQL query file under models/queries/."},
 					{Slug: "generate-job", Title: "job", Description: "Generate a River job and worker registration."},

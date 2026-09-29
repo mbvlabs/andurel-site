@@ -4,7 +4,9 @@ Andurel v2 does not provide an automated upgrade path from v1. The `upgrade` com
 
 ## Choose a migration strategy
 
-Keep production v1 applications on the `1-5-stable` line until you can create a fresh v2 scaffold and move application behavior deliberately. Install the v2 CLI separately (`github.com/mbvlabs/andurel/v2@v2.0.0-alpha`), generate a temporary v2 project with the same frontend and extensions, and compare its composition root and generated conventions with your application.
+Keep production v1 applications on the `1-5-stable` line until you can create a fresh v2 scaffold and move application behavior deliberately. Install the v2 CLI separately (`github.com/mbvlabs/andurel/v2@v2.0.0-alpha.2`), generate a temporary v2 project with the same frontend and extensions, and compare its `internal/runtime` graphs and generated conventions with your application.
+
+Apps scaffolded on **v2.0.0-alpha** (the first preview) should treat alpha.2 as a new generated baseline rather than a patch: `internal/runtime`, `cmd/migrate`, `HOST_PRIMARY` / `config/hosts.go`, `AddRoute`, `generate model --custom`, and `andurel sync model` instead of `generate model --update`. See [What's New](/docs/head/whats-new).
 
 ## Important changes
 
@@ -17,7 +19,9 @@ Keep production v1 applications on the `1-5-stable` line until you can create a 
 - Queue insertion remains available to the web process, while processing runs from `cmd/queue`.
 - Inertia v3 is the default UI (`--ui react/pnpm`); Templ/Datastar is `--ui templ/datastar`. Generators follow `andurel.toml` (`project.inertia`); there is no `--inertia` flag. Gonertia integrations require manual replacement; applications own `views/root.templ`.
 - `andurel.toml` records the JavaScript package manager separately from the Inertia SSR runtime (`cmd/ssr`). `andurel.lock` stores tool download digests.
-- Use `andurel packages list` / `andurel packages update` for `pkg/*` upgrades in `go.mod`. Sessions move to **kiks** (`router/cookies`); do not copy v1 session helpers forward.
+- Public identity is `HOST_PRIMARY` (not `DOMAIN`). Extra hosts need `config/hosts.go` plus `App.Hosts`. Controllers register with `AddRoute(route, echo.Route{Method, Handler})`.
+- Fx graphs live in `internal/runtime`. `cmd/app` / `cmd/queue` stay thin. `cmd/migrate` applies embedded SQL as a one-shot process; development still uses `andurel db migrate up`.
+- Refresh table models with `andurel sync model NAME`. Use `generate model --custom` for non-table query models.
 
 
 ## Migrate by behavior

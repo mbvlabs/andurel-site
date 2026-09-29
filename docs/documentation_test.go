@@ -68,8 +68,8 @@ func TestSiteLoadsCatalogContent(t *testing.T) {
 	if !ok {
 		t.Fatal("expected head/installation to exist")
 	}
-	if !strings.Contains(head.HTML, "v2.0.0-alpha") {
-		t.Fatal("expected head installation to document the v2.0.0-alpha CLI")
+	if !strings.Contains(head.HTML, "v2.0.0-alpha.2") {
+		t.Fatal("expected head installation to document the v2.0.0-alpha.2 CLI")
 	}
 
 	if _, ok := site.Find(LatestVersion, "missing"); ok {

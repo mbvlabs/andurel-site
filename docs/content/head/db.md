@@ -59,6 +59,8 @@ OK   00015_add_status_to_products.sql (12.4ms)
 
 Migrations are SQL files in root `migrations/` and are embedded by the `migrations` package. See [Migrations & Seeding](/docs/head/migrations).
 
+Production and CI should run `cmd/migrate` (or an image built from it) instead of the Goose CLI. That binary loads environment, opens PostgreSQL, and calls `storage.RunMigrations` on the embedded FS, then exits. Do not start `cmd/app` until migrate has succeeded.
+
 ## Named seeds
 
 ```bash

@@ -4,7 +4,7 @@ Andurel v2 uses PostgreSQL through `github.com/mbvlabs/andurel/pkg/storage`. One
 
 ## Connection lifecycle
 
-The web and queue composition roots construct `*storage.Postgres` and publish it as `storage.Connection`. Construction validates configuration, builds a pgx pool, applies pool limits, and pings PostgreSQL. A failed ping prevents startup; an Fx lifecycle hook closes the pool during shutdown.
+The web and queue graphs in `internal/runtime` construct `*storage.Postgres` and publish it as `storage.Connection`. Construction validates configuration, builds a pgx pool, applies pool limits, and pings PostgreSQL. A failed ping prevents startup; an Fx lifecycle hook closes the pool during shutdown.
 
 ```go
 db, err := storage.NewPostgres(ctx, cfg)
@@ -76,7 +76,7 @@ Calling a model method that uses the original connection from inside the callbac
 
 ## Migrations and test databases
 
-`RunMigrations` applies Goose migrations from an `fs.FS`. Generated projects embed SQL under root `migrations/`. See [Migrations & Seeding](/docs/head/migrations).
+`RunMigrations` applies Goose migrations from an `fs.FS`. Generated projects embed SQL under root `migrations/` and expose `cmd/migrate` as a one-shot process that calls `storage.RunMigrations`. Development still uses `andurel db migrate up`. See [Migrations & Seeding](/docs/head/migrations).
 
 `NewTestCluster` starts a PostgreSQL 17 Alpine container for isolated test databases. Prefer one cluster per test package. See [Testing](/docs/head/testing).
 

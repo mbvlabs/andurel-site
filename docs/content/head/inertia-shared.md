@@ -4,11 +4,17 @@ Shared props, validation errors, flash, and redirects are how Andurel keeps Iner
 
 ## Shared props
 
-`WithShared` copies static values at renderer construction. Generated apps share the build version:
+`WithShared` copies static values at renderer construction. Generated apps share the primary origin, build version, and named host origins:
 
 ```go
-inertia.WithShared(inertia.Props{"appVersion": appVersion}),
+inertia.WithShared(inertia.Props{
+    "appUrl":     appCfg.BaseURL(),
+    "appVersion": string(version),
+    "hosts":      appCfg.HostOrigins(),
+}),
 ```
+
+The Inertia client and SSR entries call `configureRouteHosts` with `hosts` at boot so generated TypeScript helpers return full URLs. Use `routes.name.path()` for a relative path.
 
 `WithSharedProvider` adds request-scoped values. Providers run on every `Page` call, including partial reloads:
 

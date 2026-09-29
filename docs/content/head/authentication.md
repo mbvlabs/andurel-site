@@ -140,7 +140,7 @@ Unsafe cookie-authenticated requests stay CSRF protected.
 
 Inertia and fetch clients send credentials with same-origin requests. Legacy HTML forms that post without Fetch Metadata need the compatibility strategy or a token field.
 
-Credentialed CORS trusts the application base URL (`PROTOCOL` + `DOMAIN`) plus `CORS_ALLOWED_ORIGINS`. Do not enable credentialed `*`.
+Credentialed CORS trusts every configured host origin (`PROTOCOL` + `HOST_PRIMARY`, plus extra `HOST_*` names) plus `CORS_ALLOWED_ORIGINS`. Do not enable credentialed `*`.
 
 ## Authorization
 

@@ -28,6 +28,8 @@ type Product struct {
 }
 ```
 
+Custom query models use `// andurel:custom` instead and have no table. They cannot be refreshed with `andurel sync model` or `andurel sync factory`.
+
 Nullable columns use `pgtype.*` when `database.nullType` is `pgtype.Null` (the default), or pointers when set to `pointer` in `andurel.toml`.
 
 ## Construct and inject
@@ -71,19 +73,20 @@ andurel generate migration create_products_table
 andurel db migrate up
 andurel generate model Product
 andurel generate model Product --mode read-only
-andurel generate model Product --update --yes
+andurel sync model Product
+andurel generate model AggregateResult --custom id:uuid total:int64
 ```
 
 | Flag | Meaning |
 | --- | --- |
+| `--custom` | Non-table model from `field:type` specs (`// andurel:custom`) |
 | `--mode` | `crud` (default), `read-only`, or `create-only` |
 | `--table-name` | Override the default table name |
 | `--primary-key` | Skip interactive primary-key detection |
 | `--skip-factory` | Do not create or update `models/factories` |
-| `--update` | Refresh an existing model from migration changes |
 | `--dry-run` / `--diff` / `--json` | Preview structured mutations |
 
-Model generation reads migration history, writes (or updates) the model API and matching `models/queries/*.sql`, and updates `models.Module`. You own the resulting Go afterward. After editing SQL by hand, run `andurel sync queries --json` so the internal client matches.
+Table model generation reads migration history, writes the model API and matching `models/queries/*.sql`, and updates `models.Module`. Refresh an existing table model from later migrations with `andurel sync model NAME`. Custom models have no table and cannot be synced from migrations. You own the resulting Go afterward. After editing SQL by hand, run `andurel sync queries --json` so the internal client matches.
 
 ## Transactions
 

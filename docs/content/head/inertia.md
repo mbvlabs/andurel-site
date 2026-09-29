@@ -2,7 +2,7 @@
 
 `github.com/mbvlabs/andurel/pkg/inertia` is Andurel's Echo-native implementation of the Inertia v3 server protocol. It owns request classification, page responses, partial prop evaluation, redirects, Vite integration, and optional SSR. The browser adapter is the official `@inertiajs/*` package for Vue, React, or Svelte.
 
-The package has no Fx dependency. Generated applications construct one `Renderer` in `cmd/app`, register `renderer.Middleware()`, and inject `*inertia.Renderer` into controllers. Node process ownership belongs to `cmd/ssr`, not the web process.
+The package has no Fx dependency. Generated applications construct one `Renderer` in `internal/runtime` (`NewInertia`), register `renderer.Middleware()`, and inject `*inertia.Renderer` into controllers. Node process ownership belongs to `cmd/ssr`, not the web process.
 
 ## Start here
 

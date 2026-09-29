@@ -1,6 +1,6 @@
 # Framework Packages
 
-Andurel v2 is a project generator plus independently versioned Go modules under `pkg/*`. The generated application is not a thin wrapper around a hidden runtime: it owns its composition root, environment names, domain code, routes, controllers, models, and views. Framework packages provide reusable infrastructure at those boundaries.
+Andurel v2 is a project generator plus independently versioned Go modules under `pkg/*`. The generated application is not a thin wrapper around a hidden runtime: it owns `internal/runtime` Fx graphs, environment names, domain code, routes, controllers, models, and views. Framework packages provide reusable infrastructure at those boundaries.
 
 ## Package map
 
@@ -16,7 +16,7 @@ Andurel v2 is a project generator plus independently versioned Go modules under 
 | `pkg/telemetry` | OpenTelemetry helpers for application processes | [Telemetry](/docs/head/telemetry) |
 | `pkg/kiks` | Cookie jars, bagged sessions, and flash middleware | [Cookies & Sessions](/docs/head/cookies-sessions) |
 
-The packages expose ordinary Go constructors rather than an Andurel service locator. Fx belongs to the generated application and connects constructors and process lifecycles.
+The packages expose ordinary Go constructors rather than an Andurel service locator. Fx belongs to the generated application (`internal/runtime`) and connects constructors and process lifecycles.
 
 ## Composition and process boundaries
 
@@ -54,4 +54,4 @@ Updating the CLI does not rewrite existing imports. Update packages deliberately
 
 Depend on the smallest public interface available. Models normally accept `storage.Connection`, services accept email sender interfaces, and only Inertia controllers accept `*inertia.Renderer`. Application-specific adapters stay in the application.
 
-Replace implementations at the composition root: tests can provide fake senders, a deployment can install a custom email transport, and a non-Fx program can construct storage directly. Importing implementation details throughout the application defeats these boundaries and makes independent upgrades harder.
+Replace implementations in `internal/runtime`: tests can provide fake senders, a deployment can install a custom email transport, and a non-Fx program can construct storage directly. Importing implementation details throughout the application defeats these boundaries and makes independent upgrades harder.

@@ -20,7 +20,7 @@ andurel tool list --json
 andurel run
 andurel fmt
 andurel doctor --verbose
-andurel build --version v2.0.0-alpha
+andurel build --version v2.0.0-alpha.2
 ```
 
 `run` coordinates live reload and code generation. `fmt` formats Go and Templ. `doctor` checks project health, package migration issues, and generated code. `build` compiles narsilc when query files exist, email, Templ, CSS, optional Vite/SSR assets, and the Go application.
@@ -42,9 +42,12 @@ andurel generate migration create_products_table
 andurel db migrate up
 andurel generate scaffold Product
 andurel generate model Product
+andurel generate model ReportRow --custom id:uuid total:int64
+andurel sync model Product
 andurel generate query ProductReport --table products
 andurel sync queries
 andurel generate controller Product
+andurel generate controller Widget --host=admin --prefix=admin
 andurel generate job SendReceipt
 andurel generate email Receipt
 ```

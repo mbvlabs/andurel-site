@@ -1,10 +1,10 @@
 # Dependency Injection
 
-Andurel applications use [Fx](https://uber-go.github.io/fx/) for dependency injection and process lifecycle. Framework packages expose ordinary constructors; Fx belongs to the generated application in `cmd/app`, `cmd/queue`, and `cmd/ssr`.
+Andurel applications use [Fx](https://uber-go.github.io/fx/) for dependency injection and process lifecycle. Framework packages expose ordinary constructors. Fx graphs live in `internal/runtime`; `cmd/app` and `cmd/queue` only load environment and call `runtime.App` / `runtime.Queue`.
 
 ## Composition roots
 
-Each process builds its own graph. Load validated environment before Fx, then provide only the collaborators that process should own:
+Each process builds its own graph in `internal/runtime`. Load validated environment in `cmd/*` before Fx, then provide only the collaborators that process should own:
 
 ```go
 if err := config.LoadEnvironment(); err != nil {
@@ -12,18 +12,10 @@ if err := config.LoadEnvironment(); err != nil {
     os.Exit(1)
 }
 
-app := fx.New(
-    fx.Provide(func() context.Context { return ctx }),
-    config.Module,
-    databaseModule,
-    queueInsertModule,
-    models.Module,
-    controllers.Module,
-    cookies.Module,
-    router.Module,
-    fx.Invoke(startServer),
-)
+app := fx.New(runtime.App(ctx, appVersion))
 ```
+
+`runtime.App` includes `config.Module`, shared database / email / telemetry, queue insertion, Inertia, models, services, controllers, cookies, and the router. `runtime.Queue` shares config and database, then adds `queue.Module` and the River processor. Register new constructors in the package that owns them (`models.Module`, `controllers.Module`, `queue.Module`). Add process-wide providers (production email drivers, extra Fx provides) in `internal/runtime`.
 
 Constructors return concrete types or small interfaces (`storage.Connection`, `storage.InsertQueue`, `*inertia.Renderer`, `*kiks.Jar`). Do not hide dependencies in Echo request context.
 
@@ -72,6 +64,6 @@ Web needs HTTP and queue insertion. Queue needs a River processor and workers, b
 
 ## Replacing implementations
 
-Prefer the smallest public interface at the composition root. Tests can provide fake email senders or in-memory collaborators without rewriting controllers. Package updates should not silently introduce new environment contracts; environment mapping stays in application `config/`.
+Prefer the smallest public interface at the composition root (`internal/runtime`). Tests can provide fake email senders or in-memory collaborators without rewriting controllers. Package updates should not silently introduce new environment contracts; environment mapping stays in application `config/`.
 
 See [Configuration](/docs/head/configuration), [Request Lifecycle](/docs/head/request-lifecycle), and [Framework Packages](/docs/head/framework-packages).

@@ -1,6 +1,6 @@
 # Installation
 
-Install the Andurel v2 CLI, create an application, and start its development server. These head docs match **v2.0.0-alpha**.
+Install the Andurel v2 CLI, create an application, and start its development server. These head docs match **v2.0.0-alpha.2**.
 
 ## Requirements
 
@@ -17,11 +17,11 @@ v2 lives on the `/v2` module path. v1 remains on the unversioned path; that path
 
 ```bash
 # Documented alpha line (matches these head docs)
-go install github.com/mbvlabs/andurel/v2@v2.0.0-alpha
+go install github.com/mbvlabs/andurel/v2@v2.0.0-alpha.2
 andurel --version
 ```
 
-While `v2.0.0-alpha` is the current `/v2` tag, `github.com/mbvlabs/andurel/v2@latest` resolves to the same line. Pin `@v2.0.0-alpha` when you want the exact release these docs describe.
+While `v2.0.0-alpha.2` is the current `/v2` tag, `github.com/mbvlabs/andurel/v2@latest` resolves to the same line. Pin `@v2.0.0-alpha.2` when you want the exact release these docs describe.
 
 Nightlies that track unreleased `master` ship as **prebuilt binaries** on the GitHub `nightly` release, do not use `go install …@master` for nightly metadata. v1 installs stay on `github.com/mbvlabs/andurel@v1.x.y`.
 

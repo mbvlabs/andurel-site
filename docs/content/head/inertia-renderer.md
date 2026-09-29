@@ -2,7 +2,7 @@
 
 Construct one `inertia.Renderer` at process start and inject it into controllers. The package is an ordinary Go constructor: it does not register Fx hooks, read environment variables, or own a Node process.
 
-Generated applications do this in `cmd/app` through `newInertia`, then pass the renderer into router middleware and every Inertia controller.
+Generated applications do this in `internal/runtime` through `NewInertia`, then pass the renderer into router middleware and every Inertia controller.
 
 ## Construction
 
@@ -22,7 +22,11 @@ renderer, err := inertia.NewRenderer(
     inertia.WithProjectName(appCfg.ProjectName),
     inertia.WithEnvironment(appCfg.Environment),
     inertia.WithProtocolDebug(cfg.ProtocolDebug),
-    inertia.WithShared(inertia.Props{"appVersion": appVersion}),
+    inertia.WithShared(inertia.Props{
+        "appUrl":     appCfg.BaseURL(),
+        "appVersion": string(version),
+        "hosts":      appCfg.HostOrigins(),
+    }),
     inertia.WithSSRFailFast(cfg.SSRFailFast),
 )
 ```
@@ -118,7 +122,7 @@ Fx belongs to the application:
 ```go
 var inertiaModule = fx.Module(
     "inertia",
-    fx.Provide(newInertia),
+    fx.Provide(NewInertia),
 )
 ```
 
@@ -139,6 +143,6 @@ func NewProducts(products models.Products, renderer *inertia.Renderer) Products 
 }
 ```
 
-Keep renderer construction in `cmd/app`. Controllers should not build a second renderer per request. If a test needs different shared props, construct a dedicated renderer or pass page props that replace the shared keys.
+Keep renderer construction in `internal/runtime`. Controllers should not build a second renderer per request. If a test needs different shared props, construct a dedicated renderer or pass page props that replace the shared keys.
 
 See [Pages and Visits](/docs/head/inertia-pages) for `Page` and [Shared Data and Redirects](/docs/head/inertia-shared) for providers, flash, and redirects.

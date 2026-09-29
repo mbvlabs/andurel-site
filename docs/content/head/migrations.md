@@ -53,7 +53,11 @@ OK   00015_create_products_table.sql (8.1ms)
     2026-09-23 14:05:02         00015_create_products_table.sql
 ```
 
-narsilc output does not replace migrations. Write schema changes as SQL first, apply them, then `andurel generate model` / `scaffold` from the migrated table. See [db](/docs/head/db).
+narsilc output does not replace migrations. Write schema changes as SQL first, apply them, then `andurel generate model` / `scaffold` from the migrated table. After a later migration changes columns on an existing table model, run `andurel sync model NAME`. See [db](/docs/head/db).
+
+## Production migrate binary
+
+`cmd/migrate` applies the same embedded SQL with `storage.RunMigrations` on `migrations.Migrations`. It is a one-shot process, not part of `cmd/app` start. Development still uses `andurel db migrate up`. Production and CI should run the migrate binary (or image) before starting app and queue.
 
 ## Seeds
 

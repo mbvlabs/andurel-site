@@ -18,7 +18,7 @@ Generated applications include `AGENTS.md`. Agents should:
 1. Run `andurel commands --json` before guessing subcommands
 2. Prefer `andurel inspect … --json` for read-only discovery
 3. Use `--dry-run` / structured output on mutating generators when available
-4. Import routes from `@/routes` after `andurel sync routes` in Inertia apps
+4. Import routes from `@/routes` after `andurel sync routes` in Inertia apps. Helpers return full URLs after `configureRouteHosts` runs from the shared `hosts` prop; use `routes.name.path()` for a relative path. `--host` and `--prefix` on generate controller/scaffold are independent.
 
 ```bash
 andurel commands --json

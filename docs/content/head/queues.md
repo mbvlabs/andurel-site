@@ -12,7 +12,7 @@ Job arguments live in `queue/jobs`; workers live in `queue/workers` and are regi
 
 ## Process boundaries
 
-The web application includes only the queue insertion module (`storage.NewQueueInsert` as `storage.InsertQueue`), so controllers and services can enqueue work without starting River workers. `cmd/queue` is a dedicated Fx application that constructs `storage.NewQueueProcessor`, workers, periodic jobs, telemetry, and email transports.
+The web application includes only the queue insertion module (`storage.NewQueueInsert` as `storage.InsertQueue`), so controllers and services can enqueue work without starting River workers. `cmd/queue` calls `runtime.Queue`, which constructs `storage.NewQueueProcessor`, workers, periodic jobs, telemetry, and email transports.
 
 ```go
 _, err := queue.Insert(ctx, jobs.RebuildSearchIndexArgs{ID: id}, nil)
