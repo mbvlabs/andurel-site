@@ -23,7 +23,6 @@ export default function Show({ version, pages, navDraft }: DocumentationVersionI
     slug: version.slug,
     label: version.label,
     isLatest: version.isLatest,
-    position: version.position,
   })
   const pageForm = useForm<CreateDocumentationPageFormPayload>({
     slug: '',
@@ -75,7 +74,7 @@ export default function Show({ version, pages, navDraft }: DocumentationVersionI
           <Card>
             <CardHeader>
               <CardTitle>Version</CardTitle>
-              <CardDescription>Slug, label, and which version /docs/latest should resolve to later.</CardDescription>
+              <CardDescription>Slug, label, and which version /docs/latest should resolve to later. Reorder versions on the docs list.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={(event) => saveVersion(event.nativeEvent as SubmitEvent)}>
@@ -94,15 +93,6 @@ export default function Show({ version, pages, navDraft }: DocumentationVersionI
                       id="slug"
                       value={versionForm.data.slug}
                       onChange={(event) => versionForm.setData('slug', event.currentTarget.value)}
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="position">Position</FieldLabel>
-                    <Input
-                      id="position"
-                      type="number"
-                      value={versionForm.data.position}
-                      onChange={(event) => versionForm.setData('position', Number(event.currentTarget.value))}
                     />
                   </Field>
                   <Field>

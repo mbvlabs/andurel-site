@@ -16,7 +16,6 @@ export default function Create() {
     slug: '',
     label: '',
     isLatest: false,
-    position: 0,
   })
   const [slugIsAutomatic, setSlugIsAutomatic] = useState(true)
 
@@ -69,15 +68,6 @@ export default function Create() {
                   required
                 />
                 <FieldDescription>Generated from the label until you customize it.</FieldDescription>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="position">Position</FieldLabel>
-                <Input
-                  id="position"
-                  type="number"
-                  value={form.data.position}
-                  onChange={(event) => form.setData('position', Number(event.currentTarget.value))}
-                />
               </Field>
               <Field>
                 <label className="flex items-center gap-2 text-xs">

@@ -33,7 +33,6 @@ export type CreateDocumentationVersionFormPayload = {
   slug: string
   label: string
   isLatest: boolean
-  position: number
 }
 
 export type DocumentationHeadingData = {
@@ -113,6 +112,10 @@ export type PreviewDocumentationPageFormPayload = {
   bodyMarkdown: string
 }
 
+export type ReorderDocumentationVersionsFormPayload = {
+  ids: number[]
+}
+
 export type UpdateApiTokenFormPayload = {
   name: string
   token: string
@@ -135,5 +138,4 @@ export type UpdateDocumentationVersionFormPayload = {
   slug: string
   label: string
   isLatest: boolean
-  position: number
 }

@@ -94,14 +94,16 @@ type CreateDocumentationVersionFormPayload struct {
 	Slug     string `json:"slug"`
 	Label    string `json:"label"`
 	IsLatest bool   `json:"isLatest"`
-	Position int32  `json:"position"`
 }
 
 type UpdateDocumentationVersionFormPayload struct {
 	Slug     string `json:"slug"`
 	Label    string `json:"label"`
 	IsLatest bool   `json:"isLatest"`
-	Position int32  `json:"position"`
+}
+
+type ReorderDocumentationVersionsFormPayload struct {
+	IDs []int64 `json:"ids"`
 }
 
 type CreateDocumentationPageFormPayload struct {
@@ -151,6 +153,8 @@ func adminErrorMessage(err error) string {
 	switch {
 	case errors.Is(err, services.ErrSlugTaken):
 		return "That slug is already in use"
+	case errors.Is(err, services.ErrVersionOrderMismatch):
+		return "The version list is out of date. Refresh and try again"
 	case errors.Is(err, services.ErrAPITokenTaken):
 		return "That token value is already in use"
 	case errors.Is(err, services.ErrDraftMissing):

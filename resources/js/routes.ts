@@ -82,6 +82,10 @@ export const routes = {
     host: 'admin',
     path: (id: number) => `/docs/${id}/nav/publish`,
   }),
+  adminDocumentationVersionReorder: routeHelper({
+    host: 'admin',
+    path: () => '/docs/reorder',
+  }),
   adminDocumentationVersionShow: routeHelper({
     host: 'admin',
     path: (id: number) => `/docs/${id}`,

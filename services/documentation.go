@@ -19,9 +19,10 @@ import (
 )
 
 var (
-	ErrSlugTaken    = errors.New("slug already in use")
-	ErrDraftMissing = errors.New("no draft to publish")
-	ErrPageMismatch = errors.New("page does not belong to this version")
+	ErrSlugTaken            = errors.New("slug already in use")
+	ErrDraftMissing         = errors.New("no draft to publish")
+	ErrPageMismatch         = errors.New("page does not belong to this version")
+	ErrVersionOrderMismatch = errors.New("submitted version order does not match existing versions")
 )
 
 var documentationSlugPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*$`)
@@ -54,7 +55,6 @@ type CreateDocumentationVersionInput struct {
 	Slug     string
 	Label    string
 	IsLatest bool
-	Position int32
 }
 
 type UpdateDocumentationVersionInput struct {
@@ -62,7 +62,6 @@ type UpdateDocumentationVersionInput struct {
 	Slug     string
 	Label    string
 	IsLatest bool
-	Position int32
 }
 
 type CreateDocumentationPageInput struct {
@@ -113,6 +112,37 @@ func (d Documentation) ListVersions(ctx context.Context) ([]models.Documentation
 	return d.versions.AllByPosition(ctx)
 }
 
+func (d Documentation) ReorderVersions(ctx context.Context, ids []int64) error {
+	return storage.RunInTransaction(ctx, d.db, func(ctx context.Context, tx storage.Transaction) error {
+		versions := d.versions.WithTx(tx)
+		existing, err := versions.AllByPosition(ctx)
+		if err != nil {
+			return err
+		}
+
+		updates, err := applyVersionOrder(existing, ids)
+		if err != nil {
+			return err
+		}
+
+		currentPositions := make(map[int64]int32, len(existing))
+		for _, version := range existing {
+			currentPositions[version.ID] = version.Position
+		}
+
+		for _, update := range updates {
+			if currentPositions[update.ID] == update.Position {
+				continue
+			}
+			if _, err := versions.Update(ctx, update); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
+
 func (d Documentation) CreateVersion(
 	ctx context.Context,
 	createdBy uuid.UUID,
@@ -133,6 +163,10 @@ func (d Documentation) CreateVersion(
 		if err := ensureVersionSlugAvailable(ctx, versions, strings.ToLower(input.Slug), 0); err != nil {
 			return err
 		}
+		existing, err := versions.AllByPosition(ctx)
+		if err != nil {
+			return err
+		}
 		if input.IsLatest {
 			if err := versions.ClearLatest(ctx); err != nil {
 				return err
@@ -143,7 +177,7 @@ func (d Documentation) CreateVersion(
 			Slug:           strings.ToLower(input.Slug),
 			Label:          strings.TrimSpace(input.Label),
 			IsLatest:       input.IsLatest,
-			Position:       input.Position,
+			Position:       nextVersionPosition(existing),
 			PublishedNavId: pgtype.Int8{},
 		})
 		if err != nil {
@@ -203,7 +237,7 @@ func (d Documentation) UpdateVersion(
 			Slug:           strings.ToLower(input.Slug),
 			Label:          strings.TrimSpace(input.Label),
 			IsLatest:       input.IsLatest,
-			Position:       input.Position,
+			Position:       existing.Position,
 			PublishedNavId: existing.PublishedNavId,
 		})
 		if err != nil {
@@ -951,4 +985,52 @@ func ensurePageSlugAvailable(
 	}
 
 	return ErrSlugTaken
+}
+
+func nextVersionPosition(versions []models.DocumentationVersion) int32 {
+	var next int32
+	for _, version := range versions {
+		if version.Position >= next {
+			next = version.Position + 1
+		}
+	}
+
+	return next
+}
+
+func applyVersionOrder(
+	existing []models.DocumentationVersion,
+	ids []int64,
+) ([]models.UpdateDocumentationVersionData, error) {
+	if len(ids) != len(existing) {
+		return nil, ErrVersionOrderMismatch
+	}
+
+	byID := make(map[int64]models.DocumentationVersion, len(existing))
+	for _, version := range existing {
+		byID[version.ID] = version
+	}
+
+	seen := make(map[int64]struct{}, len(ids))
+	updates := make([]models.UpdateDocumentationVersionData, 0, len(ids))
+	for i, id := range ids {
+		version, ok := byID[id]
+		if !ok {
+			return nil, ErrVersionOrderMismatch
+		}
+		if _, dup := seen[id]; dup {
+			return nil, ErrVersionOrderMismatch
+		}
+		seen[id] = struct{}{}
+		updates = append(updates, models.UpdateDocumentationVersionData{
+			ID:             version.ID,
+			Slug:           version.Slug,
+			Label:          version.Label,
+			IsLatest:       version.IsLatest,
+			Position:       int32(i),
+			PublishedNavId: version.PublishedNavId,
+		})
+	}
+
+	return updates, nil
 }

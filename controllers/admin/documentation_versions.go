@@ -55,6 +55,14 @@ func (dv DocumentationVersions) RegisterRoutes(r *router.Router) error {
 	if err != nil {
 		errs = append(errs, err)
 	}
+	_, err = r.AddRoute(routes.AdminDocumentationVersionReorder, echo.Route{
+		Method:      http.MethodPut,
+		Handler:     dv.Reorder,
+		Middlewares: adminOnly,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
 	_, err = r.AddRoute(routes.AdminDocumentationVersionShow, echo.Route{
 		Method:      http.MethodGet,
 		Handler:     dv.Show,
@@ -140,7 +148,6 @@ func (dv DocumentationVersions) Create(etx *echo.Context) error {
 		Slug:     payload.Slug,
 		Label:    payload.Label,
 		IsLatest: payload.IsLatest,
-		Position: payload.Position,
 	})
 	if err != nil {
 		flashAdminError(etx, err)
@@ -206,7 +213,6 @@ func (dv DocumentationVersions) Update(etx *echo.Context) error {
 		Slug:     payload.Slug,
 		Label:    payload.Label,
 		IsLatest: payload.IsLatest,
-		Position: payload.Position,
 	})
 	if err != nil {
 		flashAdminError(etx, err)
@@ -215,6 +221,24 @@ func (dv DocumentationVersions) Update(etx *echo.Context) error {
 
 	kiks.AddFlash(etx.Request().Context(), kiks.FlashSuccess, "Version saved")
 	return dv.renderer.Redirect(etx, routes.AdminDocumentationVersionShow.URL(version.ID), http.StatusSeeOther)
+}
+
+func (dv DocumentationVersions) Reorder(etx *echo.Context) error {
+	ctx, span := telemetry.From(etx, "admin.documentation_versions.reorder")
+	defer span.End()
+
+	var payload ReorderDocumentationVersionsFormPayload
+	if err := etx.Bind(&payload); err != nil {
+		telemetry.Error(ctx, "could not parse ReorderDocumentationVersionsFormPayload", "error", err)
+		return dv.renderer.Page(etx, "Errors/BadRequest", inertia.Props{}).Render()
+	}
+
+	if err := dv.documentation.ReorderVersions(ctx, payload.IDs); err != nil {
+		flashAdminError(etx, err)
+		return dv.renderer.Redirect(etx, routes.AdminDocumentationVersionIndex.URL(), http.StatusSeeOther)
+	}
+
+	return dv.renderer.Redirect(etx, routes.AdminDocumentationVersionIndex.URL(), http.StatusSeeOther)
 }
 
 func (dv DocumentationVersions) CreatePage(etx *echo.Context) error {

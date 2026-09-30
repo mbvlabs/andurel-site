@@ -34,6 +34,13 @@ var AdminDocumentationVersionCreate = routing.NewSimpleRoute(
 	routing.InertiaRoute(),
 	routing.Host(config.HostAdmin),
 )
+var AdminDocumentationVersionReorder = routing.NewSimpleRoute(
+	"/reorder",
+	"admin.documentation_versions.reorder",
+	AdminDocumentationVersionPrefix,
+	routing.InertiaRoute(),
+	routing.Host(config.HostAdmin),
+)
 var AdminDocumentationVersionShow = routing.NewRouteWithBigSerialID(
 	"/:id",
 	"admin.documentation_versions.show",
