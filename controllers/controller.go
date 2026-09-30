@@ -3,6 +3,7 @@ package controllers
 
 import (
 	"andurel-site/config"
+	"andurel-site/controllers/admin"
 	"andurel-site/controllers/api"
 	"andurel-site/docs"
 	"andurel-site/router"
@@ -28,6 +29,11 @@ var constructors = fx.Provide(
 	NewResetPasswords,
 	docs.New,
 	NewDocumentations,
+	admin.NewDashboards,
+	admin.NewDocumentationVersions,
+	admin.NewDocumentationPages,
+	admin.NewApiTokens,
+	api.NewDocumentations,
 )
 
 var Module = fx.Module(
@@ -56,6 +62,21 @@ var Module = fx.Module(
 		return c.RegisterRoutes(r)
 	}),
 	fx.Invoke(func(r *router.Router, c Documentations) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c admin.Dashboards) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c admin.DocumentationVersions) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c admin.DocumentationPages) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c admin.ApiTokens) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c api.Documentations) error {
 		return c.RegisterRoutes(r)
 	}),
 )

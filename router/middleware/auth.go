@@ -30,6 +30,22 @@ func AuthOnly() echo.MiddlewareFunc {
 	}
 }
 
+func AdminOnly() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c *echo.Context) error {
+			app, err := kiks.Get[*cookies.App](c.Request().Context())
+			if err != nil {
+				return err
+			}
+			if app != nil && app.IsAuthenticated && app.IsAdmin {
+				return next(c)
+			}
+
+			return c.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
+		}
+	}
+}
+
 func IPRateLimiter(
 	limit int32,
 	redirectURL routing.Route,

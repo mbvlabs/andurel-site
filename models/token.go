@@ -9,7 +9,9 @@ import (
 	"crypto/sha256"
 	"encoding/base32"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 	"uuid"
 
@@ -48,13 +50,18 @@ type Token struct {
 func (t Token) IsValid(token, secret string) bool {
 	expected := HashForStorage(token, secret)
 
-	isEqual := hmac.Equal([]byte(expected), []byte(t.Hash))
-	isNotExpired := time.Now().Before(t.ExpiresAt.Time)
-
-	return isEqual && isNotExpired
+	return hmac.Equal([]byte(expected), []byte(t.Hash)) && !t.IsExpired(time.Now())
 }
 
-const codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+func (t Token) IsExpired(now time.Time) bool {
+	return !now.Before(t.ExpiresAt.Time)
+}
+
+const (
+	ScopeAPI = "api"
+
+	codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+)
 
 func GenerateCode(n int) (string, error) {
 	b := make([]byte, n)
@@ -122,7 +129,7 @@ func (t Tokens) FindByScopeAndHash(
 
 type createTokenData struct {
 	Scope     string
-	ExpiresAt time.Time
+	ExpiresAt pgtype.Timestamptz
 	Hash      string
 	MetaData  []byte
 }
@@ -146,7 +153,7 @@ func (t Tokens) createToken(
 		CreatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 		Scope:     data.Scope,
-		ExpiresAt: pgtype.Timestamptz{Time: data.ExpiresAt, Valid: true},
+		ExpiresAt: data.ExpiresAt,
 		Hash:      data.Hash,
 		MetaData:  data.MetaData,
 	}
@@ -180,7 +187,7 @@ func (t Tokens) CreateCode(
 
 	if _, err := t.createToken(ctx, createTokenData{
 		Scope:     scope,
-		ExpiresAt: expiresAt,
+		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
 		Hash:      HashForStorage(tkn, secret),
 		MetaData:  metaData,
 	}); err != nil {
@@ -204,7 +211,7 @@ func (t Tokens) Create(
 
 	if _, err := t.createToken(ctx, createTokenData{
 		Scope:     scope,
-		ExpiresAt: expiresAt,
+		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
 		Hash:      HashForStorage(tkn, secret),
 		MetaData:  metaData,
 	}); err != nil {
@@ -212,6 +219,130 @@ func (t Tokens) Create(
 	}
 
 	return tkn, nil
+}
+
+func TokenPrefix(plain string) string {
+	if len(plain) <= 8 {
+		return plain
+	}
+
+	return plain[:8]
+}
+
+type APITokenMeta struct {
+	Name       string     `json:"name"`
+	CreatedBy  uuid.UUID  `json:"createdBy"`
+	Prefix     string     `json:"prefix"`
+	LastUsedAt *time.Time `json:"lastUsedAt,omitempty"`
+}
+
+func ParseAPITokenMeta(raw []byte) (APITokenMeta, error) {
+	var meta APITokenMeta
+	if len(raw) == 0 {
+		return meta, nil
+	}
+	if err := json.Unmarshal(raw, &meta); err != nil {
+		return APITokenMeta{}, err
+	}
+
+	return meta, nil
+}
+
+func (m APITokenMeta) Bytes() ([]byte, error) {
+	return json.Marshal(m)
+}
+
+func (t Token) APIMeta() (APITokenMeta, error) {
+	return ParseAPITokenMeta(t.MetaData)
+}
+
+func (t Tokens) FindByScopeHash(ctx context.Context, scope, hash string) (Token, error) {
+	entity, err := t.queries.GetTokenByScopeAndHash[Token](ctx, queries.GetTokenByScopeAndHashParams{
+		Scope: scope,
+		Hash:  hash,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Token{}, ErrNotFound
+		}
+
+		return Token{}, err
+	}
+
+	return entity, nil
+}
+
+func (t Tokens) ListByScope(ctx context.Context, scope string) ([]Token, error) {
+	return t.queries.ListTokensByScope[Token](ctx, scope)
+}
+
+type UpdateTokenData struct {
+	ID        uuid.UUID
+	Scope     string
+	ExpiresAt pgtype.Timestamptz
+	Hash      string
+	MetaData  []byte
+}
+
+func (t Tokens) Update(ctx context.Context, data UpdateTokenData) (Token, error) {
+	entity := Token{
+		ID:        data.ID,
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		Scope:     data.Scope,
+		ExpiresAt: data.ExpiresAt,
+		Hash:      data.Hash,
+		MetaData:  data.MetaData,
+	}
+
+	if err := validation.Validate(&entity); err != nil {
+		return Token{}, errors.Join(ErrDomainValidation, err)
+	}
+
+	row, err := t.queries.UpdateToken[Token](ctx, queries.UpdateTokenParams{
+		ID:        entity.ID,
+		UpdatedAt: entity.UpdatedAt,
+		Scope:     entity.Scope,
+		ExpiresAt: entity.ExpiresAt,
+		Hash:      entity.Hash,
+		MetaData:  entity.MetaData,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Token{}, ErrNotFound
+		}
+		return Token{}, err
+	}
+
+	return row, nil
+}
+
+func (t Tokens) Issue(
+	ctx context.Context,
+	secret string,
+	scope string,
+	expiresAt pgtype.Timestamptz,
+	metaData []byte,
+	plain string,
+) (Token, string, error) {
+	if strings.TrimSpace(plain) == "" {
+		generated, err := GenerateSecureToken()
+		if err != nil {
+			return Token{}, "", err
+		}
+		plain = generated
+	}
+
+	created, err := t.createToken(ctx, createTokenData{
+		Scope:     scope,
+		ExpiresAt: expiresAt,
+		Hash:      HashForStorage(plain, secret),
+		MetaData:  metaData,
+	})
+	if err != nil {
+		return Token{}, "", err
+	}
+
+	return created, plain, nil
 }
 
 func (t Tokens) Destroy(ctx context.Context, id uuid.UUID) error {

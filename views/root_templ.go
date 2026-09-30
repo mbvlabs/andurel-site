@@ -135,7 +135,7 @@ func rootDocument(data inertia.RootData, seo pageSEO) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if data.Environment == server.ProdEnvironment {
+		if data.Environment == server.ProdEnvironment && shouldTrackAnalytics(data) {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<script defer data-website-id=\"8ced4d29-c1ad-46aa-a885-2cf193222376\" src=\"https://analytics.mbvlabs.com/t/script.js\"></script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

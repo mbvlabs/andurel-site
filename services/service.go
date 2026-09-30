@@ -7,5 +7,7 @@ var Module = fx.Module(
 	"services",
 	fx.Provide(
 		NewIdentity,
+		NewDocumentation,
+		NewAPITokens,
 	),
 )

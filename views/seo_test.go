@@ -162,3 +162,35 @@ func TestRootDoesNotPanicWithoutPageJSON(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestRootOmitsAnalyticsOnAdminPages(t *testing.T) {
+	ConfigureHead("andurel-site", "https://andurel.com")
+
+	admin := Root(inertia.RootData{
+		Page:        inertia.Page{Component: "Admin/Dashboard/Home", URL: "/"},
+		ContainerID: "app",
+		Environment: server.ProdEnvironment,
+		PageJSON:    []byte(`{"component":"Admin/Dashboard/Home","props":{},"url":"/","version":"1"}`),
+	})
+	var adminHTML strings.Builder
+	if err := admin.Render(context.Background(), &adminHTML); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(adminHTML.String(), "analytics.mbvlabs.com") {
+		t.Fatal("admin document should not load the analytics script")
+	}
+
+	home := Root(inertia.RootData{
+		Page:        inertia.Page{Component: "Home", URL: "/"},
+		ContainerID: "app",
+		Environment: server.ProdEnvironment,
+		PageJSON:    []byte(`{"component":"Home","props":{},"url":"/","version":"1"}`),
+	})
+	var homeHTML strings.Builder
+	if err := home.Render(context.Background(), &homeHTML); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(homeHTML.String(), "analytics.mbvlabs.com") {
+		t.Fatal("public document should load the analytics script in production")
+	}
+}

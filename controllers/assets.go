@@ -81,8 +81,23 @@ func (a Assets) RegisterRoutes(r *router.Router) error {
 	if err != nil {
 		errs = append(errs, err)
 	}
-	_, err = r.AddRoute(routes.ViteBuild, echo.Route{
+	err = r.AddRouteEachHost(echo.Route{
 		Method:  http.MethodGet,
+		Path:    routes.ViteBuild.Path(),
+		Name:    routes.ViteBuild.Name(),
+		Handler: a.ViteBuild,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	// Vite emits absolute /assets/dist/<file> URLs for hashed fonts and other
+	// secondary assets (see vite base). Entry CSS/JS use the timestamped
+	// ViteBuild path above; these files still need a non-timestamped route.
+	err = r.AddRouteEachHost(echo.Route{
+		Method:  http.MethodGet,
+		Path:    routes.ViteDevFiles.Path(),
+		Name:    routes.ViteDevFiles.Name(),
 		Handler: a.ViteBuild,
 	})
 	if err != nil {
@@ -284,6 +299,10 @@ func contentTypeByExt(name string) string {
 		return "application/json"
 	case strings.HasSuffix(name, ".svg"):
 		return "image/svg+xml"
+	case strings.HasSuffix(name, ".woff2"):
+		return "font/woff2"
+	case strings.HasSuffix(name, ".woff"):
+		return "font/woff"
 	default:
 		return "application/octet-stream"
 	}

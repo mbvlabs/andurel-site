@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"andurel-site/config"
+
 	"github.com/mbvlabs/andurel/pkg/routing"
 )
 
@@ -11,6 +13,7 @@ var SessionNew = routing.NewSimpleRoute(
 	"users.new_user_session",
 	UserPrefix,
 	routing.InertiaRoute(),
+	routing.Host(config.HostAdmin),
 )
 
 var SessionCreate = routing.NewSimpleRoute(
@@ -18,6 +21,7 @@ var SessionCreate = routing.NewSimpleRoute(
 	"users.user_session",
 	UserPrefix,
 	routing.InertiaRoute(),
+	routing.Host(config.HostAdmin),
 )
 
 var SessionDestroy = routing.NewSimpleRoute(
@@ -25,6 +29,7 @@ var SessionDestroy = routing.NewSimpleRoute(
 	"users.destroy_user_session",
 	UserPrefix,
 	routing.InertiaRoute(),
+	routing.Host(config.HostAdmin),
 )
 
 var PasswordNew = routing.NewSimpleRoute(

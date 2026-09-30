@@ -64,6 +64,14 @@ func (s Sessions) RegisterRoutes(r *router.Router) error {
 }
 
 func (s Sessions) New(etx *echo.Context) error {
+	app, err := kiks.Get[*cookies.App](etx.Request().Context())
+	if err != nil {
+		return err
+	}
+	if app != nil && app.IsAuthenticated && app.IsAdmin {
+		return s.renderer.Location(etx, routes.AdminDashboardHome.URL())
+	}
+
 	return s.renderer.Page(etx, "Auth/Login", inertia.Props{}).Render()
 }
 
@@ -112,6 +120,16 @@ func (s Sessions) Create(etx *echo.Context) error {
 		return s.renderer.Redirect(etx, routes.SessionNew.URL(), http.StatusSeeOther)
 	}
 
+	if !user.IsAdmin {
+		b := validation.NewBuilder()
+		b.Add("email", "forbidden", "You do not have access to the admin console.")
+		return s.renderer.Page(
+			etx,
+			"Auth/Login",
+			inertia.Props{},
+		).ValidationErrors(b.Errors().ToMap()).Render()
+	}
+
 	if err := kiks.Set(etx.Request().Context(), &cookies.App{
 		UserID:          user.ID.String(),
 		IsAdmin:         user.IsAdmin,
@@ -120,7 +138,7 @@ func (s Sessions) Create(etx *echo.Context) error {
 		return err
 	}
 
-	return s.renderer.Location(etx, routes.HomePage.URL())
+	return s.renderer.Location(etx, routes.AdminDashboardHome.URL())
 }
 
 func (s Sessions) Destroy(etx *echo.Context) error {

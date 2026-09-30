@@ -11,7 +11,7 @@ Generated applications do this in `internal/runtime` through `NewInertia`, then 
 ```go
 renderer, err := inertia.NewRenderer(
     cfg.ContainerID,
-    routes.ViteBuild.Path(),
+    routes.ViteBuild.FullURL(),
     cfg.EntryPoint,
     cfg.ViteDevURL,
     cfg.SSRURL,
@@ -34,12 +34,14 @@ renderer, err := inertia.NewRenderer(
 | Argument | Typical source | Role |
 | --- | --- | --- |
 | `containerID` | `INERTIA_CONTAINER_ID`, default `app` | DOM id for `AppMount` and the `data-page` script |
-| `buildPathURL` | `routes.ViteBuild.Path()` | Production asset URL prefix and default asset version |
+| `buildPathURL` | `routes.ViteBuild.FullURL()` | Production asset URL prefix and default asset version |
 | `entryPoint` | `INERTIA_ENTRY_POINT` | Vite manifest key and development module URL |
 | `viteDevURL` | `INERTIA_VITE_DEV_URL` | Development asset origin; also derives `/__inertia_ssr` |
 | `ssrURL` | `INERTIA_SSR_URL` | Where `cmd/app` POSTs `/render` outside development |
 | `ssrTimeout` | `INERTIA_SSR_REQUEST_TIMEOUT` | Render, health, and shutdown deadline |
 | `ssrMaxResponseBytes` | `INERTIA_SSR_MAX_RESPONSE_BYTES` | SSR body size bound |
+
+Production tags use `buildPathURL` as a prefix (pass `routes.ViteBuild.FullURL()` so a secondary-host page loads assets from primary) and include `crossorigin` on `<link>` / `<script type="module">`. Vite production `base` is `'./'` so hashed chunks and fonts resolve against the script URL.
 
 `WithRoot` is required. Production also requires `WithAssetFS` so the renderer can read `dist/vite/manifest.json`. Empty `containerID`, a nil root, or a missing production manifest fail construction before the process serves traffic.
 

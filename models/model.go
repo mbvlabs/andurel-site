@@ -10,5 +10,9 @@ var Module = fx.Module(
 	fx.Provide(
 		NewUsers,
 		NewTokens,
+		NewDocumentationVersions,
+		NewDocumentationPages,
+		NewDocumentationRevisions,
+		NewDocumentationNavRevisions,
 	),
 )

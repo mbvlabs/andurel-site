@@ -14,6 +14,86 @@ function origin(host: string): string {
 }
 
 export const routes = {
+  adminApiTokenCreate: routeHelper({
+    host: 'admin',
+    path: () => '/tokens',
+  }),
+  adminApiTokenDestroy: routeHelper({
+    host: 'admin',
+    path: (id: string) => `/tokens/${id}`,
+  }),
+  adminApiTokenIndex: routeHelper({
+    host: 'admin',
+    path: () => '/tokens',
+  }),
+  adminApiTokenNew: routeHelper({
+    host: 'admin',
+    path: () => '/tokens/new',
+  }),
+  adminApiTokenShow: routeHelper({
+    host: 'admin',
+    path: (id: string) => `/tokens/${id}`,
+  }),
+  adminApiTokenUpdate: routeHelper({
+    host: 'admin',
+    path: (id: string) => `/tokens/${id}`,
+  }),
+  adminDashboardHome: routeHelper({
+    host: 'admin',
+    path: () => '/',
+  }),
+  adminDocumentationPagePreview: routeHelper({
+    host: 'admin',
+    path: (id: number) => `/docs/pages/${id}/preview`,
+  }),
+  adminDocumentationPagePublish: routeHelper({
+    host: 'admin',
+    path: (id: number) => `/docs/pages/${id}/publish`,
+  }),
+  adminDocumentationPageRestore: routeHelper({
+    host: 'admin',
+    path: (id: string, revisionId: string) => `/docs/pages/${id}/revisions/${revisionId}/restore`,
+  }),
+  adminDocumentationPageShow: routeHelper({
+    host: 'admin',
+    path: (id: number) => `/docs/pages/${id}`,
+  }),
+  adminDocumentationPageUpdate: routeHelper({
+    host: 'admin',
+    path: (id: number) => `/docs/pages/${id}`,
+  }),
+  adminDocumentationVersionCreate: routeHelper({
+    host: 'admin',
+    path: () => '/docs',
+  }),
+  adminDocumentationVersionCreatePage: routeHelper({
+    host: 'admin',
+    path: (id: number) => `/docs/${id}/pages`,
+  }),
+  adminDocumentationVersionIndex: routeHelper({
+    host: 'admin',
+    path: () => '/docs',
+  }),
+  adminDocumentationVersionNew: routeHelper({
+    host: 'admin',
+    path: () => '/docs/new',
+  }),
+  adminDocumentationVersionPublishNav: routeHelper({
+    host: 'admin',
+    path: (id: number) => `/docs/${id}/nav/publish`,
+  }),
+  adminDocumentationVersionShow: routeHelper({
+    host: 'admin',
+    path: (id: number) => `/docs/${id}`,
+  }),
+  adminDocumentationVersionUpdate: routeHelper({
+    host: 'admin',
+    path: (id: number) => `/docs/${id}`,
+  }),
+  adminDocumentationVersionUpdateNav: routeHelper({
+    host: 'admin',
+    path: (id: number) => `/docs/${id}/nav`,
+  }),
   confirmationCreate: routeHelper({
     host: 'primary',
     path: () => '/users/confirmation',
@@ -55,15 +135,15 @@ export const routes = {
     path: () => '/users/sign-up',
   }),
   sessionCreate: routeHelper({
-    host: 'primary',
+    host: 'admin',
     path: () => '/users/sign-in',
   }),
   sessionDestroy: routeHelper({
-    host: 'primary',
+    host: 'admin',
     path: () => '/users/sign-out',
   }),
   sessionNew: routeHelper({
-    host: 'primary',
+    host: 'admin',
     path: () => '/users/sign-in',
   }),
 }

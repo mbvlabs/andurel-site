@@ -102,7 +102,11 @@ Do not invent `--host` values: declare `routing.HostName` consts in `config/host
 
 The reverse proxy must forward the public `Host` header unchanged. When a configured hostname has no port, Andurel also registers `hostname:80` and `hostname:443` aliases. Unknown hosts are served by the primary Echo. Duplicate hostnames or aliases across `HostName`s fail at boot.
 
-Assets and `/api` stay on the primary host unless those routes set `routing.Host(...)`. A secondary-host page that loads assets from the primary origin is a normal cross-origin request; CORS already unions every configured host origin. Layout `<link>` / `<script>` tags should use `FullURL()` so they always point at the asset host.
+Layout CSS and JS stay on the primary host unless those routes set `routing.Host(...)`. Layout `<link>` / `<script>` tags should use `FullURL()` so they always point at the asset host.
+
+`/api` stays on the primary host unless those routes set `routing.Host(...)`.
+
+Inertia Vite files stay on the primary host. Production tags from `pkg/inertia` use `ViteBuild.FullURL()` plus `crossorigin` so a secondary-host page loads the entry from primary. Vite production `base` is `'./'` so hashed chunks and fonts resolve against that script URL, not the page origin. Development keeps `base: '/assets/dist/'` and tags that hit `INERTIA_VITE_DEV_URL`.
 
 Inertia TypeScript helpers return full URLs after boot calls `configureRouteHosts` from the shared `hosts` prop. Use `routes.name.path()` for a relative path. Not-found handlers are registered on every configured host (`AddRouteNotFoundEachHost`).
 

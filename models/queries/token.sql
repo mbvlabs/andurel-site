@@ -37,3 +37,20 @@ RETURNING *;
 -- name: DeleteToken :exec
 DELETE FROM tokens
 WHERE id = $1;
+
+-- name: UpdateToken :one
+UPDATE tokens
+SET
+	updated_at = $2,
+	scope = $3,
+	expires_at = $4,
+	hash = $5,
+	meta_data = $6
+WHERE id = $1
+RETURNING *;
+
+-- name: ListTokensByScope :many
+SELECT *
+FROM tokens
+WHERE scope = $1
+ORDER BY created_at DESC, id DESC;

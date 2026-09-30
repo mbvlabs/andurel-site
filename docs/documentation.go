@@ -7,14 +7,8 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/alecthomas/chroma/v2"
-	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
-	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/yuin/goldmark"
-	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/ast"
-	"github.com/yuin/goldmark/extension"
-	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/text"
 )
 
@@ -67,21 +61,7 @@ type Site struct {
 }
 
 func New() (*Site, error) {
-	registerDocsLexerAliases()
-	markdown := goldmark.New(
-		goldmark.WithExtensions(
-			extension.GFM,
-			highlighting.NewHighlighting(
-				highlighting.WithGuessLanguage(true),
-				highlighting.WithFormatOptions(
-					chromahtml.WithClasses(true),
-					chromahtml.WithLineNumbers(true),
-					chromahtml.TabWidth(4),
-				),
-			),
-		),
-		goldmark.WithParserOptions(parser.WithAutoHeadingID()),
-	)
+	markdown := Markdown()
 	site := &Site{
 		versions:  Catalog,
 		documents: make(map[string]*Document),
@@ -268,35 +248,4 @@ func (s *Site) Documents() []*Document {
 
 func (s *Site) SearchIndex() []SearchResult {
 	return s.search
-}
-
-type aliasedLexer struct {
-	chroma.Lexer
-	name string
-}
-
-func (a aliasedLexer) Config() *chroma.Config {
-	config := *a.Lexer.Config()
-	config.Name = a.name
-	config.Aliases = []string{a.name}
-	config.Filenames = nil
-	config.MimeTypes = nil
-	return &config
-}
-
-func registerDocsLexerAliases() {
-	for alias, source := range map[string]string{
-		"templ":  "go-html-template",
-		"dotenv": "bash",
-		"env":    "bash",
-	} {
-		if lexers.Get(alias) != nil {
-			continue
-		}
-		lexer := lexers.Get(source)
-		if lexer == nil {
-			continue
-		}
-		lexers.Register(aliasedLexer{Lexer: lexer, name: alias})
-	}
 }

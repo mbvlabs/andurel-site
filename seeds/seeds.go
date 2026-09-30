@@ -2,10 +2,14 @@ package seeds
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"slices"
 	"strings"
 
+	"andurel-site/config"
+	"andurel-site/models"
 	"andurel-site/models/factories"
 
 	"github.com/mbvlabs/andurel/pkg/storage"
@@ -13,12 +17,19 @@ import (
 
 const Default = "development"
 
+const (
+	productionAdminEmail = "morten@mbvlabs.com"
+)
+
+var productionAdminPassword = os.Getenv("ADMIN_PASSWORD")
+
 type Runner func(context.Context, storage.Connection) error
 
 var Registry = map[string]Runner{
 	"default":     Development,
 	"development": Development,
 	"test":        Test,
+	"production":  Production,
 }
 
 func Names() []string {
@@ -84,5 +95,48 @@ func Test(ctx context.Context, db storage.Connection) error {
 		return fmt.Errorf("failed to create test user: %w", err)
 	}
 
+	return nil
+}
+
+// Production inserts the console admin once. Re-running is a no-op if that
+// email already exists; it does not rotate the password.
+func Production(ctx context.Context, db storage.Connection) error {
+	if productionAdminPassword == "" || productionAdminPassword == "CHANGE_ME" {
+		return fmt.Errorf(
+			"set productionAdminPassword in seeds/seeds.go before running the production seed",
+		)
+	}
+
+	auth, err := config.NewAuth()
+	if err != nil {
+		return err
+	}
+
+	users := models.NewUsers(db)
+	existing, err := users.FindByEmail(ctx, productionAdminEmail)
+	if err == nil {
+		fmt.Printf("Production admin already present: %s\n", existing.Email)
+		return nil
+	}
+	if !errors.Is(err, models.ErrNotFound) {
+		return fmt.Errorf("lookup production admin: %w", err)
+	}
+
+	hashed, err := models.HashPassword(productionAdminPassword, auth.Pepper)
+	if err != nil {
+		return fmt.Errorf("hash production admin password: %w", err)
+	}
+
+	admin, err := factories.CreateUser(ctx, db,
+		factories.WithEmail(productionAdminEmail),
+		factories.WithIsAdmin(true),
+		factories.WithValidatedEmail(),
+		factories.WithPassword([]byte(hashed)),
+	)
+	if err != nil {
+		return fmt.Errorf("create production admin: %w", err)
+	}
+
+	fmt.Printf("Created production admin user: %s\n", admin.Email)
 	return nil
 }

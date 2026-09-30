@@ -28,6 +28,7 @@ func NewApp() (App, error) {
 	env := newEnvironment()
 	protocol := env.String("PROTOCOL", "")
 	primaryHost := env.RequiredString("HOST_PRIMARY")
+	adminHost := env.RequiredString("HOST_ADMIN")
 	cfg := App{
 		Environment: env.String("ENVIRONMENT", DefaultEnvironment),
 		ProjectName: env.String("PROJECT_NAME", DefaultProjectName),
@@ -36,6 +37,10 @@ func NewApp() (App, error) {
 		Hosts: map[routing.HostName]routing.HostSpec{
 			routing.HostPrimary: {
 				Hostname: primaryHost,
+				Protocol: protocol,
+			},
+			HostAdmin: {
+				Hostname: adminHost,
 				Protocol: protocol,
 			},
 		},

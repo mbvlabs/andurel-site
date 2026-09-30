@@ -25,7 +25,7 @@ Public hostnames live on `App.Hosts`. The default identity is `HOST_PRIMARY` in 
 - `--host` selects the Echo / `routing.HostName` (`primary` always works; others come from app `routing.HostName` consts).
 - `--prefix` is only the path and package namespace.
 
-Declare the host on the route with `routing.Host(config.HostAdmin)`. Controllers call `r.AddRoute(route, echo.Route{Method, Handler})`; Fx stays `RegisterRoutes(r)`. `AddRoute` fills `Path` and `Name` from the hosted route. Assets and `/api` stay on primary unless those routes set `Host(...)`.
+Declare the host on the route with `routing.Host(config.HostAdmin)`. Controllers call `r.AddRoute(route, echo.Route{Method, Handler})`; Fx stays `RegisterRoutes(r)`. `AddRoute` fills `Path` and `Name` from the hosted route. `/api` stays on primary unless those routes set `Host(...)`. Layout CSS/JS and Inertia Vite tags use `FullURL()` to primary. Vite production `base` is `'./'` so nested files follow the script origin.
 
 Inertia apps must import `resources/js/routes.ts` after `andurel sync routes --json`. Helpers return full URLs once `configureRouteHosts` runs from the shared `hosts` prop at boot. Use `routes.name.path()` for a relative path.
 

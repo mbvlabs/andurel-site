@@ -162,3 +162,13 @@ func TestNestedGeneratePagesLoadInReadingOrder(t *testing.T) {
 		t.Fatalf("email next = %+v, want sync", email.Next)
 	}
 }
+
+func TestRenderHTMLUsesThePublicRenderer(t *testing.T) {
+	html, err := RenderHTML([]byte("# Title\n\nHello **world**.\n"))
+	if err != nil {
+		t.Fatalf("render: %v", err)
+	}
+	if !strings.Contains(html, "<h1") || !strings.Contains(html, "<strong>world</strong>") {
+		t.Fatalf("unexpected html: %s", html)
+	}
+}

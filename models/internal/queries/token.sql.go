@@ -201,3 +201,63 @@ func (b *ListTokensBuilder[T]) All() ([]T, error) {
 	}
 	return items, nil
 }
+
+const listTokensByScope = `-- name: ListTokensByScope :many
+SELECT id, created_at, updated_at, scope, expires_at, hash, meta_data
+FROM tokens
+WHERE scope = $1
+ORDER BY created_at DESC, id DESC
+`
+
+func (q *Queries) ListTokensByScope[T any](ctx context.Context, scope string) ([]T, error) {
+	rows, err := q.db.Query(ctx, listTokensByScope, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []T
+	for rows.Next() {
+		item, err := narsilc.Scan[T](rows, []string{"id", "created_at", "updated_at", "scope", "expires_at", "hash", "meta_data"})
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateToken = `-- name: UpdateToken :one
+UPDATE tokens
+SET
+	updated_at = $2,
+	scope = $3,
+	expires_at = $4,
+	hash = $5,
+	meta_data = $6
+WHERE id = $1
+RETURNING id, created_at, updated_at, scope, expires_at, hash, meta_data
+`
+
+type UpdateTokenParams struct {
+	ID        uuid.UUID
+	UpdatedAt pgtype.Timestamptz
+	Scope     string
+	ExpiresAt pgtype.Timestamptz
+	Hash      string
+	MetaData  []byte
+}
+
+func (q *Queries) UpdateToken[T any](ctx context.Context, arg UpdateTokenParams) (T, error) {
+	row := q.db.QueryRow(ctx, updateToken,
+		arg.ID,
+		arg.UpdatedAt,
+		arg.Scope,
+		arg.ExpiresAt,
+		arg.Hash,
+		arg.MetaData,
+	)
+	return narsilc.Scan[T](row, []string{"id", "created_at", "updated_at", "scope", "expires_at", "hash", "meta_data"})
+}

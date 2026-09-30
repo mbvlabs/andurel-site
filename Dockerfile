@@ -3,8 +3,10 @@
 # Image for the existing Deploycrate process config:
 #   web:         serve --http   (port 8080, health /api/health)
 #   ssr-service: ssr            (port 13714, health /health)
+#   release:     migrate
+#                seeds production
 #
-# Both binaries are on PATH so the launcher can resolve bare names.
+# Binaries are on PATH so the launcher can resolve bare names.
 # Replaces Paketo buildpacks (no Go 1.27 support yet).
 
 ARG GO_VERSION=1.27
@@ -78,7 +80,11 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 	CGO_ENABLED=0 GOOS="${TARGETOS:-linux}" GOARCH="${TARGETARCH}" \
 	go build -trimpath -ldflags="-s -w -X main.appVersion=${VERSION}" -o /out/serve ./cmd/app \
 	&& CGO_ENABLED=0 GOOS="${TARGETOS:-linux}" GOARCH="${TARGETARCH}" \
-	go build -trimpath -ldflags="-s -w" -o /out/ssr ./cmd/ssr
+	go build -trimpath -ldflags="-s -w" -o /out/ssr ./cmd/ssr \
+	&& CGO_ENABLED=0 GOOS="${TARGETOS:-linux}" GOARCH="${TARGETARCH}" \
+	go build -trimpath -ldflags="-s -w" -o /out/migrate ./cmd/migrate \
+	&& CGO_ENABLED=0 GOOS="${TARGETOS:-linux}" GOARCH="${TARGETARCH}" \
+	go build -trimpath -ldflags="-s -w" -o /out/seeds ./cmd/seeds
 
 FROM node:${NODE_VERSION}-bookworm-slim
 
@@ -86,7 +92,7 @@ RUN apt-get update \
 	&& apt-get install -y --no-install-recommends ca-certificates \
 	&& rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /out/serve /out/ssr /usr/local/bin/
+COPY --from=build /out/serve /out/ssr /out/migrate /out/seeds /usr/local/bin/
 
 # Deploycrate may still start processes with the Cloud Native Buildpacks launcher.
 RUN mkdir -p /cnb/lifecycle \

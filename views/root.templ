@@ -34,7 +34,7 @@ templ rootDocument(data inertia.RootData, seo pageSEO) {
 				@inertia.AppMount(data.ContainerID)
 			}
 			@templ.Raw(string(data.ViteBody))
-			if data.Environment == server.ProdEnvironment {
+			if data.Environment == server.ProdEnvironment && shouldTrackAnalytics(data) {
 				<script defer data-website-id="8ced4d29-c1ad-46aa-a885-2cf193222376" src="https://analytics.mbvlabs.com/t/script.js"></script>
 			}
 		</body>

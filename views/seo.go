@@ -94,6 +94,11 @@ func inertiaPageSEO(data inertia.RootData) pageSEO {
 	return seo
 }
 
+func shouldTrackAnalytics(data inertia.RootData) bool {
+	component := data.Page.Component
+	return !strings.HasPrefix(component, "Admin/") && !strings.HasPrefix(component, "Auth/")
+}
+
 func marshalJSONLD(value any) string {
 	if value == nil {
 		return ""
